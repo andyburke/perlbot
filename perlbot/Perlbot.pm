@@ -176,7 +176,9 @@ sub sigdie_handler {
     $SIG{__DIE__} = 'DEFAULT';
 
     $diemsg ||= '(no message)';
-    my $filename = File::Spec->catfile($self->config->get(bot => 'crashlogdir'), 'crashlog');
+    my $filename = File::Spec->catfile($self->config->get(bot => 'crashlogdir') ||
+                                         File::Spec->curdir,
+                                       'crashlog');
     open CRASHLOG, ">>$filename"
       or warn "Could not open crashlog '$filename' for writing: $!";
     print CRASHLOG "Died with: $diemsg\n\n", Carp::longmess(), "\n=====\n\n\n";
