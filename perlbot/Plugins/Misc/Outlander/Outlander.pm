@@ -50,22 +50,17 @@ sub sodoit {
   my $curnick = $self->perlbot->curnick;
 
   if($text !~ /$curnick/) {
-    if(int(rand(50)) == 25) {
-      $text =~ s/^.*?(?:,|:)\s*//;
+    $text =~ s/^.*?(?:,|:)\s*//;
 
-      my $starttime = time();
-      print "text: $text\n";
-      my $reply = $self->megahal->do_reply($text);
-      print "reply: $reply\n";
-      $reply = $self->babel($reply);
-      print "after babel: $reply\n";
+    my $starttime = time();
+    my $reply = $self->megahal->do_reply($text);
+    $reply = $self->babel($reply);
+
+    if(int(rand(50)) == 25) {
+
       my $timediff = time() - $starttime;
 
       if($reply =~ /\&nbsp\;/ || length($reply) < 2) {
-#        my $reply = $self->{confused}[int(rand(100))%@{$self->{confused}}];
-#        sleep($self->delay($reply));
-#        $self->reply($reply);
-#        return;
         $self->sodoit($user, $text, $event);
       }
       
@@ -91,10 +86,6 @@ sub sodoit {
     my $timediff = time() - $starttime;
     
     if($reply =~ /\&nbsp\;/ || length($reply) < 2) {
-#      my $reply = $self->{confused}[int(rand(100))%@{$self->{confused}}];
-#      sleep($self->delay($reply));
-#      $self->reply($reply);
-#      return;
       $self->sodoit($user, $text, $event);
     }
     
