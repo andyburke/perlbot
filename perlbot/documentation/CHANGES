@@ -18,6 +18,8 @@ CHANGES:
 - Mike Edwards made the Perldoc plugin safer.
 - Ian Higgs pointed out some problems with logging channels you've told
   the bot to join... fixed.
+- Dmitry Agaphonov submitted a patch that allows the bot to join a server
+  that has no MOTD. Applied.
 - Added debug statement when rolling log file to the next day
 - Added debug statement on inability to write to logfile
 - Most fatal crashes should now log the error message and a stack trace
