@@ -2,67 +2,67 @@ TODO:
 
 for 2.0:
 
-- MAKE A UNIFIED SYSTEM FOR ACCESS TO THE IN-MEMORY CONFIG
 - make the bot quit gracefully and catch all the right signals
 - output buffering
 - port plugins
 - clean up code, make -w clean, etc.
 - flock the config file when reading/writing
-- write create() and delete() methods for Config?
 - move all code that touches Net::IRC stuff into Perlbot.pm and write
-  accessor methods (for example, ConnectionManagement currently bangs
-  on $perlbot->{ircconn})
-- add character-counting to max-output functionality in case of
-  very long lines (1 line = 80 chars?)
-- check that values in Weather plugin are numeric before multiplying
-- Invite plugin that handles channel invites.  Invites from admins
-  are automatically honored.  Invites from anyone else are stored
-  in a queue, and all admins are notified of the request.  An admin
-  may view, confirm, or deny the invite via a msg'd command
-  (maybe !invite [confirm|deny] -- no params views the queue)
-- BNC (BouNCe) plugin - http://bnc.ircadmin.net/
-  bnc is an IRC proxy with a defined login procedure.  A plugin
-  should be able to hook endofmotd/nomotd and send the login/server
-  commands.  Issues - core config server entries: BNC host
-  or actual desired IRC servers?  BNC config file: real IRC
-  servers or BNC host (i.e. opposite of what core config holds).
-  core=actual,BNC=BNC would make sense, but cause problems with
-  disconnects (reconnecting to wrong place?), unless the BNC plugin
-  can sufficiently deal with this via disconnect events...  Might
-  be a fun plugin to write.
+  accessor methods (for example, ConnectionManagement currently bangs on
+  $perlbot->{ircconn})
+- add character-counting to max-output functionality in case of very long
+  lines (1 line = 80 chars?)
+- check that values in Weather plugin are numeric before multiplying (lots
+  of warnings without this check)
+- User and Chan objects should know how to build a skeleton version of
+  themselves in the config if their entry doesn't already exist
+- join/part shouldn't touch Chan objects
+- see if anyone else has written something like our Config.  if so, look
+  into using it.  if not, perhaps generalize our code and publish
+  separately.
+- caching hostmasks for use by get_user - may help performance issues, but
+  do those issues even exist?
+- crashlog
+- profile code, look for candidates for optimization (no need to rush this)
+
+
 
 when we can:
 
-- create a plugin that publishes our config via RPC::XML::Server
-  so we can make a botnet
+- possibly modify Config to make it easier to create branches, modify
+  values, and deal with arrays/hashes
+- create a plugin that publishes our config via RPC::XML::Server so we can
+  make a botnet
   -  This needs more thought, let's push it back to post 2.0
 - per-channel option to auto-rejoin when kicked
 - write help files for all the plugins that are included in the base
   distribution.
-- implement user-defined formats for things like logfile names and
-  logfile entries.  could use % codes, like %y.%m.%d for
-  year.mon.day .
+- implement user-defined formats for things like logfile names and logfile
+  entries.  could use % codes, like %y.%m.%d for year.mon.day .
 - make the User package more robust...
-  - users should have more info that other users with the
-    appropriate flags should be able to access, ie:
-    real name, last seen, last unidle, email addy, daytime phone,
-    home phone, real address, etc... anything one can think of that
-    would be useful
+  - users should have more info that other users with the appropriate flags
+    should be able to access, ie: real name, last seen, last unidle, email
+    addy, daytime phone, home phone, real address, etc... anything one can
+    think of that would be useful
     -- these have been added, but we really need an entirely new
        user config file and format...
-  - this info should be able to be set by each individual user with
-    as much or as little info as desired... this means we need to
-    both parse and save out a seperate user config file
+  - this info should be able to be set by each individual user with as much
+    or as little info as desired... this means we need to both parse and
+    save out a seperate user config file
 - rewrite the define plugin to behave just like an infobot... or better yet,
   port infobot to a perlbot plugin... major props to anyone who does this
-
-THOUGHTS:
-
-- currently, users need to say '#help core ...' for help on the core stuff
-  like part/join/note etc. (i.e. the stuff in PerlbotCore)  is this OK?
-  perhaps PerlbotCore could become something else, like Base.  Also, it would
-  be ideal to move all perlbot modules, plugins, etc. into a Perlbot::
-  namespace.  I'm not sure if there's any required mapping between filenames
-  and package names, so this might not be possible without a lot of directory
-  rearranging and other hacking.
+- Invite plugin that handles channel invites.  Invites from admins are
+  automatically honored.  Invites from anyone else are stored in a queue,
+  and all admins are notified of the request.  An admin may view, confirm,
+  or deny the invite via a msg'd command (maybe !invite [confirm|deny] -- no
+  params views the queue)
+- BNC (BouNCe) plugin - http://bnc.ircadmin.net/
+  bnc is an IRC proxy with a defined login procedure.  A plugin should be
+  able to hook endofmotd/nomotd and send the login/server commands.
+  - core config server entries: BNC host or actual desired IRC servers?  BNC
+    config file: real IRC servers or BNC host (i.e. opposite of what core
+    config holds).  core=actual,BNC=BNC would make sense, but cause problems
+    with disconnects (reconnecting to wrong place?), unless the BNC plugin
+    can sufficiently deal with this via disconnect events...  Might be a fun
+    plugin to write.
 
