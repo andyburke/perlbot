@@ -111,10 +111,49 @@ sub logserver {
       $response .= '<p><hr>';
       
       $response .= "<p><center><h1>$year</h1></center>\n";
-      $response .= "<table width=\"100%\" border=\"0\">\n  <tr valign=\"center\" align=\"center\">\n";
 
+      $response .= '
+
+        <style type="text/css">
+        <!--
+
+          table {
+            width: 99%;
+          }
+
+          tr {
+            height: 30px;
+          }
+
+          td {
+            width: 14%;
+          }
+
+          table.main {
+            width: 99%;
+            border: 1px solid;
+          }
+
+          tr.main {
+            height: 33%;
+          }
+
+          td.main {
+            width: 25%;
+            vertical-align: top;
+            text-align: left;
+            padding: 10px;
+          }
+
+        -->
+        </style>';
+
+
+      $response .= "<table class=\"main\">\n";
+
+      $response .= "  <tr class=\"main\">\n";
       foreach my $month ((1..12)) {
-        $response .= "    <td width=\"25%\" valign=\"center\" align=\"center\">\n";
+        $response .= "    <td class=\"main\">\n";
         $month = sprintf("%02d", $month);
         my $cal = HTML::CalendarMonth->new(year => $year, month => $month);
         foreach my $day ($cal->days()) {
@@ -134,9 +173,9 @@ sub logserver {
                                                               . "&year=${year}&month=${month}&day=${padded_day}"));
           }
         }
-        $response .= $cal->as_HTML();
-        $response .= "</td>\n";
-        if($month % 4 == 0) { $response .="  </tr>\n  <tr>\n"; }
+        $response .= "      " . $cal->as_HTML();
+        $response .= "    </td>\n";
+        if($month % 4 == 0) { $response .= "  </tr>\n  <tr class=\"main\">\n"; }
       }
       $response .= "</table>\n";
 
