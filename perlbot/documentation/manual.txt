@@ -288,6 +288,16 @@ Table of Contents
             ...
           </bot>
 
+    ignore
+      - Causes the bot to ignore someone.
+
+        Example:
+
+          <bot nick="perlbot">
+            <ignore>*!*someone@*.someplace.com</ignore>
+            ...
+          </bot>
+
   3.2  server
   -----------
 

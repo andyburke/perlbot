@@ -335,18 +335,16 @@ sub hint {
 
   my ($category, $q, $a) = split(':::', $self->{questions}{$self->{question}});
 
-  my $blackout;
-  if(length($a) > 3) {
+  if(length($a) > 4) {
+    my $blackout;
     $blackout = (length($a) / 2) + (rand(1000) % (length($a)/4)) - 1;
+    if(int(rand(2)) == 1) {
+      substr($a, 0, (length($a) - $blackout)) =~ tr[ A-Za-z0-9][ #];
+    } else {
+      substr($a, (length($a) - $blackout)) =~ tr[ A-Za-z0-9][ #];
+    }
   } else {
-    $blackout = length($a);
-  }
-
-  my $hint;
-  if(int(rand(2)) == 1) {
-    substr($a, 0, (length($a) - $blackout)) =~ tr[ A-Za-z0-9][ #];
-  } else {
-    substr($a, (length($a) - $blackout)) =~ tr[ A-Za-z0-9][ #];
+    $a =~ tr[ A-Za-z0-9][ #];
   }
 
   $self->reply("Hint: $a");
