@@ -54,7 +54,7 @@ sub freshmeat {
     my ($time) = $date =~ /.*?(\d+:\d+).*?/;
     
     $month =~ s/January/01/;
-    $month =~ s/Februaury/02/;
+    $month =~ s/February/02/;
     $month =~ s/March/03/;
     $month =~ s/April/04/;
     $month =~ s/May/05/;
