@@ -1,9 +1,11 @@
 CHANGES:
 
-1.4.2 - misc fixes
+1.5.2 - misc fixes, web-based services improved
+- The web interface to the logs in miscscripts has been significantly
+  improved
 - Fixed a bug that wouldn't id a user who had multiple identical hostmasks
 
-1.4.1 - misc fixes
+1.5.1 - misc fixes
 - Logging actions now works correctly
 - If you don't specify hostmasks for users, it now works correctly
 - #status now msgs you back with bot status
@@ -12,8 +14,8 @@ CHANGES:
 - made host_to_user() only return correctly if it finds one user, not
   multiple ones (shouldn't happen since our hostmask fix)
 
-1.4.0/1.5.0 - crash log, configurable plugin and command trigger prefixes,
-              new plugin, plugin fixes, misc core updates/fixes
+1.5.0 - crash log, configurable plugin and command trigger prefixes,
+        new plugin, plugin fixes, misc core updates/fixes
 - Due to popular demand, the character/string that prefixes spoken commands
   to the bot is now configurable!  bot.commandprefix and bot.pluginprefix
   are the config values to set (the defaults are # and ! to mimic previous
