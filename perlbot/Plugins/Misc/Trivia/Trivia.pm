@@ -609,6 +609,8 @@ sub getqualifyingplayers {
        defined($self->{correctlyanswered}{$player}) &&
        defined($self->{fastestoverall}{$player}) &&
        defined($self->score($player))) {
+      if(!defined($self->{performanceoverall}{$player}))
+          $self->{performanceoverall}{$player} = 0;
       push(@players, $player);
     }
   }
