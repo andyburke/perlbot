@@ -77,15 +77,46 @@ sub update {
   if ($type eq 'namreply') {
     my $chan = $self->perlbot->get_channel($event->{args}[2]);
     my $nickstring = $event->{args}[3];
-    $nickstring =~ s/\@//g;
     my @nicks = split(' ', $nickstring);
     if (defined($chan)) {
       $chan->clear_member_list();
+      $chan->clear_currentopped_list();
       foreach my $nick (@nicks) {
+        my $curop;
+        $curop = 1 if ($nick =~ /^@/);
+        $nick =~ s/^@//;
+        $chan->add_current_op($nick) if $curop;
         $chan->add_member($nick);
       }
     }
   }
+
+  if ($type eq 'mode') {
+    my $chan = $self->perlbot->get_channel($event->{to}[0]);
+    my $modeline = $event->{args}[0];
+    my @nicks = @{$event->{args}}; shift @nicks; pop @nicks; # this is jus confusing
+
+    $chan or return;
+
+    if ($modeline =~ /[ov]/) {
+      while ($modeline !~ /^([+-][a-z])+$/) {
+        $modeline =~ s/([+-])([a-z])([a-z])/$1$2$1$3/;
+      }
+
+      my @modes = $modeline =~ /([+-][a-z])/g;
+      
+      my %modehash;
+      @modehash{@nicks} = @modes;
+      
+      while (my($nick,$mode) = each (%modehash)) {
+        if ($mode eq '-o') {
+          $chan->remove_current_op($nick);
+        } elsif ($mode eq '+o') {
+          $chan->add_current_op($nick);
+        }
+      }
+    }
+  } 
 
   if ($user) {
     $user->curnick($nick);

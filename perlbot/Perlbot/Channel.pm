@@ -4,7 +4,7 @@ use Perlbot::LogFile;
 use strict;
 
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(config name log members perlbot);
+use fields qw(config name log members currentopped currentvoiced perlbot);
 
 sub new {
   my $class = shift;
@@ -21,6 +21,8 @@ sub new {
   $self->name = $name;
   $self->log = new Perlbot::LogFile($config->value(bot => 'logdir'), $name, $singlelogfile);
   $self->members = {};
+  $self->currentopped = {};
+  $self->currentvoiced = {};
   $self->perlbot = $perlbot;
 
   return $self;
@@ -165,6 +167,33 @@ sub remove_op {
 
   return 1 if $removed_count;
   return 0;
+}
+
+sub is_current_op {
+  my $self = shift;
+  my $nick = shift;
+
+  $self->currentopped->{$nick} ? return 1 : return 0;
+}
+
+sub add_current_op {
+  my $self = shift;
+  my $nick = shift;
+
+  $self->currentopped->{$nick} = 1;
+}
+
+sub remove_current_op {
+  my $self = shift;
+  my $nick = shift;
+
+  delete $self->currentopped->{$nick};
+}
+
+sub clear_currentopped_list {
+  my $self = shift;
+
+  $self->currentopped = {};
 }
 
 sub join {
