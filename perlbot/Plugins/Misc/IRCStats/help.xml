@@ -1,0 +1,5 @@
+<help>
+  <overview>This plugin supplies web-based channel statistics.<br/>Ask your admin what port your web services are running on.</overview>
+  <command name="updatestats">Allows the bot admin to update the stats.</command>
+  <usage name="updatestats">updatestats</usage>
+</help>
