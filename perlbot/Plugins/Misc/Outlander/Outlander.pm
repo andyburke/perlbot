@@ -108,14 +108,14 @@ sub sodoit {
       
       if($timediff > $self->delay($reply)) {
         if(int(rand(10)) % 2 == 0) {
-          $self->addressed_ reply($reply);
+          $self->addressed_reply($reply);
         } else {
           $self->reply($reply);
         }
       } else {
         sleep($self->delay($reply) - $timediff);
         if(int(rand(10)) % 2 == 0) {
-          $self->addressed_ reply($reply);
+          $self->addressed_reply($reply);
         } else {
           $self->reply($reply); 
         }
