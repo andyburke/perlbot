@@ -91,6 +91,7 @@
                 font-size: 10pt;
                 font-family: Courier, monospace;                
                 line-height: 1.2;
+                white-space: pre;
         }
 
         .public {
