@@ -49,9 +49,15 @@ I want the Google and SpelCheck plugins to work!
 
    The Google and SpelCheck plugins both use the Google web APIs. To make
    them work, you'll need to install the Net::Google perl module and go
-   to http://www.google.com/apis to get an API key.  You should then
-   edit the Google and SpelCheck config.xml files and enter the
-   key you obtained in them.
+   to http://www.google.com/apis to get an API key.  You must then edit
+   the Google and SpelCheck <plugin> sections in your config file (or
+   create them if they don't exist yet) and enter the key you obtained as
+   the "apikey" option.  Example:
+
+   <plugin name="Google">
+     <apikey>12345</apikey>
+   </plugin>
+   (then do the same for "SpelCheck")
 
 
 I don't want to edit this configuration by hand!
@@ -104,7 +110,7 @@ Do I need to restart when I change the configuration or add/upgrade a plugin?
    careful for now if you want to edit the config while the bot is running.
 
    Plugins can be loaded, unloaded and reloaded dynamically.  Ask the bot
-   for help on the PluginControl plugin.
+   for help on the PluginControl plugin. (/msg bot !help PluginControl)
 
 
 Where can I get more plugins?
