@@ -6,7 +6,7 @@ use Perlbot::Plugin;
 use strict;
 
 use WWW::Babelfish;
-use MegaHAL;
+use IPC::Open2;
 
 our $VERSION = '0.2.0';
 
@@ -14,31 +14,23 @@ sub init {
   my $self = shift;
 
   $self->want_msg(0);
+  $self->want_fork(0);
 
-  $self->{megahal} = new MegaHAL('Path'     => $self->directory,
-                                 'Banner'   => 0,
-                                 'Prompt'   => 0,
-                                 'Wrap'     => 0,
-                                 'AutoSave' => 1);
-  $self->megahal->initial_greeting();
+  $self->{proc_pid} = -1;
+  $self->{lines} = 0;
+  $self->{trigger_lines} = 10;
 
-  $self->{confused} = ['what?',
-                       'sorry, understanding is not easy for me',
-                       'I am afflicted, which?',
-                       'I do not include/understand',
-                       'I have a comprehension of time lasts you',
-                       'slow down you, you are confusing me!',
-                       'I am much konfus',
-                       'I do not understand'
-                       ];
+  $self->{read} = undef;
+  $self->{write} = undef;
 
+  $self->{learn} = 0;
+  
+  $self->{proc_pid} = open2( $self->{read}, $self->{write}, "$self->{directory}/megahal");
+  my $garbage = readline($self->{read});
+  
   $self->hook(\&sodoit);
 
-}
 
-sub megahal {
-  my $self = shift;
-  return $self->{megahal};
 }
 
 sub sodoit {
@@ -46,6 +38,7 @@ sub sodoit {
   my $user = shift;
   my $text = shift;
   my $event = shift;
+  my $reply;
 
   my $curnick = $self->perlbot->curnick;
 
@@ -53,7 +46,13 @@ sub sodoit {
     $text =~ s/^.*?(?:,|:)\s*//;
 
     my $starttime = time();
-    my $reply = $self->megahal->do_reply($text);
+    if($self->{write}) {
+      print {$self->{write}} "$text\n\n";
+    }
+    if($self->{read}) {
+      $reply = readline($self->{read});
+    }
+    chomp $reply;
     $reply = $self->babel($reply);
 
     if(int(rand(50)) == 25) {
@@ -78,11 +77,14 @@ sub sodoit {
     $text =~ s/$curnick/$theirnick/ig;
 
     my $starttime = time();
-    print "text: $text\n";
-    my $reply = $self->megahal->do_reply($text);
-    print "reply: $reply\n";
+    if($self->{write}) {
+      print {$self->{write}} "$text\n\n";
+    }
+    if($self->{read}) {
+      $reply = readline($self->{read});
+    }
+    chomp $reply;
     $reply = $self->babel($reply);
-    print "after babel: $reply\n";
     my $timediff = time() - $starttime;
     
     if($reply =~ /\&nbsp\;/ || length($reply) < 2) {
