@@ -30,6 +30,11 @@ sub cal {
   defined($mon) or $mon = (localtime)[4] + 1;
   defined($yr) or $yr = (localtime)[5] + 1900;
 
+  if($mon !~ /^\d+$/ || $yr !~ /^\d+$/) {
+    $self->reply_error("Month/Year values must be numeric!");
+    return;
+  }
+
   if($yr < 1970) {
     $self->reply_error("$yr is out of range!");
     return;
