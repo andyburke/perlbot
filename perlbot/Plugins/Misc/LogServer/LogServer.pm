@@ -239,9 +239,10 @@ sub logserver {
       $response .= "<h2>Search logs for channel: " . $options->{channel} . "</h2><p>";
       $response .= "<form method=\"get\" action=\"/logserver/search\">";
       $response .= "<input type=\"hidden\" name=\"channel\" value=\"" . $options->{channel} . "\">";
-      $response .= "Enter words to search for: <input type=\"text\" name=\"terms\"  /><br/>";
-      $response .= "Enter nickname to search for: <input type=\"text\" name=\"nick\"  /><br/>";
-      $response .= "Event type: <select name=\"type\">
+      $response .= "<table border=\"0\" width=\"75%\">";
+      $response .= "<tr><td>Enter words to search for:</td><td><input type=\"text\" name=\"terms\"  /></td></tr>";
+      $response .= "<tr><td >Enter nickname to search for:</td><td > <input type=\"text\" name=\"nick\"  /></td></tr>";
+      $response .= "<tr><td >Event type:</td><td > <select name=\"type\">
                                   <option>all</option>
                                   <option>public</option>
                                   <option>caction</option>
@@ -252,9 +253,9 @@ sub logserver {
                                   <option>part</option>
                                   <option>kick</option>
                                   <option>quit</option>
-                                </select><br/>";
+                                </select></td></tr>";
 
-      $response .= "Initial Date: <select name=\"initialyear\">";
+      $response .= "<tr><td >Initial Date:</td><td > <select name=\"initialyear\">";
 
         my $initialyear = (localtime($channel->logs->initial_entry_time()))[5] + 1900;
         my $finalyear = (localtime($channel->logs->final_entry_time()))[5] + 1900;
@@ -289,9 +290,9 @@ sub logserver {
 
       $response .= "h: <input type=\"text\" name=\"initialhour\" size=\"2\">";
       $response .= "m: <input type=\"text\" name=\"initialmin\" size=\"2\">";
-      $response .= "s: <input type=\"text\" name=\"initialsec\" size=\"2\"><br/>";
+      $response .= "s: <input type=\"text\" name=\"initialsec\" size=\"2\"></td></tr>";
 
-      $response .= "Final Date: <select name=\"finalyear\">";
+      $response .= "<tr><td >Final Date:</td><td > <select name=\"finalyear\">";
 
         for my $year ($initialyear..$finalyear) {
           if($year == $finalyear) {
@@ -323,14 +324,14 @@ sub logserver {
 
       $response .= "h: <input type=\"text\" name=\"finalhour\" size=\"2\">";
       $response .= "m: <input type=\"text\" name=\"finalmin\" size=\"2\">";
-      $response .= "s: <input type=\"text\" name=\"finalsec\" size=\"2\"><br/>";
+      $response .= "s: <input type=\"text\" name=\"finalsec\" size=\"2\"></td></tr>";
       
-      
+      $response .= "</table>";
 
       $response .= "<input type=\"submit\" name=\"submit\" />";
       $response .= "</form>";
 
-      $response .= "<font size=\"-1\" color=\"red\">* Note that search speed is often dependent on many factors, including the amount of data logged and the log facility the bot administrator has chosen.  Please allow ample time for the search to complete.</font>";
+      $response .= '<span class="note">* Note that search speed is often dependent on many factors, including the amount of data logged and the log facility the bot administrator has chosen.  Please allow ample time for the search to complete!</span>';
 
       return $self->std_response($response);
       
