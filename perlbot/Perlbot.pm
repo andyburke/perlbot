@@ -556,15 +556,16 @@ sub empty_queue {
   my ($self) = @_;
   my $lines;
 
-  $lines = $self->{ircobject}->queue;
-  # abort if no lines in queue, or pacing not enabled
-  $lines and $self-{ircobject}->pacing or return;
-
-  delete $self->{handlers};  # make sure no handlers are triggered while we do this
-  debug("empty_queue: outputing $lines events", 3);
-  while ($self->{ircobject}->queue) {
-    $self->{ircobject}->do_one_loop;
-  }
+### commented out until Net::IRC supports pacing
+#  $lines = $self->{ircobject}->queue;
+#  # abort if no lines in queue, or pacing not enabled
+#  $lines and $self->{ircobject}->pacing or return;
+#
+#  delete $self->{handlers};  # make sure no handlers are triggered while we do this
+#  debug("empty_queue: outputing $lines events", 3);
+#  while ($self->{ircobject}->queue) {
+#    $self->{ircobject}->do_one_loop;
+#  }
 }
 
 # takes a username or hostmask and returns a user if one exists that matches
