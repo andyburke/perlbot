@@ -250,6 +250,7 @@ sub connect {
   my $port;
   my $nick;
   my $ircname;
+  my $localaddr;
 
   my $handlers;
 
