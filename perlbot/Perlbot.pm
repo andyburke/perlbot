@@ -194,6 +194,7 @@ sub connect {
   my $ircname;
 
   $self->{ircobject} = new Net::IRC;
+  $self->{ircobject}{_debug} = 1 if $DEBUG >= 10;
 
   my $i = 0;
   while(!$self->{ircconn}) {
@@ -377,6 +378,16 @@ sub event_multiplexer {
     }
   }
 
+}
+
+# removes all handlers and sends all waiting events, used prior to shutdown
+sub empty_queue {
+  my ($self) = @_;
+
+  delete $self->{handlers};  # make sure no handlers are triggered while we do this
+  while ($self->{ircobject}->queue) {
+    $self->{ircobject}->do_one_loop;
+  }
 }
 
 sub get_user {
