@@ -354,8 +354,8 @@ sub reply {
   # else
   #   send the output via whatever method it came in by
 
-  if($self->perlbot->config->value(bot => max_public_reply_lines) &&
-     @output > $self->perlbot->config->value(bot => max_public_reply_lines)) {
+  if($self->perlbot->config->get(bot => max_public_reply_lines) &&
+     @output > $self->perlbot->config->get(bot => max_public_reply_lines)) {
     foreach my $line (@output) {
       $self->perlbot->msg($self->{lastnick}, $line);
     }
@@ -402,7 +402,7 @@ sub reply_error {
   # else
   #   send the error back in whatever way we got it
 
-  if($self->perlbot->config->value(bot => send_errors_via_msg)) {
+  if($self->perlbot->config->get(bot => send_errors_via_msg)) {
     foreach my $line (@output) {
       $self->perlbot->msg($self->{lastnick}, $line);
     }
@@ -427,8 +427,8 @@ sub addressed_reply {
 
   # adds a preceding nickname to our output, see reply
 
-  if($self->perlbot->config->value(bot => max_public_reply_lines) &&
-     @output > $self->perlbot->config->value(bot => max_public_reply_lines)) {
+  if($self->perlbot->config->get(bot => max_public_reply_lines) &&
+     @output > $self->perlbot->config->get(bot => max_public_reply_lines)) {
     foreach my $line (@output) {
       $self->perlbot->msg($self->{lastnick}, $self->{lastnick} . ', ' . $line);
     }
@@ -479,7 +479,7 @@ sub _help {
       }
     }
     if($self->helpitems->{usage}{$command}{content}) {
-      push(@result, "Usage: " . $self->perlbot->config->value(bot => 'commandprefix') . $self->helpitems->{usage}{$command}{content});
+      push(@result, "Usage: " . $self->perlbot->config->get(bot => 'commandprefix') . $self->helpitems->{usage}{$command}{content});
     }
   }
 
@@ -498,9 +498,8 @@ sub _process { # _process to stay out of people's way
   # anything
   my $chan_name = normalize_channel($event->{to}[0]);
   if ($event->type ne 'msg' and
-      $self->perlbot->config->value(channel => $chan_name => 'ignoreplugin') and
       grep {$_ eq $self->{name}}
-           @{$self->perlbot->config->value(channel => $chan_name => 'ignoreplugin')}) {
+           $self->perlbot->config->get_array(channel => $chan_name => 'ignoreplugin')) {
     return;
   }
 
@@ -522,7 +521,7 @@ sub _process { # _process to stay out of people's way
   #     dispatch this event to the appropriate handler with the right args
 
   foreach my $commandprefix_hook (keys(%{$self->{commandprefix_hooks}})) {
-    my $regexp = $self->perlbot->config->value(bot => 'commandprefix') . $commandprefix_hook;
+    my $regexp = $self->perlbot->config->get(bot => 'commandprefix') . $commandprefix_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
@@ -537,7 +536,7 @@ sub _process { # _process to stay out of people's way
   }
 
   foreach my $addressed_command_hook (keys(%{$self->{addressed_command_hooks}})) {
-    my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_hook . '(?:\s+|$)';
+    my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->get(bot => 'commandprefix') . '*' . $addressed_command_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/${regexp}//i;
@@ -585,7 +584,7 @@ sub _process { # _process to stay out of people's way
   # person generating the event is an admin
 
   foreach my $commandprefix_admin_hook (keys(%{$self->{commandprefix_admin_hooks}})) {
-    my $regexp = $self->perlbot->config->value(bot => 'commandprefix') . $commandprefix_admin_hook;
+    my $regexp = $self->perlbot->config->get(bot => 'commandprefix') . $commandprefix_admin_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       if($user && $user->is_admin()) {
         my $texttocallwith = $text;
@@ -604,7 +603,7 @@ sub _process { # _process to stay out of people's way
   }
 
   foreach my $addressed_command_admin_hook (keys(%{$self->{addressed_command_admin_hooks}})) {
-    my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_admin_hook . '(?:\s+|$)';
+    my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->get(bot => 'commandprefix') . '*' . $addressed_command_admin_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       if($user && $user->is_admin()) {
         my $texttocallwith = $text;
@@ -623,7 +622,7 @@ sub _process { # _process to stay out of people's way
   # here we just return the event in addition to the other stuff
 
   foreach my $commandprefix_advanced_hook (keys(%{$self->{commandprefix_advanced_hooks}})) {
-    my $regexp = $self->perlbot->config->value(bot => 'commandprefix') . $commandprefix_advanced_hook;
+    my $regexp = $self->perlbot->config->get(bot => 'commandprefix') . $commandprefix_advanced_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
@@ -638,7 +637,7 @@ sub _process { # _process to stay out of people's way
   }
 
   foreach my $addressed_command_advanced_hook (keys(%{$self->{addressed_command_advanced_hooks}})) {
-    my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_advanced_hook . '(?:\s+|$)';
+    my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->get(bot => 'commandprefix') . '*' . $addressed_command_advanced_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/${regexp}//i;

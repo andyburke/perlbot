@@ -42,21 +42,17 @@ sub AUTOLOAD : lvalue {
 sub admin {
   my $self = shift;
 
-  # if the arrayref is undefined, create it
-  if (!$self->config->value(bot => 'admin')) {
-    $self->config->value('bot', 0)->{admin} = [];
-  }
-  # insert/remove username from admins hash as requested
+  # insert/remove username from admins list as requested
   if (@_) {
-    my $want_admin = shift(@_);
+    my $want_admin = shift;
     if ($want_admin and !$self->admin) {
-      push @{$self->config->value(bot => 'admin')}, $self->name;
+      $self->config->array_push(bot => 'admin', $self->name);
     } else {
-      my $admins = $self->config->value(bot => 'admin');
-      @$admins = grep {$_ ne $self->name} @$admins;
+      $self->config->array_delete(bot => 'admin', $self->name);
     }
   }
-  return grep({$_ eq $self->name} @{$self->config->value(bot => 'admin')}) ? 1 : 0;
+print "ADMINS: ", join(',',  $self->config->get_array(bot=>'admin')), "\n";
+  return grep({$_ eq $self->name} $self->config->array_get(bot => 'admin')) ? 1 : 0;
 }
 
 sub is_admin {
@@ -68,15 +64,11 @@ sub password {
   my $self = shift;
   my $password = shift;
 
-  if(defined($password)) {
-    if(!defined($self->config->value(user => $self->name => 'password'))) {
-      $self->config->{_config}->{user}->{$self->name}->{password} = md5_base64($password);
-    } else {
-      $self->config->value(user => $self->name => 'password') = md5_base64($password);
-    }
+  if (defined($password)) {
+    $self->config->set(user => $self->name => 'password', md5_base64($password));
   }
 
-  return $self->config->value(user => $self->name => 'password');
+  return $self->config->get(user => $self->name => 'password');
 }
 
 sub authenticate {
@@ -113,9 +105,8 @@ sub add_hostmask {
   my ($self, $hostmask) = @_;
 
   validate_hostmask($hostmask) or return;
-  push @{$self->hostmasks}, $hostmask;
+  $self->config->array_push(user => $self->name => 'hostmask', $hostmask);
 }
-
 
 sub add_temp_hostmask {
   my ($self, $hostmask) = @_;
@@ -127,17 +118,14 @@ sub add_temp_hostmask {
 sub del_hostmask {
   my ($self, $hostmask) = @_;
 
-  my $hostmasks = $self->hostmasks;
-  @$hostmasks = grep {$_ ne $hostmask} @$hostmasks;
+  $self->config->array_delete(user => $self->name => 'hostmask', $hostmask);
 }
 
 
 sub hostmasks {
   my $self = shift;
-  if (!$self->config->value(user => $self->name => 'hostmask')) {
-    $self->config->value(user => $self->name)->{hostmask} = [];
-  }
-  return $self->config->value(user => $self->name => 'hostmask');
+
+  return $self->config->array_get(user => $self->name => 'hostmask');
 }
 
 sub update_channels {

@@ -43,8 +43,8 @@ sub AUTOLOAD : lvalue {
 sub start {
   my $self = shift;
 
-  my $hostname = $self->perlbot->config->value(webserver => 'hostname');
-  my $port = $self->perlbot->config->value(webserver => 'port');
+  my $hostname = $self->perlbot->config->get(webserver => 'hostname');
+  my $port = $self->perlbot->config->get(webserver => 'port');
 
   if(!$port) {
     $port = 9090;

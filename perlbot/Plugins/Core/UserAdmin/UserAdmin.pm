@@ -69,7 +69,7 @@ sub useradmin {
     $self->reply("Removed user: $username");
 
   } elsif ($command eq 'hostmasks') {
-    foreach my $hostmask (@{$other_user->hostmasks}) {
+    foreach my $hostmask ($other_user->hostmasks) {
       $self->reply($hostmask);
     }
   } elsif ($command eq 'addhostmask') {
@@ -92,9 +92,9 @@ sub useradmin {
       $self->reply('You must specify a hostmask to delete!');
       return;
     }
-    my $old_num = @{$other_user->hostmasks};
+    my $old_num = $other_user->hostmasks;
     $other_user->del_hostmask($hostmask);
-    if ($old_num == @{$other_user->hostmasks}) {
+    if ($old_num == $other_user->hostmasks) {
       $self->reply("$hostmask is not in ${username}'s list of hostmasks!");
     } else {
       $self->perlbot->config->save;

@@ -11,7 +11,7 @@ sub new {
   my ($name, $config, $perlbot) = @_;
   my $singlelogfile = 0;
 
-  if (lc($config->value(channel => $name => 'singlelogfile')) eq 'yes') {
+  if (lc($config->get(channel => $name => 'singlelogfile')) eq 'yes') {
     $singlelogfile = 1;
   }
 
@@ -19,7 +19,7 @@ sub new {
 
   $self->config = $config;
   $self->name = $name;
-  $self->log = new Perlbot::LogFile($config->value(bot => 'logdir'), $name, $singlelogfile);
+  $self->log = new Perlbot::LogFile($config->get(bot => 'logdir'), $name, $singlelogfile);
   $self->members = {};
   $self->currentopped = {};
   $self->currentvoiced = {};
@@ -52,37 +52,37 @@ sub log_write {
 
 sub flags {
     my $self = shift;
-    $self->config->value(channel => $self->name => 'flags') = shift if @_;
-    return $self->config->value(channel => $self->name => 'flags');
+    $self->config->set(channel => $self->name => 'flags', shift) if @_;
+    return $self->config->get(channel => $self->name => 'flags');
 }
 
 sub key {
     my $self = shift;
-    $self->config->value(channel => $self->name => 'key') = shift if @_;
-    return $self->config->value(channel => $self->name => 'key');
+    $self->config->set(channel => $self->name => 'key', shift) if @_;
+    return $self->config->get(channel => $self->name => 'key');
 }
 
 sub logging {
     my $self = shift;
-    $self->config->value(channel => $self->name => 'logging') = shift if @_;
+    $self->config->set(channel => $self->name => 'logging', shift) if @_;
 
     # open/close logfile if logging value is being set
     if (@_ and $_[0] eq 'no') {
       $self->log->close;
     }
 
-    return $self->config->value(channel => $self->name => 'logging');
+    return $self->config->get(channel => $self->name => 'logging');
 }
 
 sub limit {
     my $self = shift;
-    $self->config->value(channel => $self->name => 'limit') = shift if @_;
-    return $self->config->value(channel => $self->name => 'limit');
+    $self->config->set(channel => $self->name => 'limit', shift) if @_;
+    return $self->config->get(channel => $self->name => 'limit');
 }
 
 sub ops {
     my $self = shift;
-    return $self->config->value(channel => $self->name => 'op');
+    return $self->config->array_get(channel => $self->name => 'op');
 }
 
 sub is_op {
@@ -90,7 +90,7 @@ sub is_op {
   my $user = shift;
 
   if ($user and $self->ops and
-      (grep {$_ eq $user->name } @{$self->ops})) {
+      (grep {$_ eq $user->name } $self->ops)) {
     return 1;
   }
 
@@ -137,36 +137,19 @@ sub add_op {
   
   defined $user or return;
   if (!$self->is_op($user)) {
-    if(!defined($self->config->value(channel => $self->name => 'op'))) {
-      $self->config->_config->channel->{$self->name}->{'op'} = [];
-    }
-    
-    push @{$self->config->value(channel => $self->name => 'op')}, $user->name;
-    
+    $self->config->array_push(channel => $self->name => 'op', $user->name);
   }
 }
 
 sub remove_op {
   my $self = shift;
   my $user = shift;
-  my $removed_count = 0;
   
-  my $old_ops = $self->config->value(channel => $self->name => 'op');
-  $self->config->_config->channel->{$self->name}->{'op'} = [];
-  
-  if(defined($old_ops)) {
-    foreach my $old_op (@{$old_ops}) {
-      if($user->name eq $old_op) {
-        $removed_count++;
-        next;
-      }
-      
-      $self->add_op($self->perlbot->get_user($old_op));
-    }
-  }
+  my $old_count = $self->config->array_get(channel => $self->name => 'op');
+  $self->config->array_delete(channel=> $self->name=> 'op', $user);
+  my $removed_count = $old_count - $self->config->array_get(channel => $self->name => 'op');
 
-  return 1 if $removed_count;
-  return 0;
+  return $removed_count > 0;
 }
 
 sub is_current_op {

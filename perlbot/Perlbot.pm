@@ -103,11 +103,11 @@ sub start {
   $self->process_config;
 
   # config file must at the very least define a bot section and a server
-  if (! $self->config->value('bot')) {
+  if (! $self->config->exists('bot')) {
     print "No bot section in config file '" . $self->{configfile} . "'\n";
     exit -1;
   }
-  if (! $self->config->value('server')) {
+  if (! $self->config->exists('server')) {
     print "No servers specified in config file '" . $self->configfile . "'\n";
     exit -1;
   }
@@ -117,7 +117,7 @@ sub start {
   my $i = 0;
   while (!$self->connect($i)) {
     $i++;
-    if ($i >= @{$self->config->value('server')}) {
+    if ($i >= $self->config->array_get('server')) {
       debug("connect: server list exhausted; sleeping and trying again");
       $i = 0;
       sleep 5;
@@ -176,7 +176,7 @@ sub sigdie_handler {
     $SIG{__DIE__} = 'DEFAULT';
 
     $diemsg ||= '(no message)';
-    open CRASHLOG, ">>" . File::Spec->catfile($self->config->value(bot => 'crashlogdir'), 'crashlog') or warn "Could not open crashlog '$crashlog' for writing: $!";
+    open CRASHLOG, ">>" . File::Spec->catfile($self->config->get(bot => 'crashlogdir'), 'crashlog') or warn "Could not open crashlog '$crashlog' for writing: $!";
     print CRASHLOG "Died with: $diemsg\n\n", Carp::longmess(), "\n=====\n\n\n";
     close CRASHLOG;
 
@@ -190,7 +190,7 @@ sub reload_config {
   # pretty simple, just overwrites our in-memory config with one
   # from disk
   debug("*** RELOADING CONFIG ***");
-  $self->config->load();
+  $self->config->load;
 }
 
 # this steps through the config, creating objects when appropriate
@@ -209,8 +209,8 @@ sub process_config {
   #       if this user is an admin
   #         set his/her admin flag
 
-  if ($self->config->value('user')) {
-    foreach my $user (keys(%{$self->config->value('user')})) {
+  if ($self->config->exists('user')) {
+    foreach my $user ($self->config->hash_keys('user')) {
       debug("process_config: loading user '$user'");
       $self->users->{$user} = new Perlbot::User($user, $self->config);
     }
@@ -223,8 +223,8 @@ sub process_config {
   #       add them as an op if they exist as a user
   #     put the channel into the bot object
 
-  if ($self->config->value('channel')) {
-    foreach my $channel (keys(%{$self->config->value('channel')})) {
+  if ($self->config->exists('channel')) {
+    foreach my $channel ($self->config->hash_keys('channel')) {
       $channel = normalize_channel($channel);
       debug("process_config: loading channel '$channel'");
       my $chan = new Perlbot::Channel($channel, $self->config, $self);
@@ -263,14 +263,14 @@ sub connect {
   #   set all our variables
   #   set our ircconn object to the new one
 
-  if ($self->config->value(server => $index)) {
-    $server    = $self->config->value(server => $index => 'address'); # or die ("Server $i has no address specified\n");
-    $port      = $self->config->value(server => $index => 'port');
-    $password  = $self->config->value(server => $index => 'password');
-    $nick      = $self->config->value(bot => 'nick');
-    $ircname   = $self->config->value(bot => 'ircname');
-    $localaddr = $self->config->value(bot => 'localaddr');
-    $username  = $self->config->value(bot => 'username');
+  if ($self->config->exists(server => $index)) {
+    $server    = $self->config->get(server => $index => 'address'); # or die ("Server $i has no address specified\n");
+    $port      = $self->config->get(server => $index => 'port');
+    $password  = $self->config->get(server => $index => 'password');
+    $nick      = $self->config->get(bot => 'nick');
+    $ircname   = $self->config->get(bot => 'ircname');
+    $localaddr = $self->config->get(bot => 'localaddr');
+    $username  = $self->config->get(bot => 'username');
 
     $port ||= 6667;
     $password ||= '';
@@ -279,7 +279,7 @@ sub connect {
     $localaddr ||= '';
     $username ||= '';
 
-    debug("connect: attempting to connect to server: $server");
+    debug("connect: attempting to connect to server $index: $server");
 
     $self->ircconn =
         $self->ircobject->newconn(Nick => $nick,
@@ -309,8 +309,8 @@ sub connect {
 
     $self->curnick = $nick;
 
-    if ($self->config->value(bot => 'ignore')) {
-      foreach my $hostmask (@{$self->config->value(bot => 'ignore')}) {
+    if ($self->config->exists(bot => 'ignore')) {
+      foreach my $hostmask ($self->config->array_get(bot => 'ignore')) {
         $self->ircconn->ignore('all', $hostmask);
       }
     }
@@ -327,21 +327,21 @@ sub load_all_plugins {
 
   my @plugins;
   my @plugins_found = $self->find_plugins;
-  # FIXME: need config->value_array() or somesuch
-  my $noload_ref = $self->config->value(bot => 'noload');
-  my @noload = @{$noload_ref} if $noload_ref;
 
-  # foreach plugin
-  #   if it's listed in @noload
-  #     print debug message, but do nothing else
-  #   else
-  #     push it onto our list of plugins to load
+  # if there are noload entries
+  #   foreach plugin
+  #     if it's listed in @noload
+  #       print debug message, but do nothing else
+  #     else
+  #       push it onto our list of plugins to load
 
-  foreach my $plugin (@plugins_found) {
-    if (grep {lc($plugin) eq lc($_)} @noload) {
-      debug("load_all_plugins: Skipping '$plugin': noload");
-    } else {
-      push @plugins, $plugin;
+  if ($self->config->exists(bot => 'noload')) {
+    foreach my $plugin (@plugins_found) {
+      if (grep {lc($plugin) eq lc($_)} $self->config->array_get(bot => 'noload')) {
+        debug("load_all_plugins: Skipping '$plugin': noload");
+      } else {
+        push @plugins, $plugin;
+      }
     }
   }
 
@@ -375,7 +375,7 @@ sub find_plugins {
   #     close the dir
   #   return our found plugins
 
-  foreach my $plugindir (@{$self->config->value(bot => 'plugindir')}) {
+  foreach my $plugindir ($self->config->array_get(bot => 'plugindir')) {
     opendir(PDH, $plugindir);
     foreach my $plugin (readdir(PDH)) {
       # ignore '.' and '..' silently
@@ -669,7 +669,7 @@ sub get_user {
   #       go back to the foreach user loop
 
   foreach my $user (values %{$self->users}) {
-    my @hostmasks = (@{$user->hostmasks}, @{$user->temphostmasks});
+    my @hostmasks = ($user->hostmasks, @{$user->temphostmasks});
     foreach my $tempmask (@hostmasks) {
       $regex = hostmask_to_regexp($tempmask);
       if ($param =~ /^$regex$/i) {

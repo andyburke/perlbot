@@ -83,7 +83,7 @@ sub hostmasks {
     $self->reply_error('No hostmasks specified!');
     return;
   } else {
-    foreach my $hostmask (@{$user->hostmasks}) {
+    foreach my $hostmask ($user->hostmasks) {
       $self->reply($hostmask);
     }
   }
@@ -129,9 +129,9 @@ sub delhostmask {
     return;
   }
 
-  my $old_num = @{$user->hostmasks};
+  my $old_num = $user->hostmasks;
   $user->del_hostmask($hostmask);
-  if (@{$user->hostmasks} == $old_num) {
+  if ($user->hostmasks == $old_num) {
     $self->reply("$hostmask not in your list of hostmasks!");
   } else {
     $self->perlbot->config->save;
