@@ -273,7 +273,7 @@ sub _process { # _process to stay out of people's way
     }
   }
 
-  if($self->{perlbot}{curnick}) {
+  if($self->{perlbot}{curnick} ne '') {
     if($text =~ /^$self->{perlbot}{curnick}(?:,|:|\.|\s)*/i) {
       if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
         $self->{lastcontact} = $event->nick();
