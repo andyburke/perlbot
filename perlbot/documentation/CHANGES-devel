@@ -1,5 +1,46 @@
 CHANGES:
 
+1.9.3 - new web services functionality, buxfixes
+- Now perlbot runs a built-in webserver so plugins can publish data over
+  the web.  web_hook added to Plugin.pm API, and several existing plugins
+  now use this feature.  The webserver only starts if plugins that use
+  it are loaded, and soon we should have a config option to disable it
+  outright.
+- Numerous patches from Rich Newhook
+- Plugins are now unloaded correctly on bot shutdown
+- Internal changes to make delop work correctly (part of UserAdmin plugin)
+- Logs.pm/Channel.pm file opening/closing logic centralized and improved
+- Config objects may now be constructed read-only (will not modify XML
+  file on disk when save() is called)
+- Plugins will try to read config-sample.xml (read-only) if a config.xml
+  is not found.  This lets plugin authors ship a config with sane defaults
+  that will be read automatically.
+Plugins:
+- BitchOps: this plugin used to modify the Net::IRC Event objects by
+  accident, and this could cause unexpected behavior for other plugins
+  hooking the same events.  Fixed.
+- Google: new plugin, searches Google using the Google SOAP api.  You will
+  need to aquire a key from google; the key you get with a free account is
+  good for 1000 queries per day.  This should satisfy most people; let us
+  know if you need more than that and we might merge the old code back in
+  as a backup.
+- Infobot: factpacks loaded into dbm files instead of kept memory-resident
+- LogServer: converted to use Web Services
+- Outlander: rewritten to use all-perl code, but it's still not as good as
+  when it used megahal.
+- RottenTomatoes: new plugin, written by Paul Sharpe.  Displays freshness
+  statistics for movies via rottentomatoes.com .
+- SpelCheck: also uses Google API now.  Once again, let us know if the
+  1000-query limit will pose a problem for you.
+- StatsServer: new plugin, publishes some information through Web Services
+  in both XML and HTML.  External systems can now show some stuff about
+  your bot.
+- Trivia: Rankings totally redone; your old db files will have to go.
+  Trivia files now in XML.  Many bugfixes.  Also, publishes top ranked
+  player lists through Web Services.
+- URLEater: publishes urls through Web Services
+- Weather: better output formatting
+
 1.9.2 - more bugfixes and cleanups, some new plugins
 - Ident username now configurable
 - Passwords now MD5 crypted, but "legacy" crypt()ed passwords are also
