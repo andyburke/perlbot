@@ -23,7 +23,7 @@ sub new {
 
   my $self = fields::new($class);
   
-  $self->logdir = $logdir;
+  $self->logdir = $logdir || 'logs';
   $self->chan = $chan;
   $self->curyr = $year;
   $self->curmon = $mon;
