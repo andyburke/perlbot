@@ -20,7 +20,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if ($args =~ /^${pluginprefix}dict/  || $args =~ /^${pluginchar}dictionary/) {
+  if ($args =~ /^${pluginprefix}dict/  || $args =~ /^${pluginprefix}dictionary/) {
     get_def($conn, $event, $event->{to}[0]);
   }
 }
@@ -31,7 +31,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if ($args =~ /^${pluginprefix}dict/  || $args =~ /^${pluginchar}dictionary/) {
+  if ($args =~ /^${pluginprefix}dict/  || $args =~ /^${pluginprefix}dictionary/) {
     get_def($conn, $event, $event->nick);
   }
 }

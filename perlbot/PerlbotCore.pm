@@ -141,14 +141,12 @@ my %config_handlers =
      }
 
      # get our command prefix
-     $commandprefixr = '\Q'.$_[0]->{commandprefixr}[0].'\E';
+     $commandprefix = '\Q'.$_[0]->{commandprefixr}[0].'\E';
      $commandprefix ||= '\Q#\E';
 
      # get our plugin prefix
      $pluginprefix = '\Q'.$_[0]->{pluginprefix}[0].'\E';
      $pluginprefix ||= '\Q!\E';
-     # allow whitespace between char/string and command itself
-     $pluginprefixr .= '\s*?';
    }
    );
 

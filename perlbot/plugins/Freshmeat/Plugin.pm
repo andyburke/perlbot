@@ -20,8 +20,8 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginprefix}freshmeat\s*/  || $args =~ /^${pluginchar}fm\s*/) {
-    if($args =~ /^${pluginprefix}freshmeat\s+search.*/ || $args =~/^${pluginchar}fm\s+search.*/) {
+  if($args =~ /^${pluginprefix}freshmeat\s*/  || $args =~ /^${pluginprefix}fm\s*/) {
+    if($args =~ /^${pluginprefix}freshmeat\s+search.*/ || $args =~/^${pluginprefix}fm\s+search.*/) {
       get_fm_search($conn, $event, $event->{to}[0]);
     } else {
       get_fm($conn, $event, $event->{to}[0]);
@@ -36,8 +36,8 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginprefix}freshmeat\s*/  || $args =~ /^${pluginchar}fm\s*/) {
-    if($args =~ /^${pluginprefix}freshmeat\s+search.*/ || $args =~/^${pluginchar}fm\s+search.*/) {
+  if($args =~ /^${pluginprefix}freshmeat\s*/  || $args =~ /^${pluginprefix}fm\s*/) {
+    if($args =~ /^${pluginprefix}freshmeat\s+search.*/ || $args =~/^${pluginprefix}fm\s+search.*/) {
       get_fm_search($conn, $event, $event->nick);
     } else {
       get_fm($conn, $event, $event->nick);

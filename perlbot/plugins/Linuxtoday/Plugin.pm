@@ -20,8 +20,8 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginprefix}linuxtoday\s*/  || $args =~ /^${pluginchar}lt\s*/) {
-    if($args =~ /^${pluginprefix}linuxtoday\s+search.*/ || $args =~/^${pluginchar}lt\s+search.*/) {
+  if($args =~ /^${pluginprefix}linuxtoday\s*/  || $args =~ /^${pluginprefix}lt\s*/) {
+    if($args =~ /^${pluginprefix}linuxtoday\s+search.*/ || $args =~/^${pluginprefix}lt\s+search.*/) {
       get_lt_search($conn, $event, $event->{to}[0]);
     } else {
       get_lt($conn, $event, $event->{to}[0]);
@@ -36,8 +36,8 @@ sub on_msg {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginprefix}linuxtoday\s*/  || $args =~ /^${pluginchar}lt\s*/) {
-    if($args =~ /^${pluginprefix}linuxtoday\s+search.*/ || $args =~/^${pluginchar}lt\s+search.*/) {
+  if($args =~ /^${pluginprefix}linuxtoday\s*/  || $args =~ /^${pluginprefix}lt\s*/) {
+    if($args =~ /^${pluginprefix}linuxtoday\s+search.*/ || $args =~/^${pluginprefix}lt\s+search.*/) {
       get_lt_search($conn, $event, $event->nick);
     } else {
       get_lt($conn, $event, $event->nick);

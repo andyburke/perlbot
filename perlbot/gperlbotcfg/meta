@@ -34,7 +34,7 @@ class {
 	field {
 		plugin	base
 		class	bot
-		name	commandchar
+		name	commandprefix
 		display	Internal command prefix
 		type	string
 		default #
@@ -43,7 +43,7 @@ class {
 	field {
 		plugin	base
 		class	bot
-		name	pluginchar
+		name	pluginprefix
 		display	Plugin command prefix
 		type	string
 		default !

@@ -21,7 +21,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if ($args =~ /^${pluginprefix}pricewatch/  || $args =~ /^${pluginchar}pw/) {
+  if ($args =~ /^${pluginprefix}pricewatch/  || $args =~ /^${pluginprefix}pw/) {
     get_pw($conn, $event, $event->{to}[0]);
   }
 }
@@ -32,7 +32,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if ($args =~ /^${pluginprefix}pricewatch/  || $args =~ /^${pluginchar}pw/) {
+  if ($args =~ /^${pluginprefix}pricewatch/  || $args =~ /^${pluginprefix}pw/) {
     get_pw($conn, $event, $event->nick);
   }
 }

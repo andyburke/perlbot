@@ -20,7 +20,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginprefix}bluesnews/ || $args =~ /^${pluginchar}blues/) {
+  if($args =~ /^${pluginprefix}bluesnews/ || $args =~ /^${pluginprefix}blues/) {
     get_bluesnews($conn, $event, $event->{to}[0]);
   }
 }
@@ -32,7 +32,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginprefix}bluesnews/ || $args =~/^${pluginchar}blues/) {
+  if($args =~ /^${pluginprefix}bluesnews/ || $args =~/^${pluginprefix}blues/) {
     get_bluesnews($conn, $event, $event->nick);
   }
 }
