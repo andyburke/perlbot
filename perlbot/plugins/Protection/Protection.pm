@@ -11,7 +11,9 @@ sub init {
   $self->{config} = $self->read_config();
   $self->{deoppers} = {};
 
-  $self->{perlbot}->add_handler('mode', sub {$self->modechange(@_) }, $self->{name});
+#  $self->{perlbot}->add_handler('mode', sub {$self->modechange(@_) }, $self->{name});
+
+  $self->hook_event('mode', sub { $self->modechange(@_) });
 }
 
 sub modechange {

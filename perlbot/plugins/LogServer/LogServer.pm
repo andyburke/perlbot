@@ -2,6 +2,10 @@
 #
 # Man, this is way bigger than I thought it would be
 #
+# This is a combination of a bunch of people's work,
+# including Jeremy Muhlich <jmuhlich@bitflood.org> and
+# Phil Fibiger <philip@fibiger.org>
+#
 # TODO: make it use channel keys for password protection of the logs... ?
 #       make this thing die cleanly
 
@@ -21,6 +25,7 @@ sub init {
   $self->want_msg(0);
   $self->want_public(0);
 
+  $self->{config} = $self->read_config();
   $self->{logdir} = $self->{perlbot}->config('bot' => 'logdir');
 
   $self->hook_event('endofmotd', sub { $self->logserver });
@@ -31,7 +36,9 @@ sub init {
 sub logserver {
   my $self = shift;
   my $logdir = $self->{logdir};
-  my $server = HTTP::Daemon->new(LocalPort => 9000) || die;
+
+  my $server = HTTP::Daemon->new(LocalAddr => $self->{config}{server}[0]{hostname}[0],
+                                 LocalPort => $self->{config}{server}[0]{port}[0]) || die;
 
   my $search = 0;
 
@@ -192,6 +199,8 @@ sub logserver {
             if(opendir(DIR, File::Spec->catfile($logdir, $chan))) {
               @tmp = readdir(DIR);
               @files = sort(@tmp);
+
+              my $results_found = 0;
               
               foreach $file (@files) {
                 open(FILE, File::Spec->catfile($logdir, $chan, $file));
@@ -208,6 +217,7 @@ sub logserver {
                 }
                 
                 if (@lines) {
+                  $results_found = 1;
                   ($year, $month, $day) = split(/\./, $file);
                   $response .= "<b><a href=\"/${chan}/${year}/${month}/${day}\">$file</a></b>";
                   $response .= '<pre>';
@@ -217,6 +227,10 @@ sub logserver {
                   }
                   $response .= '</pre>';
                 }
+              }
+
+              if(!$results_found) {
+                $response .= '<center><h2>No results found for: ' . join(' ', @words) . '</h2></center>';
               }
         
               closedir(DIR);

@@ -12,15 +12,26 @@ sub init {
 
   $self->want_fork(0);
 
-  $self->{perlbot}->add_handler('public', sub { $self->log(@_) }, $self->{name});
-  $self->{perlbot}->add_handler('caction', sub {$self->log(@_) }, $self->{name});
-  $self->{perlbot}->add_handler('join', sub {$self->log(@_) }, $self->{name});
-  $self->{perlbot}->add_handler('part', sub {$self->log(@_) }, $self->{name});
-  $self->{perlbot}->add_handler('mode', sub {$self->log(@_) }, $self->{name});
-  $self->{perlbot}->add_handler('topic', sub {$self->log(@_) }, $self->{name});
-  $self->{perlbot}->add_handler('nick', sub {$self->log(@_) }, $self->{name});
-  $self->{perlbot}->add_handler('quit', sub {$self->log(@_) }, $self->{name});
-  $self->{perlbot}->add_handler('kick', sub {$self->log(@_) }, $self->{name});
+#  $self->{perlbot}->add_handler('public', sub { $self->log(@_) }, $self->{name});
+#  $self->{perlbot}->add_handler('caction', sub {$self->log(@_) }, $self->{name});
+#  $self->{perlbot}->add_handler('join', sub {$self->log(@_) }, $self->{name});
+#  $self->{perlbot}->add_handler('part', sub {$self->log(@_) }, $self->{name});
+#  $self->{perlbot}->add_handler('mode', sub {$self->log(@_) }, $self->{name});
+#  $self->{perlbot}->add_handler('topic', sub {$self->log(@_) }, $self->{name});
+#  $self->{perlbot}->add_handler('nick', sub {$self->log(@_) }, $self->{name});
+#  $self->{perlbot}->add_handler('quit', sub {$self->log(@_) }, $self->{name});
+#  $self->{perlbot}->add_handler('kick', sub {$self->log(@_) }, $self->{name});
+
+  $self->hook_event('public', \&log);
+  $self->hook_event('caction', \&log);
+  $self->hook_event('join', \&log);
+  $self->hook_event('part', \&log);
+  $self->hook_event('mode', \&log);
+  $self->hook_event('topic', \&log);
+  $self->hook_event('nick', \&log);
+  $self->hook_event('quit', \&log);
+  $self->hook_event('kick', \&log);
+
 
 }
 
