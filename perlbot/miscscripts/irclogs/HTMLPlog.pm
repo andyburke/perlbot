@@ -23,10 +23,10 @@ END
     s/</\&lt\;/g;
     s/>/\&gt\;/g;
     s/(\&lt\;.*?\&gt\;)/<b>$1<\/b>/;
-    s/^(\d+\:\d+\:\d+\s)\*\s(.*?)/$1\*\s<b>$2<\/b>/g;
-    s/^(\d+\:\d+\:\d+\s)(.*? joined \#.*?$)/$1<FONT COLOR=\"BLUE\">$2<\/FONT>/;
-    s/^(\d+\:\d+\:\d+\s)(.*? left \#.*?$)/$1<FONT COLOR=\"BLUE\">$2<\/FONT>/;
-    s/^(\d+\:\d+\:\d+\s)(\[.*?\])/$1<FONT COLOR\=\"RED\">$2<\/FONT>/;
+    s|^(\d+:\d+:\d+) \* (\w+) (.*)|$1 * <b>$2</b> $3|;
+    s/^(\d+:\d+:\d+\s)(.*? joined \#.*?$)/$1<FONT COLOR=\"BLUE\">$2<\/FONT>/;
+    s/^(\d+:\d+:\d+\s)(.*? left \#.*?$)/$1<FONT COLOR=\"BLUE\">$2<\/FONT>/;
+    s/^(\d+:\d+:\d+\s)(\[.*?\])/$1<FONT COLOR\=\"RED\">$2<\/FONT>/;
     s/(\d+\:\d+:\d+)/<A NAME=\"$1\">$1<\/A>/;
     print "      <TT>$_</TT><BR>";
   }
