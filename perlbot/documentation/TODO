@@ -18,6 +18,7 @@ for 2.0:
 - add character-counting to max-output functionality in case of
   very long lines (1 line = 80 chars?)
 - check that values in Weather plugin are numeric before multiplying
+- Notes are broken?
 - Invite plugin that handles channel invites.  Invites from admins
   are automatically honored.  Invites from anyone else are stored
   in a queue, and all admins are notified of the request.  An admin
