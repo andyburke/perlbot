@@ -45,7 +45,8 @@ require Exporter;
 	     %handlers %users %channels
 	     &parse_config &write_config
 	     &notify_users &to_channel &from_channel
-	     &host_to_user &username &update_user
+	     &validate_hostmask &host_to_user
+	     &username &update_user
 	     &validate_plugin &load_one_plugin &start_plugin
 	     &add_handler &unload_one_plugin
 	     &shutdown_bot
@@ -204,6 +205,20 @@ sub from_channel {
   my $channel = shift;
   $channel =~ s/^[#&]//;
   return $channel;
+}
+
+sub validate_hostmask {
+  my ($hostmask) = (@_);
+
+  if ($hostmask !~ /^[^!@]+![^!@]+@[^!@]+$/) {
+    print "validate_hostmask: '$hostmask' has bad syntax\n" if $debug;
+    return undef;
+  }
+  if ($hostmask =~ /!\*@/ or $hostmask =~ /@[\*\.]*$/) {
+    print "validate_hostmask: '$hostmask' is an open hostmask (insecure)\n" if $debug;
+    return undef;
+  }
+  return 1;
 }
 
 sub host_to_user {

@@ -55,6 +55,9 @@ sub curnick {
 sub hostmasks {
     my $self = shift;
     foreach (@_) {
+        # make sure the hostmask is OK before adding it
+	validate_hostmask($_) or return;
+
         # Substitutions to take a standard IRC hostmask and convert it to
         #   a regexp.  I thought this was pretty clever...  :)
 

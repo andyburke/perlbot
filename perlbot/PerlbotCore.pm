@@ -595,6 +595,11 @@ my %command_handlers =
        return;
      }
 
+     if(!validate_hostmask($hostname)) {
+       $conn->privmsg($from, "invalid hostmask (bad syntax or too insecure)");
+       return;
+     }
+
      # FIXME:  This will break if someone has #loaded and is working from
      # a different config, basically if we #load a config, we should
      # probably reset $CONFIG
