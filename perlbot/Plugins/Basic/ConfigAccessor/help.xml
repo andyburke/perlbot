@@ -1,0 +1,5 @@
+<help>
+  <overview>This plugin provides direct access to the bot's config for bot admins.  This is mainly useful for developers.</overview>
+  <command name="config">Shows the bot's status.</command>
+  <usage name="config">config (get|set) some => value => here[, newvalue]</usage>
+</help>
