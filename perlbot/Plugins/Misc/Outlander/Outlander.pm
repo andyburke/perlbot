@@ -19,7 +19,7 @@ sub addressed {
   my $user = shift;
   my $text = shift;
 
-  $self->babel($user, $text);
+  $self->addressed_reply($self->babel($user, $text));
 }
 
 sub random {
@@ -27,11 +27,13 @@ sub random {
   my $user = shift;
   my $text = shift;
 
-  my $go = rand(10);
+  my $curnick = $self->{perlbot}{curnick};
 
-  if($go % 4 == 0) {
-    $text =~ s/^.*?(?:,|:)\s*//;
-    $self->babel($user, $text);
+  if($text !~ /$curnick/) {
+    if(int(rand(20)) == 0) {
+      $text =~ s/^.*?(?:,|:)\s*//;
+      $self->reply($self->babel($user, $text));
+    }
   }
 }
 
@@ -53,7 +55,6 @@ sub babel {
   my $curresult = $text;
 
   for(my $i = 0; $i<$iterations; $i++) {
-
     if($i == 0) {
       $source = 'English';
       $dest = $languages[rand(20)%@languages];
@@ -63,12 +64,16 @@ sub babel {
       $dest = 'English';
     }
 
-    $curresult = $obj->translate( 'source' => $source,
-                                  'destination' => $dest,
-                                  'text' => $curresult);
+    if($obj && $curresult && $source && $dest) {
+      $curresult = $obj->translate( 'source' => $source,
+                                    'destination' => $dest,
+                                    'text' => $curresult);
+    }
+
     $source = $dest;
     $dest = $languages[rand(20)%@languages];
   }
+
   $curresult =~ s/\&nbsp\;//g; 
-  if($curresult) { $self->reply($curresult); }
+  return $curresult;
 }
