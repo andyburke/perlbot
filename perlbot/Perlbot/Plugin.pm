@@ -330,7 +330,7 @@ sub hook_web {
   my $call = shift;
   my $description = shift;
 
-  $self->perlbot->webserver->hook($hook, sub { $call->($self, @_) }, $description);
+  $self->perlbot->webserver_add_handler($hook, sub { $call->($self, @_) }, $description, $self->name);
 }
 
 # send a reply to the bot's last contact via the correct path (msg, public, etc.)
@@ -718,7 +718,8 @@ sub shutdown {
 sub _shutdown {
   my $self = shift;
 
-  if($self->config) { $self->config->save(); }
+  
+  $self->config->save() if $self->config;
   $self->shutdown();
 }
 
