@@ -59,9 +59,7 @@ sub logging {
     $self->config->value(channel => $self->name => 'logging') = shift if @_;
 
     # open/close logfile if logging value is being set
-    if (@_ and $_[0] eq 'yes') {
-      $self->{log}->open;
-    } else {
+    if (@_ and $_[0] eq 'no') {
       $self->{log}->close;
     }
 
@@ -136,14 +134,13 @@ sub add_op {
 
 sub join {
     my $self = shift;
-
-    $self->{log}->open if $self->is_logging;
+    # we used to do something here.  leaving the stub in for now.
 }
 
 sub part {
     my $self = shift;
 
-    $self->{log}->close if $self->is_logging;
+    $self->{log}->close;
 }
 
 1;
