@@ -182,16 +182,16 @@ sub parse_log_entry {
   } elsif ($text =~ /^(.*?) set mode: (.*)$/) {
     @$rawevent{qw(type nick text)} = ('mode', $1, $2);
 
-  } elsif ($text =~ /^\[TOPIC\] (.*?): (.*)$/) {
+  } elsif ($text =~ /^\[topic\] (.*?): (.*)$/i) {
     @$rawevent{qw(type nick text)} = ('topic', $1, $2);
 
-  } elsif ($text =~ /^\[NICK\] (.*?) changed nick to: (.*)$/) {
+  } elsif ($text =~ /^\[nick\] (.*?) changed nick to: (.*)$/i) {
     @$rawevent{qw(type nick text)} = ('nick', $1, $2);
 
-  } elsif ($text =~ /^\[QUIT\] (.*?) quit: (.*)$/) {
+  } elsif ($text =~ /^\[quit\] (.*?) quit: (.*)$/i) {
     @$rawevent{qw(type nick text)} = ('quit', $1, $2);
 
-  } elsif ($text =~ /^\[KICK\] (.*?) was kicked by (.*?) \((.*)\)$/) {
+  } elsif ($text =~ /^\[kick\] (.*?) was kicked by (.*?) \((.*)\)$/i) {
     @$rawevent{qw(type target nick text)} = ('kick', $1, $2, $3);
 
   } elsif ($text =~ /^(.*?) \((.*?)\) joined .*$/) {
