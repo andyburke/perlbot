@@ -196,6 +196,10 @@ sub answer {
     if(!defined($self->{fastestoverall}{$nick})) {
       $self->{fastestoverall}{$nick} = $timediff;
     }
+    foreach my $person (keys(%{$self->{answeredthisquestion}})) {
+      $self->{totalanswered}{$person}++;
+      delete $self->{answeredthisquestion}{$person};
+    }
     
     my @percentageranks = $self->rankplayersbypercentage($self->getqualifyingplayers());
     my $oldpercentagerank = $self->{percentageranks}{$nick};
@@ -293,7 +297,6 @@ sub answer {
     $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });    
 
     foreach my $person (keys(%{$self->{answeredthisquestion}})) {
-      $self->{totalanswered}{$person}++;
       delete $self->{answeredthisquestion}{$person};
     }
   }
