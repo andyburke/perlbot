@@ -155,8 +155,6 @@ sub answer {
     }
   }
   $self->{answeredthisquestion}{$nick} = 1;
-  
-#  my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
 
   my $correct = 0;
 
@@ -282,6 +280,7 @@ sub answer {
 
     $self->reply("The answer was: $answer");
     $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} %R:$percentagerank WR:$winsrank TR:$timerank PR:$perfrank");
+    if($self->{answeredthisround}{$nick} <= 0) { $self->{answeredthisround}{$nick} = 1; }
     $self->reply("        This round: FT:$self->{fastest}{$nick} S:" . sprintf("%0.1f", 100 * ($self->{score}{$nick} / $self->{answeredthisround}{$nick})) . "% W:$self->{score}{$nick} A:$self->{answeredthisround}{$nick}");
 
     if($speedrecord) {
