@@ -42,8 +42,6 @@ sub modechange {
 
     if($modehash{$nick} eq '+o') {
       foreach my $user (values(%{$self->perlbot->users})) {
-        use Data::Dumper;
-        print Dumper($user);
         if(($user->curnick eq $nick)
            && $self->perlbot->channels->{$channel}->is_op($user)) {
           $validop = 1;
