@@ -72,10 +72,10 @@ sub logserver {
           }
         }
         if($chan && !$year && !$search) {
+          $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[${chan}]</a> <a href=\"/\">[top]</a><p>";
           if(!opendir(LOGLIST, File::Spec->catfile($logdir, $chan))) {
             $response .= "No logs for channel: $chan";
           } else {
-            $response .= "<a href=\"/${chan}/search\">[search]</a><p>";
             my @tmpfiles =  readdir(LOGLIST);
             my @logfiles = sort(@tmpfiles);
             close LOGLIST;
@@ -99,7 +99,7 @@ sub logserver {
           }
         }
         if($chan && $year && !$month && !$search) {
-          $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[top]</a><p>";
+          $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[${chan}]</a> <a href=\"/\">[top]</a><p>";
 
           use HTML::CalendarMonth;
 
@@ -135,7 +135,7 @@ sub logserver {
         }
 
         if($chan && $year && $month && !$day && !$search) {
-          $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[top]</a><p>";
+          $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[${chan}]</a> <a href=\"/\">[top]</a><p>";
           use HTML::CalendarMonth;
 
           if(!opendir(LOGLIST, File::Spec->catfile($logdir, $chan))) {
@@ -163,7 +163,7 @@ sub logserver {
         }
 
         if($chan && $year && $month && $day && !$search) {
-          $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[top]</a><p>";
+          $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[${chan}]</a> <a href=\"/\">[top]</a><p>";
           my $filename = File::Spec->catfile($logdir, $chan, "$year.$month.$day");
 
           if(open(FILE, $filename)) {
@@ -186,13 +186,14 @@ sub logserver {
 
         if($search) {
           if($request->uri() !~ /\?/) {
+            $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[${chan}]</a> <a href=\"/\">[top]</a><p>";
             $response .= "<h2>Search logs for channel: $chan</h2><p>";
             $response .= "<form method=\"get\" action=\"/${chan}/search\">";
             $response .= "Enter words to search for: <input type=\"text\" name=\"words\"  />";
             $response .= "<input type=\"submit\" name=\".submit\" />";
             $response .= "</form>";
           } else {
-            $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[top]</a><p>";
+            $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[${chan}]</a> <a href=\"/\">[top]</a><p>";
             my ($tmpwords) = $request->uri() =~ /words\=(.*?)(?:\&|$)/;
             my @words = split(/\+/, $tmpwords);
 
