@@ -491,7 +491,6 @@ sub triviastats {
     my @percentageranks = $self->rankplayersbypercentage($self->getqualifyingplayers());
     my $percentagerank = 1;
     foreach my $name (@percentageranks) {
-      print "$name :: $percentagerank\n";
       $self->{percentageranks}{$name} = $percentagerank;
       $percentagerank++;
     }
@@ -529,7 +528,7 @@ sub triviastats {
     $perfrank = $self->{performanceranks}{$nick};
     $perfrank ||= 'n/a';
 
-    $self->reply("$nick: %R:$percentagerank  WR:$winsrank  TR:$timerank  PR:$perfrank  W:$self->{correctlyanswered}{$nick}  TA:$self->{totalanswered}{$nick}  S:" . $self->score($nick) . "%  FT: $self->{fastestoverall}{$nick}");
+    $self->reply("$nick: %R:$percentagerank  WR:$winsrank  TR:$timerank  PR:$perfrank  Avg:" . ($percentagerank + $winsrank + $timerank + $perfrank) / 4 . "  W:$self->{correctlyanswered}{$nick}  TA:$self->{totalanswered}{$nick}  S:" . $self->score($nick) . "%  FT: $self->{fastestoverall}{$nick}");
   }
 }
 
