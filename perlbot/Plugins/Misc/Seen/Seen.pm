@@ -88,7 +88,11 @@ sub seen {
     } elsif($type eq 'NICK') {
       $replystring .= "changing his/her nick to $lasttext";
     } elsif($type eq 'QUIT') {
-      $replystring .= "quitting with quit message '${lasttext}'";
+      if(${lasttext}) {
+        $replystring .= "quitting, having said '${lasttext}'";
+      } else {
+        $replystring .= "quitting, having said nothing";
+      }
     } elsif($type eq 'ACTION') {
       $replystring .= "doing '${name} ${lasttext}'";
     }
@@ -102,38 +106,42 @@ sub seen {
 sub updater {
   my $self = shift;
   my $event = shift;
+  my $nick = $event->nick;
 
   my $user = $self->{perlbot}->get_user($event->from());
 
-  if($event->{type} eq 'public') {
+  if($event->type eq 'public') {
     if($user) {
-      $self->{seen}{$user->{name}} = time() . ':' . 'PUBLIC:' . $event->{args}[0];
+      $self->{seen}{$user->name} = time() . ':' . 'PUBLIC:' . $event->{args}[0];
     }
-    $self->{seen}{$event->{nick}} = time() . ':' . 'PUBLIC:' . $event->{args}[0];
-  } elsif($event->{type} eq 'join') {
+    $self->{seen}{$nick} = time() . ':' . 'PUBLIC:' . $event->{args}[0];
+  } elsif($event->type eq 'join') {
     if($user) {
-      $self->{seen}{$user->{name}} = time() . ':' . 'JOIN:' . $event->{to}[0];
+      $self->{seen}{$user->name} = time() . ':' . 'JOIN:' . $event->{to}[0];
     }
-    $self->{seen}{$event->{nick}} = time() . ':' . 'JOIN:' . $event->{to}[0];
-  } elsif($event->{type} eq 'part') {
+    $self->{seen}{$nick} = time() . ':' . 'JOIN:' . $event->{to}[0];
+  } elsif($event->type eq 'part') {
     if($user) {
-      $self->{seen}{$user->{name}} = time() . ':' . 'PART:' . $event->{to}[0];
+      $self->{seen}{$user->name} = time() . ':' . 'PART:' . $event->{to}[0];
     }
-    $self->{seen}{$event->{nick}} = time() . ':' . 'PART:' . $event->{to}[0];
-  } elsif($event->{type} eq 'nick') {
+    $self->{seen}{$nick} = time() . ':' . 'PART:' . $event->{to}[0];
+  } elsif($event->type eq 'nick') {
     if($user) {
-      $self->{seen}{$user->{name}} = time() . ':' . 'NICK:' . $event->{args}[0];
+      $self->{seen}{$user->name} = time() . ':' . 'NICK:' . $event->{args}[0];
     }
-    $self->{seen}{$event->{nick}} = time() . ':' . 'NICK:' . $event->{args}[0];
-  } elsif($event->{type} eq 'quit') {
+    $self->{seen}{$nick} = time() . ':' . 'NICK:' . $event->{args}[0];
+  } elsif($event->type eq 'quit') {
     if($user) {
-      $self->{seen}{$user->{name}} = time() . ':' . 'QUIT:' . $event->{args}[0];
+      my ($junk, $otherjunk, $lastthingsaid) = split(':', $self->{seen}{$user->name}, 3);
+      $self->{seen}{$user->name} = time() . ':' . 'QUIT:' . $lastthingsaid;
     }
-    $self->{seen}{$event->{nick}} = time() . ':' . 'QUIT:' . $event->{args}[0];
-  } elsif($event->{type} eq 'caction') {
+    my ($junk, $otherjunk, $lastthingsaid) = split(':', $self->{seen}{$event->nick}, 3);
+    $self->{seen}{$nick} = time() . ':' . 'QUIT:' . $lastthingsaid;
+  } elsif($event->type eq 'caction') {
     if($user) {
-      $self->{seen}{$user->{name}} = time() . ':' . 'ACTION:' . $event->{args}[0];    }
-    $self->{seen}{$event->{nick}} = time() . ':' . 'ACTION:' . $event->{args}[0];
+      $self->{seen}{$user->name} = time() . ':' . 'ACTION:' . $event->{args}[0];
+    }
+    $self->{seen}{$nick} = time() . ':' . 'ACTION:' . $event->{args}[0];
   }
 
   my $curtime = time();

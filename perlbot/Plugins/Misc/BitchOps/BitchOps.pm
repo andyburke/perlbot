@@ -33,11 +33,6 @@ sub modechange {
   my %modehash;
   @modehash{@nicks} = @modes;
 
-  print "Got modechange:\n";
-  use Data::Dumper;
-  print Dumper($event);
-  print Dumper(%modehash);
-
   foreach my $nick (keys(%modehash)) {
     my $validop = 0;
       
@@ -45,8 +40,8 @@ sub modechange {
 
     if($modehash{$nick} eq '+o') {
       foreach my $user (values(%{$self->{perlbot}{users}})) {
-        if(($user->{curnick} eq $nick)
-           && $self->{perlbot}{channels}{$channel}{ops}{$user->{name}}) {
+        if(($user->curnick eq $nick)
+           && $self->{perlbot}{channels}{$channel}{ops}{$user->name}) {
           $validop = 1;
           next;
         }
