@@ -1,4 +1,4 @@
-# Andrew Burke <burke@pas.rochester.edu>
+# Andrew Burke <burke@bitflood.org>
 #
 # This plugin does math using bc.  Prolly needs to be on
 # a unix system...

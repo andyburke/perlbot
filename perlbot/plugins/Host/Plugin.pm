@@ -1,4 +1,4 @@
-# Andrew Burke <burke@pas.rochester.edu>
+# Andrew Burke <burke@bitflood.org>
 #
 # does a host lookup, and also catches nslookups
 #

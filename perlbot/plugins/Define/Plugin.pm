@@ -1,4 +1,4 @@
-# Andrew Burke <burke@pas.rochester.edu>
+# Andrew Burke <burke@bitflood.org>
 #
 # this is fearable, and ugly... maybe i'll comment it someday...
 

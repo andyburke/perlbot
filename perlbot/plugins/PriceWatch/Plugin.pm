@@ -1,4 +1,4 @@
-# Andrew Burke <burke@pas.rochester.edu>
+# Andrew Burke <burke@bitflood.org>
 #
 # This will get you the latest, lowest price from www.pricewatch.com
 

@@ -31,7 +31,7 @@ my $pid;
 
 # from Perlbot.pm
 $VERSION = '1.5.1';
-$AUTHORS = 'jmuhlich@jhu.edu, burke@pas.rochester.edu';
+$AUTHORS = 'jmuhlich@bitflood.org / burke@bitflood.org';
 
 # Let the user specify a config file as the first command line param, or
 # default to 'config'.

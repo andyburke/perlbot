@@ -1,7 +1,7 @@
 # SpelCheck
 # =========
 #
-# Jeremy Muhlich <jmuhlich@jhu.edu>
+# Jeremy Muhlich <jmuhlich@bitflood.org>
 #
 # This plugin does spell-checking using ispell.  Prolly needs to be on
 # a unix system...

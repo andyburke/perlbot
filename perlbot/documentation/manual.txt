@@ -1,7 +1,8 @@
-perlbot - <burke@pas.rochester.edu / jmuhlich@jhu.edu>
+Perlbot  /  http://perlbot.sourceforge.net
+An IRC bot written in perl.
+Authors: Andrew Burke and Jeremy Muhlich
+         burke@bitflood.org / jmuhlich@bitflood.org
 ======================================================
-
-http://perlbot.sourceforge.net
 
 WARNING!: DO NOT RUN AS ROOT.  We have seen people around the net run
 perlbot as root.  This is ill advised.  Although the perlbot core
