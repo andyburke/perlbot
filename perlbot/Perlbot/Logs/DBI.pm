@@ -11,29 +11,31 @@ use File::Spec;
 
 use base qw(Perlbot::Logs);
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(channel dbh dbtype dbname user password insertquery);
+use fields qw(dbh insertquery);
 
 
 sub new {
-  my ($class, $perlbot, $channel, $dbtype, $dbname, $user, $password) = @_;
+  my ($class, $perlbot, $channel, $config, $index) = @_;
 
   my $self = fields::new($class);
 
   $self->perlbot = $perlbot;
   $self->channel = $channel;
-  $self->dbtype = $dbtype;
-  $self->dbname = $dbname;
-  $self->user = $user;
-  $self->password = $password;
+  $self->config = $config;
+  $self->index = $index;
 
+  my $dbistring = "dbi:"
+                  . $self->config_get('dbtype')
+                  . ":dbname=" . $self->config_get('dbname');
 
-  my $dbistring = "dbi:" . $self->dbtype . ":dbname=" . $self->dbname;
-
-  $self->dbh = DBI->connect($dbistring, $self->user, $self->password, { RaiseError => 1,
-                                                                        PrintError => 1,
-                                                                        InactiveDestroy => 1})
+  $self->dbh = DBI->connect($dbistring,
+                            $self->config_get('dbuser'),
+                            $self->config_get('dbpassword'),
+                            { RaiseError => 1,
+                              PrintError => 1,
+                              InactiveDestroy => 1})
       or die("Could not connect to database for logging!");
-
+  
 
   my $tabletest = $self->dbh->prepare("SELECT * FROM logs;");
   if(!$tabletest->execute()) {  # table not yet created
@@ -42,7 +44,7 @@ sub new {
 
     my $createtablestring;
 
-    if($dbtype eq 'Pg') {
+    if($self->config_get('dbtype') eq 'Pg') {
       debug("Creating a table in PostgreSQL");
       $createtablestring = "
 
@@ -59,11 +61,12 @@ sub new {
       ";
     } # else...
 
-    debug("Create table string: $createtablestring");
+    debug("Auto-creating logs table!");
+    debug("Create table string: $createtablestring", 2);
 
     my $query = $self->dbh->prepare($createtablestring);
     $query->execute()
-        or die("Could not create table in database!");
+        or die("Could not auto-create logs table in database!");
     $query->finish();
   }
 
@@ -103,7 +106,7 @@ sub disconnect {
       
 sub log_event {
   my $self = shift;
-  my $event = new Perlbot::Logs::Event(shift, $self->channel);
+  my $event = shift;
 
   $self->insertquery->execute($event->time,
                               $event->type,
