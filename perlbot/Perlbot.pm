@@ -790,5 +790,4 @@ sub get_channel {
   }
 }
 
-
 1;

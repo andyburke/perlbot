@@ -2,6 +2,7 @@ package Perlbot::User;
 
 use strict;
 use Perlbot::Utils;
+use Digest::MD5 qw(md5_base64);
 
 sub new {
     my $class = shift;
@@ -68,10 +69,44 @@ sub is_admin {
 
 sub password {
   my $self = shift;
-  $self->config->value(user => $self->name => 'password') = shift if @_;
+  my $password = shift;
+
+  if(defined($password)) {
+    $self->config->value(user => $self->name => 'password') = md5_base64($password);
+  }
+
   return $self->config->value(user => $self->name => 'password');
 }
 
+sub authenticate {
+  my $self = shift;
+  my $data = shift;;
+
+  foreach my $method (qw(password legacy_password)) {
+    return 1 if eval "\$self->auth_$method(\$data);";
+  }
+  return 0;
+}
+
+sub auth_password {
+  my $self = shift;
+  my $password = shift;
+
+  if($self->password() && ($self->password() eq md5_base64($password))) {
+    return 1;
+  }
+  return 0;
+}
+
+sub auth_legacy_password {
+  my $self = shift;
+  my $password = shift;
+
+  if($self->password() && (crypt($password, $self->password()) eq $self->password())) {
+    return 1;
+  }
+  return 0;
+}
 
 sub add_hostmask {
   my ($self, $hostmask) = @_;

@@ -37,8 +37,7 @@ sub auth {
   }
 
   if (my $check_user = $self->perlbot->get_user($username)) {
-    if ($check_user->password
-        && (crypt($password, $check_user->password) eq $check_user->password())) {
+    if($check_user->authenticate($password)) {
       $check_user->add_temp_hostmask($userhost);
       $check_user->curnick($event->nick);
       $self->reply("User $username authenticated!");
@@ -47,7 +46,7 @@ sub auth {
     }
   } else {
     $self->reply_error("No such user: $username");
-	return;
+    return;
   }
 }
 
@@ -66,7 +65,6 @@ sub password {
     return;
   }
 
-  $newpassword = crypt($newpassword, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
   $user->password($newpassword);
   $user->config->save;
 

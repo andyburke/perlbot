@@ -2,6 +2,7 @@
 
 use strict;
 use Term::ReadKey;
+use Digest::MD5 qw(md5_base64);
 
 my $passwd1 = '';
 my $passwd2 = 'kludge';
@@ -25,9 +26,6 @@ while(($passwd1 ne $passwd2) or (length($passwd1) < 5)) {
 }
 ReadMode('normal');
 
-my $password = crypt($passwd1, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
+my $password = md5_base64($passwd1);
 
 print "\n\nEncrypted password: $password\n";
-print "Line for perlbot config:\n\n";
-print "\tpassword\t\t$password\n\n";
-
