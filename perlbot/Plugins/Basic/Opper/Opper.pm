@@ -18,8 +18,9 @@ sub opper {
   my $event = shift;
 
   my $user = $self->{perlbot}->get_user($event->from());
+  my $chan = $self->{perlbot}->get_channel($event->{to}[0]);
 
-  if($user && $self->{perlbot}{channels}{Perlbot::Utils::normalize_channel($event->{to}[0])}{ops}{$user->{name}}) {
+  if($user && (grep {$_ eq $user->name } @{$chan->ops})) {
     $self->{perlbot}->op($event->{to}[0], $event->nick());
   }
 }
