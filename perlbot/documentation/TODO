@@ -7,8 +7,6 @@ for 2.0:
 - let admins change user's passwords, hostmasks, etc. via irc
 - output buffering
 - add a robust help system, possibly using xml
-- move everything into a Perlbot:: namespace
-- rearrange plugins namespace to be like Perlbot::Plugin::Foo
 - port plugins
 - create a plugin that publishes our config via RPC::XML::Server
   so we can make a botnet
