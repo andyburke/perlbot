@@ -123,7 +123,7 @@ sub useradmin {
       $self->reply_error("No such channel: $channame");
       return;
     }
-    $channel->add_op($username);
+    $channel->add_op($other_user);
     $self->perlbot->config->save;
     $self->reply("Added $username to the list of ops for $channel");
 

@@ -75,7 +75,8 @@ sub is_op {
   my $self = shift;
   my $user = shift;
 
-  if($user && (grep {$_ eq $user->name } @{$self->ops})) {
+  if ($user and $self->ops and
+      (grep {$_ eq $user->name } @{$self->ops})) {
     return 1;
   }
 
@@ -115,8 +116,8 @@ sub add_op {
     my $user = shift;
 
     defined $user or return;
-    if (! grep {$_ eq $user} @{$self->ops}) {
-      push @{$self->config->value(channel => $self->name => 'op')}, $user;
+    if (! $self->is_op($user)) {
+      push @{$self->config->value(channel => $self->name => 'op')}, $user->name;
     }
 }
 

@@ -129,7 +129,7 @@ sub op {
     return;
   }
 
-  if (! grep {$_ eq $user->name} @{$chan->ops}) {
+  if (! $chan->is_op($user)) {
     $self->reply("You are not a valid op for channel $channel");
   } else {
     $self->perlbot->op($channel, $user->{curnick});

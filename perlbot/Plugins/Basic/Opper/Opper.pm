@@ -19,12 +19,13 @@ sub opper {
   my $self = shift;
   my $event = shift;
 
-  my $user = $self->perlbot->get_user($event->from());
+  my $user = $self->perlbot->get_user($event->from);
   my $chan = $self->perlbot->get_channel($event->{to}[0]);
 
-  if($user && (grep {$_ eq $user->name } @{$chan->ops})) {
-    $self->perlbot->op($event->{to}[0], $event->nick());
+  if ($chan->is_op($user)) {
+    $self->perlbot->op($event->{to}[0], $event->nick);
   }
 }
+
 
 1;
