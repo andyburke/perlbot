@@ -28,7 +28,7 @@ my $irc;
 my $pid;
 
 # from Perlbot.pm
-$VERSION = '1.2.2';
+$VERSION = '1.2.3';
 $AUTHORS = 'jmuhlich@jhu.edu, burke@pas.rochester.edu';
 
 # Let the user specify a config file as the first command line param, or
