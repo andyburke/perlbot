@@ -11,7 +11,7 @@ use Perlbot::User;
 use Perlbot::Channel;
 use Perlbot::Logs;
 
-our $VERSION = '1.9.6';
+our $VERSION = '1.9.7';
 our $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
 
 use fields qw(starttime configfile config ircobject ircconn msg_queue empty_queue webserver plugins handlers handlers_backup users channels logs curnick masterpid);
@@ -38,25 +38,6 @@ sub new {
   $self->logs = new Perlbot::Logs($self);
   $self->curnick = '';
   $self->masterpid = $$;
-
-#  my $self = {
-#    starttime => time(),       # bot startup time, used for uptime
-#    configfile => $configfile, # bot's config filename
-#    config => undef,           # bot's config object reference
-#    ircobject => undef,        # bot's irc object
-#    ircconn => undef,          # bot's irc connection
-#    msg_queue => [],           # for output buffering, eventually
-#    empty_queue => 1,          # more output buffering
-#    webserver => undef,        # the bot's built-in webserver
-#    plugins => [],             # all the plugin references
-#    handlers => {},            # all the handlers per event type and plugin
-#    users => {},               # all our users
-#    channels => {},            # all the channels
-#    curnick => '',             # the bot's current nick
-#    masterpid => $$,           # the bot's master pid
-#  };
-
-#  bless $self, $class;
 
   # here we hook up signals to their handlers
   # INT shuts the bot down
@@ -812,38 +793,6 @@ sub notice {
   my $text = shift;
 
   $self->ircconn->notice($target, $text);
-}
-
-# joins a channel
-sub join {
-  my $self = shift;
-  my $channel = shift;
-
-  $channel->join;
-
-  # if there's a configured channel key
-  #   join using the key
-  # else
-  #   just join the channel
-
-  if ($channel->key) {
-    $self->ircconn->join($channel->name, $channel->key);
-  } else {
-    $self->ircconn->join($channel->name);
-  }
-
-  # call a names event so we can later populate the channel's member list
-  # (a Core plugin handles the response to this event)
-  $self->ircconn->names($channel->name);
-}
-
-sub part {
-  my $self = shift;
-  my $channel = shift;
-
-  $self->ircconn->part($channel->name);
-
-  $channel->part;
 }
 
 sub op {

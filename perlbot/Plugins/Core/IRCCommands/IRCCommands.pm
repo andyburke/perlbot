@@ -59,7 +59,7 @@ sub join {
   }
   $chan->key($key);
   $self->perlbot->channels->{$channel} = $chan;
-  $self->perlbot->join($chan);
+  $chan->join();
 }
 
 sub part {
@@ -69,8 +69,8 @@ sub part {
 
   $channel = normalize_channel($channel);
 
-  if ($self->perlbot->get_channel($channel)) {
-    $self->perlbot->part($self->perlbot->get_channel($channel));
+  if ($channel = $self->perlbot->get_channel($channel)) {
+    $channel->part();
     delete $self->perlbot->channels->{$channel};
   } else {
     $self->reply("I am not currently in $channel");

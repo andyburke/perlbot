@@ -239,13 +239,28 @@ sub clear_currentopped_list {
 }
 
 sub join {
-    my $self = shift;
-    # we used to do something here.  leaving the stub in for now.
+  my $self = shift;
+
+  # if there's a configured channel key
+  #   join using the key
+  # else
+  #   just join the channel
+
+  if ($self->key) {
+    $self->perlbot->ircconn->join($self->name, $self->key);
+  } else {
+    $self->perlbot->ircconn->join($self->name);
+  }
+
+  # call a names event so we can later populate the channel's member list
+  # (a Core plugin handles the response to this event)
+  $self->perlbot->ircconn->names($self->name);
 }
 
 sub part {
     my $self = shift;
 
+    $self->perlbot->ircconn->part($self->name);
     $self->logs->close;
 }
 
