@@ -806,10 +806,10 @@ sub on_join {
   
   if($user) {
     if(exists($channels{$chan})) {
-      my $usernick = $user->nick;
+      my $username = $user->name();
       my $ref = $channels{$chan}->ops;
       
-      if(exists($ref->{$usernick})) {
+      if(exists($ref->{$username})) {
 	$self->mode($chan, "+o", $nick);
       }
     }

@@ -134,6 +134,7 @@ sub dump {
     my $self = shift;
     print <<END_DUMP;
 User:
+  name     : $self->{name}
   nick     : $self->{nick}
   hostmasks: @{$self->{hostmasks}}
   flags    : $self->{flags}
@@ -205,7 +206,7 @@ sub add_note {
 
     if($from && $text) {
 	$self->{notified} = 0;
-	print "= saving note to $self->{nick} from $from: $text\n" if ($debug);
+	print "= saving note to $self->{name} from $from: $text\n" if ($debug);
 	$note = new Note($from, $text);
 	push @{$self->{notes}}, $note;
     }
