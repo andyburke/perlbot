@@ -309,11 +309,9 @@ sub initial_entry_time {
     debug("failed to open '$firstfile': $!");
   }
 
-  my @lines = <FIRSTFILE>;
+  my $firstline = <FIRSTFILE>;
 
   CORE::close(FIRSTFILE);
-
-  my $firstline = shift @lines;
 
   my $datestring = $self->filename_to_datestring($firstfile);
   my $rawevent = $self->parse_log_entry($firstline, $datestring);
