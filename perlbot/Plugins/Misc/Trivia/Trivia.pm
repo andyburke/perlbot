@@ -160,7 +160,7 @@ sub answer {
     my @answerwords = split(' ', $tmpanswer);
     my @guesswords = split(' ', $tmptext);
 
-    use Data:Dumper;
+    use Data::Dumper;
     print "answer: " . Dumper(@answerwords);
     print "guess : " . Dumper(@guesswords);
 
@@ -168,16 +168,21 @@ sub answer {
       return;
     }
 
-    my $right;
-    for($right = 0; $right < length(@guesswords); $right++) {
-      if(defined($answerwords[$right]) && defined($guesswords[$right])) {
-        if(!amatch(lc($answerwords[$right]), lc($guesswords[$right]))) { last; }
+    if(length(@answerwords) > 1) { 
+      my $right;
+      for($right = 0; $right < length(@guesswords); $right++) {
+        if(defined($answerwords[$right]) && defined($guesswords[$right])) {
+          if(!amatch(lc($answerwords[$right]), lc($guesswords[$right]))) { last; }
+        }
       }
+
+      if($right == length(@answerwords)) {
+        $correct = 1;
+      }
+    } else {
+      if(!amatch(lc($answerwords[0]), lc($guesswords[0]))) { $correct = 1; }
     }
 
-    if($right == length(@answerwords)) {
-      $correct = 1;
-    }
   }
 
   if($correct) {
