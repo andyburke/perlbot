@@ -145,7 +145,7 @@ sub connection {
 
           if(defined($user) && $user->authenticate($password)) { # they're a user
             if(lc($authtyperequired) eq 'admin') {
-              if(!$user->is_admin()) {
+              if(!$self->perlbot->is_admin($user)) {
                 $connection->send_error(RC_UNAUTHORIZED);
               } else {
                 $connection->send_response(HTTP::Response->new(RC_OK,

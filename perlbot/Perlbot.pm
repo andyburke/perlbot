@@ -205,9 +205,6 @@ sub process_config {
   # if there are users defined
   #   foreach user
   #     create a user object inside the bot object
-  #     foreach admin listed in the config
-  #       if this user is an admin
-  #         set his/her admin flag
 
   if ($self->config->exists('user')) {
     foreach my $user ($self->config->hash_keys('user')) {
@@ -694,6 +691,30 @@ sub get_user {
 
   return undef;
 
+}
+
+######################################
+# functions for maintaining our admins
+
+sub is_admin {
+  my $self = shift;
+  my $user = shift;
+
+  return grep({$_ eq $user->name} $self->config->array_get(bot => 'admin')) ? 1 : 0;
+}
+
+sub add_admin {
+  my $self = shift;
+  my $user = shift;
+
+  $self->config->array_push(bot => 'admin', $user->name);
+}
+
+sub remove_admin {
+  my $self = shift;
+  my $user = shift;
+
+  $self->config->array_delete(bot => 'admin', $user->name);
 }
 
 # sends out the msg on the front of the queue and (re-)schedules itself

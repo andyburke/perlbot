@@ -39,27 +39,6 @@ sub AUTOLOAD : lvalue {
   $self->{$field};
 }
 
-sub admin {
-  my $self = shift;
-
-  # insert/remove username from admins list as requested
-  if (@_) {
-    my $want_admin = shift;
-    if ($want_admin and !$self->admin) {
-      $self->config->array_push(bot => 'admin', $self->name);
-    } else {
-      $self->config->array_delete(bot => 'admin', $self->name);
-    }
-  }
-print "ADMINS: ", join(',',  $self->config->get_array(bot=>'admin')), "\n";
-  return grep({$_ eq $self->name} $self->config->array_get(bot => 'admin')) ? 1 : 0;
-}
-
-sub is_admin {
-  my $self = shift;
-  return $self->admin();
-}
-
 sub password {
   my $self = shift;
   my $password = shift;
@@ -115,7 +94,7 @@ sub add_temp_hostmask {
   push @{$self->temphostmasks}, $hostmask;
 }
 
-sub del_hostmask {
+sub remove_hostmask {
   my ($self, $hostmask) = @_;
 
   $self->config->array_delete(user => $self->name => 'hostmask', $hostmask);

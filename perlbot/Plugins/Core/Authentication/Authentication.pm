@@ -19,7 +19,7 @@ sub init {
   $self->hook('password', \&password);
   $self->hook('hostmasks', \&hostmasks);
   $self->hook('addhostmask', \&addhostmask);
-  $self->hook('delhostmask', \&delhostmask);
+  $self->hook('removehostmask', \&removehostmask);
 }
 
 sub auth {
@@ -114,13 +114,13 @@ sub addhostmask {
 
 }
 
-sub delhostmask {
+sub removehostmask {
   my $self = shift;
   my $user = shift;
   my $hostmask = shift;
 
   if(!$hostmask) {
-    $self->reply('You must specify a hostmask to delete!');
+    $self->reply('You must specify a hostmask to remove!');
     return;
   }
 
@@ -130,7 +130,7 @@ sub delhostmask {
   }
 
   my $old_num = $user->hostmasks;
-  $user->del_hostmask($hostmask);
+  $user->remove_hostmask($hostmask);
   if ($user->hostmasks == $old_num) {
     $self->reply("$hostmask not in your list of hostmasks!");
   } else {

@@ -586,7 +586,7 @@ sub _process { # _process to stay out of people's way
   foreach my $commandprefix_admin_hook (keys(%{$self->{commandprefix_admin_hooks}})) {
     my $regexp = $self->perlbot->config->get(bot => 'commandprefix') . $commandprefix_admin_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
-      if($user && $user->is_admin()) {
+      if($user && $self->perlbot->is_admin($user)) {
         my $texttocallwith = $text;
         $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
 
@@ -605,7 +605,7 @@ sub _process { # _process to stay out of people's way
   foreach my $addressed_command_admin_hook (keys(%{$self->{addressed_command_admin_hooks}})) {
     my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->get(bot => 'commandprefix') . '*' . $addressed_command_admin_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
-      if($user && $user->is_admin()) {
+      if($user && $self->perlbot->is_admin($user)) {
         my $texttocallwith = $text;
         $texttocallwith =~ s/${regexp}//i;
 
