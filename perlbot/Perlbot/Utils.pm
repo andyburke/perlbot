@@ -1,4 +1,4 @@
-package PerlbotUtils;
+package Perlbot::Utils;
 
 use strict;
 
