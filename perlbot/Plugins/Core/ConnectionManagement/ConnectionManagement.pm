@@ -41,7 +41,7 @@ sub reconnect {
   my $event = shift;
   my $old_server = $event->{from};
   my $server;
-  my $i;
+  my $i = 0;
 
   if ($$ == 0) {    # exit if we're a child...
     exit;
@@ -59,8 +59,13 @@ sub reconnect {
       if($i == $self->{perlbot}->config('server') - 1) { $i = 0; $old_server = ''; last; }
     }
 
-    for( ; $i < $self->{perlbot}->config('server'); $i++) {
-      $server = join(':', $self->{perlbot}->config(server => $i => 'address'), $self->{perlbot}->config(server => $i => 'port'));
+    for(; $i < $self->{perlbot}->config('server'); $i++) {
+      my $address = $self->{perlbot}->config(server => $i => 'address');
+      my $port = $self->{perlbot}->config(server => $i => 'port');
+      $address or last;
+      $port ||= 6667;
+
+      $server = join(':', $address, $port);
       print "trying $server\n" if $debug;
       $self->{perlbot}{ircconn}->server($server);
       $self->{perlbot}{ircconn}->connect();

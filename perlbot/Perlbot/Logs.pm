@@ -3,6 +3,8 @@ package Perlbot::Logs;
 use Perlbot::Utils;
 use strict;
 
+use File::Spec;
+
 # note: This used to be called 'Log' instead of 'Logs', but when we put
 # perlbot into CVS, Log created problems with keyword substitution.
 # So it's called Logs now.
@@ -75,7 +77,7 @@ sub open {
 
     # make necessary dirs if they don't exist
     stat $self->{logdir} or mkdir($self->{logdir}, 0755);
-    stat $self->{logdir}.$DIRSEP.strip_channel($self->chan) or mkdir($self->{logdir}.$DIRSEP.strip_channel($self->chan), 0755);
+    stat File::Spec->catfile($self->{logdir}, strip_channel($self->chan)) or mkdir(File::Spec->catfile($self->{logdir}, strip_channel($self->chan)), 0755);
 
     $self->update_date();
     $date = sprintf("%04d.%02d.%02d", $self->curyr, $self->curmon, $self->curday);
@@ -86,9 +88,9 @@ sub open {
 
 
     $self->{file}->close if $self->{file}->opened;   # is this necessary?
-    my $result = $self->{file}->open(">>$self->{logdir}".$DIRSEP.strip_channel($self->chan).$DIRSEP."$date");
+    my $result = $self->{file}->open(">>" . File::Spec->catfile($self->{logdir}, strip_channel($self->chan), "$date"));
     if (!$result) {
-      print "Could not open logfile " . $self->{logdir}.$DIRSEP.strip_channel($self->chan).$DIRSEP."$date" . ": $!\n" if $DEBUG;
+      print "Could not open logfile " . File::Spec->catfile($self->{logdir}, strip_channel($self->chan), "$date") . ": $!\n" if $DEBUG;
     }
 }
 
@@ -107,8 +109,6 @@ sub write {
     $year += 1900;
     $mon += 1;
     
-    # make sure the log file's there...
-    #    stat ">>$self->{logdir}".$DIRSEP.strip_channel($self->chan).$DIRSEP.$self->curyr.'.'.$self->curmon.'.'.$self->curday or
     if(!$self->{file}->opened) { $self->open(); } 
 
     if($DEBUG > 1) {

@@ -67,10 +67,10 @@ sub _addremove_handler {
 
   if (defined $bool) {
     if ($bool) {
-      print "_addremove_handler: adding '$event' handler for '$self->{name}'\n" if $DEBUG >= 2;
+      print "_addremove_handler: adding '$event' handler for '$self->{name}'\n" if $Perlbot::DEBUG >= 2;
       $self->{perlbot}->add_handler($event, sub {$self->_process(@_)}, $self->{name});
     } else {
-      print "_addremove_handler: removing '$event' handler for '$self->{name}'\n" if $DEBUG >= 2;
+      print "_addremove_handler: removing '$event' handler for '$self->{name}'\n" if $Perlbot::DEBUG >= 2;
       $self->{perlbot}->remove_handler($event, $self->{name});
     }
   }

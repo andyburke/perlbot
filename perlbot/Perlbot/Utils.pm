@@ -7,7 +7,7 @@ use XML::Simple;
 
 use vars qw(
             @ISA @EXPORT
-            $DEBUG $DIRSEP
+            $DEBUG
             );
 require Exporter;
 
@@ -15,7 +15,7 @@ require Exporter;
 
 # symbols to export
 @EXPORT = qw(
-             $DEBUG $DIRSEP
+             $DEBUG
              &read_generic_config &write_generic_config
              &normalize_channel &strip_channel
              &validate_hostmask
@@ -24,8 +24,7 @@ require Exporter;
 
 
 $DEBUG = $ENV{PERLBOT_DEBUG};
-if ($^O =~ /mac/i) { $DIRSEP = ':' } else { $DIRSEP = '/' }
-
+$DEBUG ||= 0;
 
 sub read_generic_config {
   my ($filename) = @_;
@@ -36,6 +35,8 @@ sub read_generic_config {
 
 sub write_generic_config {
   my ($filename, $hashref) = @_;
+
+  ($filename && $hashref) or return 0;
 
   my $xml = XMLout($hashref,
                    rootname => 'config');
@@ -63,6 +64,8 @@ sub strip_channel {
 
 sub validate_hostmask {
   my ($hostmask) = (@_);
+
+  $hostmask or return 0;
 
   if ($hostmask !~ /^[^!@]+![^!@]+@[^!@]+$/) {
     print "validate_hostmask: '$hostmask' has bad syntax\n" if $DEBUG;

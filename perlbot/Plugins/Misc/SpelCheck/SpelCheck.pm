@@ -29,7 +29,7 @@ sub spell {
   my $text = shift;
 
   # kill all punctuation that might piss off ispell, or the shell (?)
-  $text =~ tr/\w //c;
+#  $text =~ tr/\w//c;
   
   $text =~ s/\`//g;
   $text =~ s/\$//g;

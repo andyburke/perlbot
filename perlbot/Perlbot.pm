@@ -200,7 +200,7 @@ sub connect {
     $nick = $self->config(bot => 'nick'); $nick ||= 'perlbot';
     $ircname = $self->config(bot => 'ircname'); $ircname ||= 'imabot';
 
-    print "connect: attempting to connect to server: $server\n" if $Perlbot::DEBUG;
+    print "connect: attempting to connect to server: $server\n" if $DEBUG;
 
     $self->{ircconn} =
       $self->{ircobject}->newconn(Nick => $nick,
@@ -210,7 +210,7 @@ sub connect {
     $i++;
   }
 
-  print "connect: onnected to server: $server\n" if $Perlbot::DEBUG;
+  print "connect: onnected to server: $server\n" if $DEBUG;
 
   $self->{curnick} = $nick;
 
@@ -326,7 +326,7 @@ sub add_handler {
   my ($event, $coderef, $plugin) = @_;
 
   # do some init stuff if nobody has hooked this event yet
-  unless (%{$self->{handlers}{$event}}) {
+  unless ($self->{handlers}{$event}) {
     $self->{handlers}{$event} = {};                    # create the hash ref
     # add our 'multiplexer' sub as the handler
     $self->{ircconn}->add_handler($event, sub { $self->event_multiplexer(@_) });

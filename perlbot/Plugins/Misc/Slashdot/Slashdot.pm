@@ -44,7 +44,7 @@ sub slashdot {
 
     my $max;
     ($max = $text) =~ tr/[A-Z]/[a-z]/;
-    $max =~ s/\s+(\d+)\s*.*/\1/;
+    $max =~ s/\s+(\d+)\s*.*/$1/;
 
     if($max eq '') { $max = 5; }
 
