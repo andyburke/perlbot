@@ -156,7 +156,7 @@ sub as_string_formatted {
 
   study $format;
 
-  $format =~ s/%time/$date/g;
+  $format =~ s/%timestamp/$date/g;
   $format =~ s/%year/$year/g;
   $format =~ s/%mon/$mon/g;
   $format =~ s/%day/$day/g;
