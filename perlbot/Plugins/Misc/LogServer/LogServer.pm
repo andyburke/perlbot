@@ -117,14 +117,10 @@ sub logserver {
         $month = sprintf("%02d", $month);
         my $cal = HTML::CalendarMonth->new(year => $year, month => $month);
         foreach my $day ($cal->days()) {
-          if($channel->logs->search({ initialdate => Date::Manip::UnixDate("$year/$month/$day-00:00:00",'%s'),
-                                      finaldate   => Date::Manip::UnixDate("$year/$month/$day-23:59:59",'%s'),
-                                      boolean     => 1 })) {
-            $cal->item($day)->wrap_content(HTML::Element->new('a',
-                                                              href => "/logserver/display?channel="
-                                                              . $options->{channel}
-                                                              . "&year=${year}&month=${month}&day=${day}"));
-          }
+          $cal->item($day)->wrap_content(HTML::Element->new('a',
+                                                            href => "/logserver/display?channel="
+                                                            . $options->{channel}
+                                                            . "&year=${year}&month=${month}&day=${day}"));
         }
         $response .= $cal->as_HTML();
         $response .= "</td>\n";
@@ -148,6 +144,21 @@ sub logserver {
                                                                                  . "/"
                                                                                  . $options->{day}
                                                                                  . "-23:59:59",'%s')});
+
+      if(!@events) {
+        $response .= "<center>
+                        <h2>
+                          No logs for "
+                          . $options->{year}
+                          . "/"
+                          . $options->{month}
+                          . "/"
+                          . $options->{day}
+                          . "!
+                        </h2>
+                      </center>";
+        return $self->std_response($response);
+      }
 
       foreach my $event (@events) {
         $response .= $self->event_as_html_string($event);
