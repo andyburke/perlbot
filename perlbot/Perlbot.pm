@@ -9,7 +9,7 @@ use Perlbot::Config;
 use Perlbot::User;
 use Perlbot::Channel;
 
-$VERSION = '1.9.3';
+$VERSION = '1.9.4';
 $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
 
 sub new {
