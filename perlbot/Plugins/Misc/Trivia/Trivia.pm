@@ -154,8 +154,8 @@ sub answer {
     my $tmpanswer = $answer;
     my $tmptext = $text;
 
-    $tmpanswer =~ s/the//g;
-    $tmptext =~ s/the//g;
+    $tmpanswer =~ s/(the|a)\s+//g;
+    $tmptext =~ s/(the|a)\s+//g;
 
     my @answerwords = split(' ', $tmpanswer);
     my @guesswords = split(' ', $tmptext);
@@ -166,7 +166,9 @@ sub answer {
 
     my $right;
     for($right = 0; $right < length(@guesswords); $right++) {
-      if(!amatch(lc($answerwords[$right]), lc($guesswords[$right]))) { last; }
+      if(defined($answerwords[$right]) && defined($guesswords[$right])) {
+        if(!amatch(lc($answerwords[$right]), lc($guesswords[$right]))) { last; }
+      }
     }
 
     if($right == length(@answerwords)) {
