@@ -183,9 +183,9 @@ sub logserver {
         foreach my $day ($cal->days()) {
           if($channel->logs->search({
             initialdate
-                => timegm(0, 0, 0, $day, $month - 1, $year - 1900),
+                => timelocal(0, 0, 0, $day, $month - 1, $year - 1900),
             finaldate
-                => timegm(59, 59, 23, $day, $month - 1, $year - 1900),
+                => timelocal(59, 59, 23, $day, $month - 1, $year - 1900),
             boolean
                 => 1
               })) {
@@ -209,10 +209,10 @@ sub logserver {
 
     if(defined($options->{day}) && defined($options->{month}) && defined($options->{year})) {
       my @events = $channel->logs->search({ initialdate
-                                                => timegm(0, 0, 0, $options->{day}, $options->{month} - 1, $options->{year} - 1900),
+                                                => timelocal(0, 0, 0, $options->{day}, $options->{month} - 1, $options->{year} - 1900),
 
                                             finaldate
-                                                => timegm(59, 59, 23, $options->{day}, $options->{month} - 1, $options->{year} - 1900)
+                                                => timelocal(59, 59, 23, $options->{day}, $options->{month} - 1, $options->{year} - 1900)
                                               });
 
       if(!@events) {
@@ -356,7 +356,7 @@ sub logserver {
       my $initialhour = $options->{initialhour} || 0;
       my $initialmin = $options->{initialmin} || 0;
       my $initialsec = $options->{initialsec} || 0;
-      my $initialdate = timegm($initialsec, $initialmin, $initialhour, $initialday, $initialmonth - 1, $initialyear - 1900);
+      my $initialdate = timelocal($initialsec, $initialmin, $initialhour, $initialday, $initialmonth - 1, $initialyear - 1900);
 
       my $finalyear = $options->{finalyear};
       my $finalmonth = $options->{finalmonth};
@@ -364,7 +364,7 @@ sub logserver {
       my $finalhour = $options->{finalhour} || 23;
       my $finalmin = $options->{finalmin} || 59;
       my $finalsec = $options->{finalsec} || 59;
-      my $finaldate = timegm($finalsec, $finalmin, $finalhour, $finalday, $finalmonth - 1, $finalyear - 1900);
+      my $finaldate = timelocal($finalsec, $finalmin, $finalhour, $finalday, $finalmonth - 1, $finalyear - 1900);
 
       my $nick = $options->{nick};
       my $type = $options->{type}; if($type eq 'all') { $type = undef; };

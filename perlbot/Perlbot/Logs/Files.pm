@@ -256,7 +256,7 @@ sub search {
 
     my $curdate = $initialdate;
     do {
-      my (undef, undef, undef, $d, $m, $y) = gmtime($curdate);
+      my (undef, undef, undef, $d, $m, $y) = localtime($curdate);
       $d = sprintf("%02d", $d);
       $m = sprintf("%02d", $m + 1);
       $y += 1900;
