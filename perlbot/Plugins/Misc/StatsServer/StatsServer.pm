@@ -59,6 +59,7 @@ sub stats {
 
     foreach my $channel (values %{$self->perlbot->channels}) {
       my ($topic, $topicsetter) = @{$self->{_topics}{$channel->name()}};
+      $topic =~ s/\</\&lt\;/g; $topic =~ s/\>/\&gt\;/g;
       $response .= "<p><table width=100% border=1><th width=20%>Name</th><th>Topic (set by $topicsetter)</th></tr>";
       $response .= "<tr><td>" . $channel->name() . "</td><td>$topic</td></tr>";
       $response .= "<tr><th colspan=2>Members (" . scalar keys(%{$channel->{members}}) . ")</th></tr><tr><td colspan=2><ul>";
