@@ -268,7 +268,7 @@ sub _help {
     if($self->{helpitems}{overview}[0]) {
       push(@result, @{$self->{helpitems}{overview}});
       push(@result, 'Available commands:');
-      push(@result, @{$self->{helpitems}{commandlist}});
+      push(@result, join(' ', keys(%{$self->{helpitems}{command}})));
     }
   } elsif($self->{helpitems}{command}{$command}) {
     push(@result, @{$self->{helpitems}{command}{$command}{content}});

@@ -164,13 +164,14 @@ sub useradmin {
     $self->reply("Added $username to the list of ops for $channel");
     return;
   } else {
-    $self->reply("Unknown command: $command");
+    $self->reply_error("Unknown command: $command");
     return;
   }
   
 
       
 }
+
 
 
 
