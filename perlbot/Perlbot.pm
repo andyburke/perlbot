@@ -864,6 +864,14 @@ sub dcc_chat {
   $self->{ircconn}->new_chat(1, $nick, $host);
 }
 
+sub mode {
+  my $self = shift;
+  my $channel = shift;
+  my $modeline = shift;
+
+  $self->{ircconn}->mode($channel, $modeline);
+}
+
 sub schedule {
   my $self = shift;
   my $time = shift;
