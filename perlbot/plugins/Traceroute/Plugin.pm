@@ -1,14 +1,13 @@
 # Andrew Burke <burke@pas.rochester.edu>
 #
-# does a traceroute...
-#
-# ported/mangled from:
-# infobot :: Kevin Lenzo & Patrick Cole   (c) 1997
+# does a traceroute
 
 package Traceroute::Plugin;
 
 use Perlbot;
 use POSIX;
+
+my $traceroutebinary = '/usr/sbin/traceroute';
 
 sub get_hooks {
   return { public => \&on_public, msg => \&on_msg};
@@ -18,8 +17,8 @@ sub on_public {
   my $conn = shift;
   my $event = shift;
 
-  if (($event->{args}[0] =~ /^${pluginchar}traceroute\s*/) || ($event->{args}[0] =~ /^${pluginchar}tr\s*/)) {
-    troute($conn, $event, $event->{to}[0]);
+  if ($event->{args}[0] =~ /^${pluginchar}(traceroute|tr)/) {
+   trace($conn, $event, $event->{to}[0]);
   }
 }  
 
@@ -27,19 +26,20 @@ sub on_msg {
   my $conn = shift;
   my $event = shift;
 
-  if (($event->{args}[0] =~ /^${pluginchar}traceroute\s*/)  || ($event->{args}[0] =~ /^${pluginchar}tr\s*/)) {
-    troute($conn, $event, $event->nick);
+  if ($event->{args}[0] =~ /^${pluginchar}(traceroute|tr)/) {
+    trace($conn, $event, $event->nick);
   }
 }  
 
-sub troute {
+sub trace {
   my $conn = shift;
   my $event = shift;
   my $who = shift;
   my $in;
+  my @text;
 
   if (!defined($pid = fork)) {
-    $conn->privmsg($chan, "error in traceroute... weird.");
+    $conn->privmsg($chan, "error in traceroute plugin... weird.");
     return;
   }
 
@@ -52,22 +52,37 @@ sub troute {
   } else {
     # child...
 
-    ($in = $event->{args}[0]) =~ s/^${pluginchar}traceroute\s*//;
-    ($in = $event->{args}[0]) =~ s/^${pluginchar}tr\s*//;
+    ($in = $event->{args}[0]) =~ s/^${pluginchar}(traceroute|tr)\s*//;
 
     $in =~ s/\`//g; #security?
     $in =~ s/\$//g;
     $in =~ s/\|//g;
-    
-    my @tr = `traceroute $in`;
-    chomp @tr;
 
-    foreach(@tr) {
-      $conn->privmsg($who, $_);
+    if($in eq '') {
+      $conn->privmsg($who, "you must specify a host to trace...");
+      $conn->{_connected} = 0;
+      exit 1;
     }
-    
+
+    die "Can't fork: $!" unless defined($pid = open(KID, "-|"));
+
+    if ($pid) {
+       # parent
+       @text = <KID>;
+       close KID;
+    } else {
+       # kid
+       # Send stderr to stdout, so the bot will report errors back to the user
+       open (STDERR, ">&STDOUT") or die "Can't dup stdout: $!\n";
+       exec $traceroutebinary, split(' ', $in) or die "Can't exec traceroute: $!\n";
+    }
+
+    chomp @text;
+    foreach my $text (@text) {
+      $conn->privmsg($who, $text);
+    }
     $conn->{_connected} = 0;
-    exit 0;			# kill child
+    exit 0;
   }
 }
 

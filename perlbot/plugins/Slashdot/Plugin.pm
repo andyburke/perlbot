@@ -41,6 +41,7 @@
 
 package Slashdot::Plugin;
 
+use Perlbot;
 use IO::Socket;
 use IO::Handle;
 
