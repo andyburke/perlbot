@@ -210,23 +210,35 @@ sub reply {
 
 sub reply_via_msg {
   my $self = shift;
-  my $text = shift;
+  my @text = @_;
+  my @output;
 
-  foreach my $line (split('\n', $text)) {
+  foreach my $textline (@text) {
+    my @lines = split('\n', $textline);
+    push(@output, @lines);
+  }
+
+  foreach my $line (@output) {
     $self->{perlbot}->msg($self->{lastnick}, $line);
   }
 }
 
 sub reply_error {
   my $self = shift;
-  my $text = shift;
+  my @text = @_;
+  my @output;
+
+  foreach my $textline (@text) {
+    my @lines = split('\n', $textline);
+    push(@output, @lines);
+  }
 
   if($self->{perlbot}->config(bot => send_errors_via_msg)) {
-    foreach my $line (split('\n', $text)) {
+    foreach my $line (@output) {
       $self->{perlbot}->msg($self->{lastnick}, $line);
     }
   } else {
-    foreach my $line (split('\n', $text)) {
+    foreach my $line (@output) {
       $self->{perlbot}->msg($self->{lastcontact}, $line);
     }
   }
@@ -234,9 +246,15 @@ sub reply_error {
 
 sub addressed_reply {
   my $self = shift;
-  my $text = shift;
+  my @text = @_;
+  my @output;
 
-  foreach my $line (split('\n', $text)) {
+  foreach my $textline (@text) {
+    my @lines = split('\n', $textline);
+    push(@output, @lines);
+  }
+
+  foreach my $line (@output) {
     $self->{perlbot}->msg($self->{lastcontact}, $self->{lastnick} . ', ' . $line);
   }
 }
