@@ -81,6 +81,7 @@ sub sodoit {
     $length = int($length * .75);
   }
   if($length < 1) { $length = 1; }
+  if($length > 15) { $length = 15; }
   undef @words;
 
   if($text !~ /$curnick/i) {
