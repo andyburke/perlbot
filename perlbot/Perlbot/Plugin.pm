@@ -210,8 +210,20 @@ sub hook {
   my $hook = shift;
   my $call = shift;
 
-  $self->hook_commandprefix($hook, $call);
-  $self->hook_addressed_command($hook, $call);
+  # if they pass just a coderef, treat it like they passed an
+  # empty/undef hook and then the coderef.  i.e.,
+  #   hook(\&code) is equivalent to hook(undef, \&code)
+  if (ref($hook) eq 'CODE' and !defined($call)) {
+    $call = $hook;
+    $hook = undef;
+  }
+
+  if (defined($hook) and length($hook) > 0) {
+    $self->hook_commandprefix($hook, $call);
+    $self->hook_addressed_command($hook, $call);
+  } else {
+    $self->hook_regular_expression('.', $call);
+  }
 }
 
 sub hook_commandprefix {

@@ -141,6 +141,20 @@ Your irc session would look like:
 As you can see, either a prepended commandprefix or a prepended
 address to the bot will call your hook.
 
+In addition, if the first parameter (the command) is empty or undef,
+or you omit it entirely, every line will trigger your plugin.  You can
+think of this as hooking on an "empty" command.  So you would hook
+like this to make your "hello world" plugin trigger on every line:
+
+  $self->hook(\&hello);
+
+Then you would see:
+
+<plastik> I am saying something
+<perlbot> hello world
+<plastik> Now I'll say another thing
+<perlbot> hello world
+
     3.3.2) hook_commandprefix
     -------------------------
 
