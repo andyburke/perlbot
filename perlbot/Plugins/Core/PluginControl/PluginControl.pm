@@ -71,12 +71,13 @@ sub reload_plugin {
 sub reload_all_plugins {
   my ($self, $user, $text) = @_;
 
-  foreach my $plugin (@{$self->perlbot->plugins}) {
+  foreach my $plugin (grep { $_ !~ /PluginControl/ } @{$self->perlbot->plugins}) {
     my $ret = $self->perlbot->reload_plugin($plugin->name);
     if (ref($ret) eq 'SCALAR') {
       $self->display_reload_error($$ret, $plugin->name);
     }
   }
+
   $self->reply("Finished reloading all plugins");
 }
 
@@ -107,6 +108,10 @@ sub validate_input {
   }
   if ($text !~ /^\w+$/) {
     $self->reply('Please specify only one plugin name');
+    return undef;
+  }
+  if ($text =~ /PluginControl/) {
+    $self->reply('Sorry, PluginControl cannot be modified.');
     return undef;
   }
 
