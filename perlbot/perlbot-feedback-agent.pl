@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 
 use strict;
+use Socket;
+
 
 my $userid = -1;
 
@@ -102,7 +104,7 @@ while($usingwebserver ne 'y' && $usingwebserver ne 'n') {
 my $mostdesired;
 print "What is your most desired future feature and/or plugin?: ";
 my $mostdesired = <STDIN>;
-
+chomp $mostdesired;
 
 
 
@@ -134,6 +136,84 @@ print "Estimated Load: $load\n";
 print "Using Integrated Webserver: $usingwebserver\n";
 print "Most desired feature/plugin:\n";
 print "  $mostdesired\n\n";
+
+my $xml = "<perlbot-feedback os=\"$os\" perlbotversion=\"$perlbotversion\" perlversion=\"$perlversion\" netircversion=\"$netircversion\" firsttimeuser=\"$firsttime\" docshelpful=\"$docshelpful\" docsimprovement=\"$docsimprovement\" channels=\"$numchannels\" users=\"$numusers\" load=\"$load\" usingwebserver=\"$usingwebserver\" mostdesired=\"$mostdesired\" />";
+
+my $viewxml;
+while($viewxml ne 'y' && $viewxml ne 'n') {
+  print "Would you like to view the xml output that will be submitted? [y/n] ";
+  $viewxml = lc(<STDIN>);
+  chomp $viewxml;
+}
+
+if($viewxml eq 'y') {
+  print "\n\n" . $xml . "\n\n";
+}
+
+
+my($remote,$port,$iaddr,$paddr,$proto,$line);
+$remote = "www.fdntech.com";
+$port = "80";
+    
+if(!defined($iaddr = inet_aton($remote))) {
+  print "Could not get address for $remote\n";
+  exit 1;
+}
+
+if(!defined($paddr = sockaddr_in($port, $iaddr))) {
+  print "Could not get port for $remote\n";
+  exit 1;
+}
+
+if(!defined($proto = getprotobyname('tcp'))) {
+  print "Could not get tcp protocol\n";
+  exit 1;
+}
+    
+if(!socket(SOCK, PF_INET, SOCK_STREAM, $proto)) {
+  print "Could not open socket to $remote\n";
+  exit 1;
+}
+
+if(!connect(SOCK, $paddr)) {
+  print "Could not connect to $remote\n";
+  exit 1;
+}
+
+# some of this lifted from URI::Escape
+
+my %escapes;
+# Build a char->hex map
+for (0..255) {
+  $escapes{chr($_)} = sprintf("%%%02X", $_);
+}
+
+$xml =~ s/([^A-Za-z0-9\-_.!~*'()])/$escapes{$1}/g;
+
+my $msg = "GET /perlbot/index.pl?xml=$xml\n\n";
+
+if(!send(SOCK, $msg, 0)) {
+  print "Could not send to $remote\n";
+  exit 1;
+}
+
+if($userid == -1) {
+  while(my $line = <SOCK>) {
+    if($userid =~ /^\d+$/) { last; }
+  }
+}
+
+close SOCK;
+
+open(USERID, ">.perlbot_user_id");
+print USERID $userid;
+close(USERID);
+
+
+
+
+
+
 
 
 
