@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!ELEMENT config (bot, server+, channel*, user*)>
+<!ELEMENT bot (plugindir*, noload*, admin*, ignore*)>
+  <!ATTLIST bot nick CDATA #REQUIRED>
+  <!ATTLIST bot ircname CDATA "imabot">
+  <!ATTLIST bot logdir CDATA "./logs">
+  <!ATTLIST bot crashlogdir CDATA "./">
+  <!ATTLIST bot commandprefix CDATA "!">
+  <!ATTLIST bot nickappend CDATA "_">
+  <!ATTLIST bot max_public_reply_lines CDATA "10">
+  <!ATTLIST bot send_errors_via_msg (0|1) "0">
+<!ELEMENT server EMPTY>
+  <!ATTLIST server address CDATA #REQUIRED>
+  <!ATTLIST server port CDATA "6667">
+<!ELEMENT channel (op*, ignoreplugin*)>
+  <!ATTLIST channel name CDATA #REQUIRED>
+  <!ATTLIST channel flags CDATA #IMPLIED>
+  <!ATTLIST channel logging (yes|no) "no">
+  <!ATTLIST channel limit CDATA "0">
+<!ELEMENT user (hostmask*)>
+  <!ATTLIST user name CDATA #REQUIRED>
+  <!ATTLIST user password CDATA #IMPLIED>
+<!ELEMENT plugindir (#PCDATA)>
+<!ELEMENT noload (#PCDATA)>
+<!ELEMENT admin (#PCDATA)>
+<!ELEMENT ignore (#PCDATA)>
+<!ELEMENT op (#PCDATA)>
+<!ELEMENT ignoreplugin (#PCDATA)>
+<!ELEMENT hostmask (#PCDATA)>
+

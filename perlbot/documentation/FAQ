@@ -7,13 +7,10 @@ What is Perlbot?
 ================
 
    Perlbot is an IRC bot written in Perl. It depends on Net::IRC and its goals
-   are simplicity, a small footprint, and modularity. It's meant as a more
-   easily configured but less robust alternative to bots like eggdrop. It's
-   also noticeably faster by the authors' tests. The base bot allows
-   auto-opping, notes, multiple channels, channel redirection, etc., but much,
-   much more is possible through the use of plugins. Many plugins are included,
-   and it should be easy for anyone with some knowledge of Perl to write her
-   own.
+   are simplicity and modularity. The base bot allows auto-opping, notes,
+   multiple channels, channel redirection, etc., but much, much more is possible
+   through the use of plugins. Many plugins are included, and it should be easy
+   for anyone with some knowledge of Perl to write her own.
 
 
 How do I make this damn thing run?
