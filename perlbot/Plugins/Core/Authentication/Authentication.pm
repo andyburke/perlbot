@@ -13,7 +13,7 @@ sub init {
   $self->want_public(0);
   $self->want_fork(0);
 
-  $self->advanced_hook('auth', \&auth);
+  $self->hook_advanced('auth', \&auth);
   $self->hook('password', \&password);
   $self->hook('hostmasks', \&hostmasks);
   $self->hook('addhostmask', \&addhostmask);

@@ -1,7 +1,24 @@
 Designing Perlbot Plugins
 =========================
 
+Table of Contents
+-----------------
 
+1) So you want to write a plugin
+2) A very simple example plugin
+3) Plugin requirements
+  3.1) init
+  3.2) behaviors
+  3.3) hooks
+    3.3.1) hook
+    3.3.2) hook_regular_expression
+    3.3.3) hook_addressed
+    3.3.4) hook_advanced
+    3.3.5) hook_admin
+    3.3.6) hook_event
+4) Config files
+5) Cleanup
+6) The plugin help facility
 
 1) So you want to write a plugin
 --------------------------------
@@ -14,465 +31,187 @@ Here are the things you'll need:
 - You obviously need to know perl.  In particular, you'll need a clear
   understanding of perl references and classes/objects.  The "perlref" and
   "perltoot" man pages have all you need to know.  You won't need to
-  design any classes, but you'll need to deal with some objects from
-  Net::IRC and perlbot itself.
+  design any classes, but you'll need to deal with some objects.
 
-- Familiarity with the Event and Connection classes from Net::IRC, since
-  perlbot uses Net::IRC to handle its connection to IRC servers.  See
-  plugin-events.txt for a list of events (copied straight from
-  Net/IRC/Event.pm).
+2) A very simple example plugin
+-------------------------------
 
-- An understanding of the internal classes that perlbot uses to handle
-  users and channels: User and Chan (see User.pm and Chan.pm).
+package Perlbot::Plugin::Example;
 
-The way a plugin interfaces to IRC is by listening for events.  As a
-plugin author, you decide which event types to listen for, and write a
-subroutine to deal with each type (it's possible for one sub to handle
-more than one type of event, but not recommended).  We call these
-subroutines 'handler subs'.  The events that are most common for a plugin
-to handle are 'public' which is generated when someone says something
-publicly to a channel, and 'msg' which is generated when someone privately
-messages perlbot.  See plugin-events.txt for the full list. 
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
 
+sub init {
+  my $self = shift;
 
+  $self->hook('example', \&example);
+}
 
-2) Handler subs
----------------
+sub example {
+  my $self = shift;
+  my $user = shift;
+  my $text = shift;
 
-Your handler subs will be passed 2 arguments.  The first is the
-Net::IRC::Connection object representing perlbot's connection to its IRC
-server.  The second is the Net::IRC::Event object representing the event
-that is being handled by your sub. So each of your handler subs should
-probably start off with this line:
+  $self->reply('I saw the command "example"!');
+}
 
-	my ($conn, $event) = @_;
-
-A note on the 'my': We strongly suggest that you 'use strict' in your
-perlbot plugins, and all your other perl code too.  It really helps you
-keep track of all your variables, and helps you avoid bugs caused by
-misspelled variables.  If you need to declare a variable that's visible to
-other plugins or perl modules, you can 'use vars'.  See the perldoc
-entries for 'strict' and 'vars' if you don't have experience with them.
-
-You need to decide what sort of behavior each event should trigger.  Let's
-pretend you're writing a plugin to pull headlines from the (fictional)
-website, www.perlbot-news.com.  You might choose to handle the 'public' and
-'msg' events, and display the headlines if the text from these events begins
-with '!perlbotnews'.  (In practice, your regular expression(s) must use
-$pluginprefix, from the Perlbot package, instead of '!', as this is a
-configurable option)  This would allow people to say '!perlbotnews' in a
-channel with the bot, or in a private message to it, in order to retrieve
-the headlines.  If someone messages the bot privately, your plugin should
-send back the headlines via a private message.  If the key phrase is said
-publicly in a channel, you might choose to send the headlines publicly to
-the channel as well, or privately message the user instead, so as not to
-bother the other users in the channel.  The best option might be to allow
-the person running the bot to control this behavior through a configuration
-file.  See Section 5 for more info on configuration files.
-
-
-
-3) Overall plugin structure
----------------------------
-
-You're probably wondering where to put these handler subs that you're
-going to write, and how to tell perlbot which subs are supposed to handle
-which events.  The file to put your subs in should be called 'Plugin.pm'
-and it should be placed in "plugins/PluginName".  Also, you need to put
-the line "package PluginName::Plugin;" at the top of that file, and the
-line "1;" at the bottom of the file (these 2 lines are to satisfy the perl
-module loading mechanism).  Put all your subs and global variables in
-between these 2 lines.
-
-There's one last step.  You need to write a sub called "get_hooks", and
-next is a description of what get_hooks must return.  The description
-might be difficult to understand now, but the example below will surely
-clear things up.  get_hooks must return a reference to a hash, where each
-key/value pair is the name of an event you want to hook and a reference to
-the sub you want to handle that event.  Don't worry, it's not as bad as it
-sounds.  Here's an example that will cause your public_handler sub to
-handle 'public' events, and your message_handler sub to handle 'msg'
-events:
-
-	sub get_hooks {
-	  return {
-	    public => \&public_handler,
-	    msg    => \&message_handler
-	  }
-	}
-
-So if you were writing a plugin called "Foo" that should handle 'public'
-and 'msg' events, you would have a file called "plugins/Foo/Plugin.pm" and
-it would look something like this:
-
-	package Foo::Plugin;
-
-	sub get_hooks {
-	  return {
-	    public => \&on_public,
-	    msg    => \&on_msg
-	  }
-	}
-
-	sub on_public {
-	  # code here to handle 'public' events
-	}
-
-	sub on_msg {
-	  # code here to handle 'msg' events
-	}
-
-	1;
-
-You are free to write other subs that don't directly handle events, but
-rather are called from the handler subs.  You may also split some of your
-code into separate source files if it starts to get too big for one file,
-but keep it all under your plugin's directory.
-
-
-
-4) Access to global variables
------------------------------
-
-Many plugins will want to get at global variables such as the hashes of
-User and Chan objects, and also the many utility functions that simplify
-common tasks.  To do this, you can 'use Perlbot' in your plugin to have
-all the symbols imported into your namespace.  Or, if you don't want all
-those symbols dumped into your namespace for some reason, you can just
-access them via their fully qualified name.  For example, %Perlbot::users
-would be the %users hash.  See the section on "global variables" in
-developer.txt for details about what the Perlbot module provides.
-
-We've written what we think are an appropriate set of utility functions in
-Perlbot.pm, but if you find yourself writing the same little bit of code
-over and over, feel free to write your own utility function(s) inside your
-plugin.  If you think it's something that would be of use to all plugin
-authors, email the perlbot authors and let us know.
-
-
-
-5) Config files
----------------
-
-Perlbot provides a robust mechanism for parsing configuration files with a
-special "class"-like syntax.  That is, they somewhat resemble the
-definition of a class in languages like C++.  Perlbot's main configuration
-file uses this syntax too.  See perlbot.txt for more information about how
-the configuration files work.  Here's a quick description:
-
-- blank or all-whitespace lines and lines starting with '#' are ignored
-
-- whitespace within each line is ignored
-
-- "class" definitions start with 'classname {' ALL ON ONE LINE by itself
-
-- definitions end with '}' on a line by itself
-
-- the body of the definition is made up of lines with the format
-  'name value' where "name" is a field name with no spaces, and "value" is
-  a string that is the value of that field.
-
-Please do read perlbot.txt for a more detailed discussion with examples.
-
-If you'd like to support a configuration file for your plugin that uses
-this syntax, you can use the sub from the Perlbot module (see Section 4)
-called, appropriately enough, parse_config .  parse_config takes one
-argument, which is the name of the configuration file.  There is one
-caveat: the current working directory for perlbot is the main perlbot
-directory, but your configuration file will be 2 directories below that,
-in the subdirectory that holds your plugin.  Use the $plugindir variable
-from the Perlbot module to form the appropriate directory name.  If you
-were writing a plugin called "Foo", you would look for your configuration
-file in the directory "$plugindir/Foo/".
-
-parse_config returns either a reference to a hash if the file parsed
-correctly, or an error string if there was a parsing error.  The hash ref
-that it returns on success is the base for a multi-level arrangement of
-hash and array references that stores all the data from the configuration
-file.  The structure might seem like a real mess at first, but once you
-fully understand how it's set up, you'll see how powerful it is.  From
-here on, we'll refer to the hash ref returned by parse_config as $hash.
-
-Let's use this example configuration file.  The plugin that it configures
-might be one that provides customized greeting messages from perlbot when
-a user enters a channel.
-
-	main {
-	  delay     3
-	}
-
-	user {
-	  name      timmy
-	  quote     woop!
-	  quote     Hey everyone, it's timmy!
-	}
-
-	user {
-	  name      hal9000
-	  quote     What are you doing, Dave?
-	}
-
-1) $hash is a reference to a hash.  The keys in that hash are the names of
-all the "classes" in your configuration file.  With this example, the hash
-would have keys 'main' and 'user'.  The values for these keys are array
-references.  So $hash->{main} and $hash->{user} are array refs. 
-
-2) These arrays store all the different "objects" of that class.  So
-$hash->{user}[0] represents 'timmy' and $hash->{user}[1] represents
-hal9000.  $hash->{main}[0] represents the single 'main' object.  Note that
-even if you only have one object of a given class (like 'main' in this
-example), you still need the [0].  Each of these array elements stores
-another hash reference.
-
-3) The keys for these hashes are the field names from a given class.  So
-$hash->{user}[0] and $hash->{user}[1] would have keys 'name' and 'quote'. 
-The values for these keys are more array references.  So for example,
-$hash->{user}[0]{quote} is an array ref. 
-
-4) These arrays store all the different values for a given field. 
-$hash->{user}[0]{quote}[0] is timmy's first quote, and
-$hash->{user}[0]{quote}[1] is his second quote.
-
-
-Maybe this will be easier to understand: If you were to explicitly
-initialize $hash for the above example file, it would look like this: 
-
-	$hash = {
-	  'main' => [
-	    {
-	      'delay' => [3]
-	    }
-	  ],
-	  'user' => [
-	    {
-	      'name'  => ["timmy"],
-	      'quote' => ["woop!", "Hey everyone, it's timmy!"]
-	    },
-	    {
-	      'name'  => ["hal9000"],
-	      'quote' => ["What are you doing, Dave?"]
-	    }
-	  ]
-	};
-
-Like I said, it's sort of a mess.  But, we didn't intend for you to be
-messing around with $hash in your main plugin code.  You're supposed to
-call parse_config to get $hash, then set up some foreach loops to iterate
-over the hash keys and arrays, to pull out all the values and initialize
-some nicer structures that the rest of your code will use.  Here's the
-code that parses the main perlbot configuration file (pulled straight from
-PerlbotCore.pm in version 1.1.7, with some comments removed):
-
-	my $ret = parse_config($CONFIG);
-
-	# If $ret isn't a hash ref, it's an error string... :(
-	if (ref($ret) ne 'HASH') {
-	  print $ret, "\n";
-	  exit(1);
-	}
-
-	foreach my $class ('user','bot','server','chan') {
-	  foreach my $fields (@{$ret->{$class}}) {
-	    &{$config_handlers{$class}}($fields);
-	  }
-	}
- 
-Note the 2 nested foreach loops.  The outer one loops $class over the 4
-classes that it knows how to deal with.  Then the inner foreach loops over
-@{$ret->{$class}}, which is the array of "objects" for "class" $class
-(item 2 in the above description of the structure).  So $fields holds a
-reference to the hash representing one object from the config file (item
-3). 
-
-Then there's a slightly tricky line inside the inner for loop.  We have a
-hash set up, called %config_handlers, where the keys are each of the
-"classes" we know how to deal with, and the values are references to subs
-that handle an "object" from that class.  It's really just a robust way to
-implement a "switch" statement in perl.  Here's the 'chan' handler, which
-illustrates the different things you can do with the structure.
-
-	chan => sub {
-	  my $name = to_channel($_[0]->{name}[0]);
-	  my $chan = new Chan($name, $_[0]->{flags}[0]);
-	  foreach my $op (@{$_[0]->{op}}) {
-	    $chan->add_op($op) if (exists($users{$op}));
-	  }
-	  if($_[0]->{logging}) {
-	    $chan->logging($_[0]->{logging}[0]);
-	  }
-	  $channels{$name} = $chan;
-	}
-
-Let's go over it line by line (remember, $_[0] is the first parameter
-passed to the sub, which contains the reference to the hash from step 3):
-
-          my $name = to_channel($_[0]->{name}[0]);
-
-This pulls out the first value for 'name' from this channel.  It
-explicitly grabs the first one since it wouldn't make sense to have more
-than one name.  If multiple names are given, the second and later ones are
-simply ignored.  It then passes the name through to_channel which is in
-Perlbot.pm.  to_channel appends a '#' on the front of a string if it
-doesn't already have a '#' or '&'.  Thus a channel name that starts with
-'#' can be given in the configuration file without the '#' if the owner is
-a little lazy.
-
-          my $chan = new Chan($name, $_[0]->{flags}[0]);
-
-This creates a Chan object.  The constructor expects the channel name and
-the flags for the channel.  The flags value is pulled from the 'flags'
-field in the channel's definition in the configuration file. 
-
-          foreach my $op (@{$_[0]->{op}}) {
-
-This loops $op over each value for the 'op' field from this channel's
-definition.  Each 'op' entry in a channel definition is the name of a user
-who should be a channel operator (mode +o). 
-
-             $chan->add_op($op) if (exists($users{$op}));
-
-This adds $op as a channel op only if the user is an actual user.
-
-         if($_[0]->{logging}) {
-
-If the definition for this channel has a 'logging' field,
-
-             $chan->logging($_[0]->{logging}[0]);
-
-the value for the (first) 'logging' field is passed to Chan->logging
-(expected values are 'on' or 'off'). 
-
-
-Right now, you can only read configuration data with parse_config.  We're
-looking into writing some code that will allow you to write a
-configuration file back to disk.  It will most likely be the exact reverse
-of parse_config; you will pass one of these big messy structures and a
-filename to write_config, and it will write out a configuration file with
-that data.
-
-
-
-6) Initialization and Cleanup
------------------------------
-
-To perform some initialization routines in your plugin when it is loaded for
-the first time, implement a sub named "BEGIN".  (This is a feature of the perl
-module system)  To perform cleanup routines when the bot is shut down or your
-plugin is explicitly unloaded, implement a sub named "END".
-
-Advanced programmers may also implement INIT and CHECK subs if they so desire.
-Plugins are loaded via the normal perl module loading mechanism, thus any
-standard features of the module system may be utilized.
-
-
-
-7) The plugin help facility
----------------------------
-
-Perlbot provides a standard way for users to get online help for your
-plugin.  If a user says "#help" to perlbot, it will give them the general
-syntax of the help command and a list of installed plugins.  They can then
-message the bot "#help pluginname" for general help on that plugin and a
-list of subtopics that they can look up for further information.  "#help
-pluginname subtopic" returns help on that subtopic.
-
-To specify the help messages for your plugin, create a file called
-'help.txt' in your plugin's directory.  Blank lines in this file are
-ignored. 
-
-The first non-blank line should be the general help text for your plugin,
-which the user will see when they say "#help pluginname".  If you want to
-send multiple lines back to the user, separate the lines with '\\'.  The
-entire string must be on ONE line!
-
-The next non-blank line should be the name of a subtopic, and next should
-be the help text for that subtopic.  Once again, the help text must be all
-on one line, and \\ serves as a line separator.  The rest of the file
-continues in this fashion, with subtopics and help text on alternating
-lines.
-
-In a future version of perlbot, we might write a parser that will allow
-for a more natural help.txt format.  Perhaps something similar to the
-current format, but with real carriage returns instead of \\, and 1 or
-more blank lines to separate a help text entry from the next subtopic.
-
-
-
-8) Forking / threading
+3) Plugin requirements
 ----------------------
 
-Any plugin that could potentially take a long time to do its thing (such
-as retrieve a web page or call an external program) should create a
-parallel thread of execution in which to do its own processing, to allow
-perlbot to continue processing new events.  This may be accomplished via a
-fork() call, but that creates an entire copy of the perlbot process, which
-is quite inefficient.  With many such forks going on in rapid succession,
-the system hosting the bot may run out of RAM and start thrashing. 
+  3.1) init
+  ---------
 
-We're currently looking into something more lightweight, like threads.  If
-you have any suggestions, please mail the authors. 
+All plugins should define an subroutine 'init' which is called when the
+plugin is loaded.  Here you initialize your plugin, set up your behaviors
+and hook appropriate events.
+
+Example:
+
+sub init {
+  my $self = shift;
+
+  $self->want_fork(0);
+
+  $self->hook('hi', \&hi);
+}
+
+  3.2) behaviors
+  --------------
+
+You can define different behaviors for your plugin:
+
+  $self->want_public(0|[1]);        # wants public text
+  $self->want_msg(0|[1]);           # wants messages
+  $self->want_action([0]|1);        # wants ctcp actions
+  $self->want_chat([0]|1);          # wants dcc chat
+
+  $self->want_fork(0|[1]);          # wants to be forked
+  $self->want_reply_via_msg([0]|1); # wants to only reply via msg
+
+Each of these wants either a 0 or a 1 as an argument.  The default values
+are in brackets above.  If you don't want behavior different than the
+default, you don't need to call these functions.
+
+Example:
+
+sub init {
+  my $self = shift;
+
+  $self->want_fork(0); # don't want to be forked
+  $self->want_msg(0);  # don't want to get messages
+
+  $self->hook('thing', \&someroutine);
+}
+
+  3.3) hooks
+  ----------
+
+Your plugin needs to hook diffent events to be of much use, so you'll
+most likely need to use at least one of the following ways of hooking:
+
+  $self->hook('command', \&callback);
+  $self->hook_regular_expression('regular expression', \&callback);
+  $self->hook_addressed(\&callback);
+  $self->hook_advanced('command', \&callback);
+  $self->hook_admin('command', \&callback);
+  $self->hook_event('eventtype', \&callback);
+
+    3.3.1) hook
+    -----------
+
+The hook function hooks a command word to a callback.  So, if your
+commandprefix is set to '!' and you add the following hook:
+
+  $self->hook('blah', \&blah);
+
+When the bot sees '!blah some text here'.  It will call the callback
+'blah' with a ref to $self, a user (if the person who said it was a
+user) and the text 'some text here'. (it will strip the command)
+
+    3.3.2) hook_regular_expression
+    ------------------------------
+
+The hook_regular_expression function will hook on a regular expression.
+For instance, you could get yourself called on every line of text with
+the following:
+
+  $self->hook_regular_expression('.*', \&somesub);
+
+You get passed the same type of stuff as the hook() call, but with
+nothing stripped.
+
+    3.3.3) hook_addressed
+    ---------------------
+
+This will hook any event in which the bot itself is address. If, for
+instance, your bot was named 'samuelkins', then the following text
+would trigger an event hooked in this manner:
+
+  sameulkins, how are you?
+
+You get called with the same arguments as hook, but with the addressed
+part stripped, so you'd get 'how are you?'.
+
+    3.3.4) hook_advanced
+    --------------------
+
+Exactly the same as hook, but you get the irc event passed as an
+additional argument.
+
+    3.3.5) hook_admin
+    -----------------
+
+The same as hook, but it will only be triggered by bot admins saying
+the command.
+
+    3.3.6) hook_admin
+    -----------------
+
+With this, you can hook any irc event you like.  To hook all messages:
+
+  $self->hook_event('msg', \&something);
+
+You just get passed a self ref and the event.
 
 
+4) Config files
+---------------
 
-9) Sharing data or interfacing multiple plugins
------------------------------------------------
+All plugins try to read a valid XML config file from their own directory.
+An example config for a plugin is:
 
-You might want to write a plugin that provides some functionality for a
-few other plugins.  For example, you might want to implement some online
-games, so you write one plugin for each game, and one plugin to handle
-general user settings for all the games.  In each of your game plugins,
-you might want to find out some user setting, so you would need to
-communicate with your settings plugin.  All you need to do is provide some
-subroutine or global variable in the settings plugin (let's call it
-GameSettings), and then reference $GameSettings::some_variable from your
-different game plugins. 
+<config>
+  <server hostname="www.someplace.com" port="9000" />
+</config>
 
-Alternately, if you are familiar with the Exporter package, you could use
-@EXPORT_OK to provide some symbols for export, but only if the 'use'ing
-module asks for them.  Then, in your game plugins, you could just say:
+You can access elements from your config by using the Perlbot::Config
+object:
 
-	use GameSettings qw($some_variable);
+  $self->config->value(server => 'hostname')
 
-and then use $some_variable without the 'GameSettings::' prefix.
-
-You might also have shared files (perhaps a database of some sort) that
-reside in the common plugin's directory. 
-
-If your plugin requires another plugin, and you want to check to see if that
-other plugin is installed, just grep @plugins (from the Perlbot module) for the
-name of that plugin, from inside a BEGIN block (see Section 6 on Initialization
-and Cleanup).  If the grep fails, which means the required plugin isn't
-installed, die() with an appropriate error message.  The plugin will not be
-loaded, and the error message will be displayed if debugging is enabled.  (This
-will likely change in the future, such that the die() string will be printed
-regardless of the debug setting)
-
-In the future we will probably make this process a little cleaner.  For
-example, a plugin might be allowed to provide a list of other plugins it
-requires, and the dependency tree will be evaluated before even attempting to
-load plugins.
+would return 'www.someplace.com'.
 
 
-10) Designing well-behaved plugins
----------------------------------
+5) Cleanup
+----------
 
-- Plugins should never ever export any symbols by default.
+When your plugin is shut down, Perlbot will try to call the method
+'shutdown' on it.  You can define this method if you have anything you
+want to clean up.
 
-- All files that a plugin uses during its operation, such as extra custom
-  perl modules, text or database files, etc., should reside under its own
-  directory. 
 
-- If your plugin listens for users to say a key phrase in the form of
-  '!command', then make sure you look for that phrase only at the
-  beginning of an event's text (use a regexp like
-  /^${pluginprefix}command/ -- OBEY $pluginprefix !!!).
+6) The plugin help facility
+---------------------------
 
-- If your plugin scans all public/msg text for certain phrases (for
-  example, "what is X" or "where can I find Y") or passes all the text on to
-  some entity (such as an artificial intelligence program or module), make
-  sure you do NOT scan or pass on lines that start with $pluginprefix or
-  $commandprefixr, unless you are SURE this is what you want to do.  If you
-  have a plugin that looks for "!spell <a list of words to spellcheck>" and
-  another that looks for "what is X" in general speech, you don't want the
-  second plugin to trigger when someone says "!spell what is yor questt?" 
+Help for plugins is defined by creating a file 'help.xml' in your plugin's
+directory.  It should have the following format:
+
+<help>
+  <overview>An overview of the function of your plugin.</overview>
+  <command name="something">What the command 'something' does.<br/>Usage</command>
+  <command nome="someotherthing">What 'someotherthing' does.<br/>Usage<br/>More</command>
+</help>
+
+If you define this file, Perlbot will automatically give users acess to your
+help.
 

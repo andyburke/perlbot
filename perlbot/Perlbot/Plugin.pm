@@ -53,6 +53,8 @@ sub new {
   return $self;
 }
 
+sub init { } # stub
+
 sub property {
   my ($self, $property, $param) = @_;
   if($param) { $self->{$property} = $param; }
@@ -206,7 +208,7 @@ sub hook_event {
   $self->perlbot->add_handler($event, sub {$self->_process(@_)}, $self->{name});
 }
 
-sub advanced_hook {
+sub hook_advanced {
   my $self = shift;
   my $hook = shift;
   my $call = shift;
