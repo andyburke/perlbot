@@ -11,11 +11,13 @@ Table of Contents
   3.2) behaviors
   3.3) hooks
     3.3.1) hook
-    3.3.2) hook_regular_expression
-    3.3.3) hook_addressed
-    3.3.4) hook_advanced
-    3.3.5) hook_admin
-    3.3.6) hook_event
+    3.3.2) hook_commandprefix
+    3.3.3) hook_addressed_command
+    3.3.4) hook_regular_expression
+    3.3.5) hook_addressed
+    3.3.6) hook_advanced
+    3.3.7) hook_admin
+    3.3.8) hook_event
 4) Config files
 5) Cleanup
 6) The plugin help facility
@@ -119,16 +121,49 @@ most likely need to use at least one of the following ways of hooking:
     3.3.1) hook
     -----------
 
-The hook function hooks a command word to a callback.  So, if your
-commandprefix is set to '!' and you add the following hook:
+The hook method is an alias for calling both hook_commandprefix
+and hook_addressed command as defined below.  This is the most
+common type of hook.  If, for instance, your commandprefix was '!'
+and you added the following hook for a math function:
 
-  $self->hook('blah', \&blah);
+  $self->hook('math', \&math);
+
+Your irc session would look like:
+
+<ender> perlbot, math 2+2
+<perlbot> 4
+<ender> !math 2+2
+<perlbot> 4
+
+As you can see, either a prepended commandprefix or a prepended
+address to the bot will call your hook.
+
+    3.3.2) hook_commandprefix
+    -------------------------
+
+The hook_commandprefix method will hook a command issued with the
+commandprefix in front of it.  If your command prefix is '!' and
+you added the following hook:
+
+  $self->commandprefix_hook('blah', \&blah);
 
 When the bot sees '!blah some text here'.  It will call the callback
 'blah' with a ref to $self, a user (if the person who said it was a
 user) and the text 'some text here'. (it will strip the command)
 
-    3.3.2) hook_regular_expression
+    3.3.3) hook_addressed_command
+    -----------------------------
+
+The hook_addressed_command method will hook a command after the bot
+has been addressed.  For instance:
+
+  $self->hook_addressed_command('lala', \&lala);
+
+Would get called back with 'so then' if a user typed into irc:
+
+  yourbotnick, lala so then
+
+    3.3.4) hook_regular_expression
     ------------------------------
 
 The hook_regular_expression function will hook on a regular expression.
@@ -140,7 +175,7 @@ the following:
 You get passed the same type of stuff as the hook() call, but with
 nothing stripped.
 
-    3.3.3) hook_addressed
+    3.3.5) hook_addressed
     ---------------------
 
 This will hook any event in which the bot itself is address. If, for
@@ -152,19 +187,19 @@ would trigger an event hooked in this manner:
 You get called with the same arguments as hook, but with the addressed
 part stripped, so you'd get 'how are you?'.
 
-    3.3.4) hook_advanced
+    3.3.6) hook_advanced
     --------------------
 
 Exactly the same as hook, but you get the irc event passed as an
 additional argument.
 
-    3.3.5) hook_admin
+    3.3.7) hook_admin
     -----------------
 
 The same as hook, but it will only be triggered by bot admins saying
 the command.
 
-    3.3.6) hook_admin
+    3.3.8) hook_admin
     -----------------
 
 With this, you can hook any irc event you like.  To hook all messages:

@@ -21,11 +21,14 @@ sub new {
     directory => $directory,
     config => undef,
     helpitems => {},
-    hooks => {},
-    hookres => {},
+    commandprefix_hooks => {},
+    addressed_command_hooks => {},
+    regular_expression_hooks => {},
     addressed_hooks => [],
-    admin_hooks => {},
-    advanced_hooks => {},
+    commandprefix_admin_hooks => {},
+    addressed_command_admin_hooks => {},
+    commandprefix_advanced_hooks => {},
+    addressed_command_advanced_hooks => {},
     event_hooks => {},
     lastcontact => '',
     lastnick => '',
@@ -199,16 +202,32 @@ sub hook {
   my $hook = shift;
   my $call = shift;
 
-  $self->{hooks}{$hook} = $call;
+  $self->hook_commandprefix($hook, $call);
+  $self->hook_addressed_command($hook, $call);
 }
 
+sub hook_commandprefix {
+  my $self = shift;
+  my $hook = shift;
+  my $call = shift;
+
+  $self->{commandprefix_hooks}{$hook} = $call;
+}
+
+sub hook_addressed_command {
+  my $self = shift;
+  my $hook = shift;
+  my $call = shift;
+
+  $self->{addressed_command_hooks}{$hook} = $call;
+}
 
 sub hook_regular_expression {
   my $self = shift;
-  my $hookre = shift;
+  my $hook = shift;
   my $call = shift;
 
-  $self->{hookres}{$hookre} = $call;
+  $self->{regular_expression_hooks}{$hook} = $call;
 }
 
 sub hook_addressed {
@@ -223,7 +242,24 @@ sub hook_admin {
   my $hook = shift;
   my $call = shift;
 
-  $self->{admin_hooks}{$hook} = $call;
+  $self->hook_commandprefix_admin($hook, $call);
+  $self->hook_addressed_command_admin($hook, $call);
+}
+
+sub hook_commandprefix_admin {
+  my $self = shift;
+  my $hook = shift;
+  my $call = shift;
+
+  $self->{commandprefix_admin_hooks}{$hook} = $call;
+}
+
+sub hook_addressed_command_admin {
+  my $self = shift;
+  my $hook = shift;
+  my $call = shift;
+
+  $self->{addressed_command_admin_hooks}{$hook} = $call;
 }
 
 sub hook_event {
@@ -243,7 +279,24 @@ sub hook_advanced {
   my $hook = shift;
   my $call = shift;
 
-  $self->{advanced_hooks}{$hook} = $call;
+  $self->hook_commandprefix_advanced($hook, $call);
+  $self->hook_addressed_command_advanced($hook, $call);
+}
+
+sub hook_commandprefix_advanced {
+  my $self = shift;
+  my $hook = shift;
+  my $call = shift;
+
+  $self->{commandprefix_advanced_hooks}{$hook} = $call;
+}
+
+sub hook_addressed_command_advanced {
+  my $self = shift;
+  my $hook = shift;
+  my $call = shift;
+
+  $self->{addressed_command_advanced_hooks}{$hook} = $call;
 }
 
 # send a reply to the bot's last contact via the correct path (msg, public, etc.)
@@ -429,8 +482,8 @@ sub _process { # _process to stay out of people's way
   #       set our last contact to the channel this event came from
   #     dispatch this event to the appropriate handler with the right args
 
-  foreach my $hook (keys(%{$self->{hooks}})) {
-    my $regexp = $self->perlbot->config->value(bot => 'commandprefix') . $hook;
+  foreach my $commandprefix_hook (keys(%{$self->{commandprefix_hooks}})) {
+    my $regexp = $self->perlbot->config->value(bot => 'commandprefix') . $commandprefix_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
@@ -440,21 +493,37 @@ sub _process { # _process to stay out of people's way
       } else {
         $self->{lastcontact} = $event->{to}[0];
       }
-      $self->_dispatch($self->{hooks}{$hook}, $user, $texttocallwith);
+      $self->_dispatch($self->{commandprefix_hooks}{$commandprefix_hook}, $user, $texttocallwith);
+    }
+  }
+
+  foreach my $addressed_command_hook (keys(%{$self->{addressed_command_hooks}})) {
+    my $nick = $self->perlbot->curnick;
+    my $regexp = $nick . '(?:,|:|\.|\s)*' . $addressed_command_hook . '(?:\s+|$)';
+    if($text =~ /^${regexp}/i) {
+      my $texttocallwith = $text;
+      $texttocallwith =~ s/${regexp}//i;
+
+      if(($event->type() eq 'msg') || $self->{behaviors}{reply_via_msg}) {
+        $self->{lastcontact} = $event->nick();
+      } else {
+        $self->{lastcontact} = $event->{to}[0];
+      }
+      $self->_dispatch($self->{addressed_command_hooks}{$addressed_command_hook}, $user, $texttocallwith);
     }
   }
 
   # like above, but with a raw regular expression
 
-  foreach my $hookre (keys(%{$self->{hookres}})) {
-    if($text =~ /$hookre/) {
+  foreach my $regular_expression_hook (keys(%{$self->{regular_expression_hooks}})) {
+    if($text =~ /$regular_expression_hook/) {
       if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
         $self->{lastcontact} = $event->nick();
       } else {
         $self->{lastcontact} = $event->{to}[0];
       }
 
-      $self->_dispatch($self->{hookres}{$hookre}, $user, $text);
+      $self->_dispatch($self->{regular_expression_hooks}{$regular_expression_hook}, $user, $text);
     }
   }
   
@@ -477,8 +546,8 @@ sub _process { # _process to stay out of people's way
   # just like the first one, but with an added check to make sure the
   # person generating the event is an admin
 
-  foreach my $admin_hook (keys(%{$self->{admin_hooks}})) {
-    my $regexp = $self->perlbot->config->value(bot => 'commandprefix') . $admin_hook;
+  foreach my $commandprefix_admin_hook (keys(%{$self->{commandprefix_admin_hooks}})) {
+    my $regexp = $self->perlbot->config->value(bot => 'commandprefix') . $commandprefix_admin_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       if($user && $user->is_admin()) {
         my $texttocallwith = $text;
@@ -489,27 +558,61 @@ sub _process { # _process to stay out of people's way
         } else {
           $self->{lastcontact} = $event->{to}[0];
         }
-        $self->_dispatch($self->{admin_hooks}{$admin_hook}, $user, $texttocallwith);
+        $self->_dispatch($self->{commandprefix_admin_hooks}{$commandprefix_admin_hook}, $user, $texttocallwith);
       } else {
         $self->perlbot->msg($event->nick(), 'You are not an admin!');
       }
     }
   }
 
+  foreach my $addressed_command_admin_hook (keys(%{$self->{addressed_command_admin_hooks}})) {
+    my $nick = $self->perlbot->curnick;
+    my $regexp = $nick . '(?:,|:|\.|\s)*' . $addressed_command_admin_hook . '(?:\s+|$)';
+    if($text =~ /^${regexp}/i) {
+      if($user && $user->is_admin()) {
+        my $texttocallwith = $text;
+        $texttocallwith =~ s/${regexp}//i;
+
+        if(($event->type() eq 'msg') || $self->{behaviors}{reply_via_msg}) {
+          $self->{lastcontact} = $event->nick();
+        } else {
+          $self->{lastcontact} = $event->{to}[0];
+        }
+        $self->_dispatch($self->{addressed_command_admin_hooks}{$addressed_command_admin_hook}, $user, $texttocallwith);
+      }
+    }
+  }
+
   # here we just return the event in addition to the other stuff
 
-  foreach my $advanced_hook (keys(%{$self->{advanced_hooks}})) {
-    my $regexp = $self->perlbot->config->value(bot => 'commandprefix') . $advanced_hook;
+  foreach my $commandprefix_advanced_hook (keys(%{$self->{commandprefix_advanced_hooks}})) {
+    my $regexp = $self->perlbot->config->value(bot => 'commandprefix') . $commandprefix_advanced_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
 
-      if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
+      if(($event->type() eq 'msg') || $self->{behaviors}{reply_via_msg}) {
         $self->{lastcontact} = $event->nick();
       } else {
         $self->{lastcontact} = $event->{to}[0];
       }
-      $self->_dispatch($self->{advanced_hooks}{$advanced_hook}, $user, $texttocallwith, $event);
+      $self->_dispatch($self->{commandprefix_advanced_hooks}{$commandprefix_advanced_hook}, $user, $texttocallwith, $event);
+    }
+  }
+
+  foreach my $addressed_command_advanced_hook (keys(%{$self->{addressed_command_advanced_hooks}})) {
+    my $nick = $self->perlbot->curnick;
+    my $regexp = $nick . '(?:,|:|\.|\s)*' . $addressed_command_advanced_hook . '(?:\s+|$)';
+    if($text =~ /^${regexp}/i) {
+      my $texttocallwith = $text;
+      $texttocallwith =~ s/${regexp}//i;
+
+      if(($event->type() eq 'msg') || $self->{behaviors}{reply_via_msg}) {
+        $self->{lastcontact} = $event->nick();
+      } else {
+        $self->{lastcontact} = $event->{to}[0];
+      }
+      $self->_dispatch($self->{addressed_command_advanced_hooks}{$addressed_command_advanced_hook}, $user, $texttocallwith, $event);
     }
   }
 

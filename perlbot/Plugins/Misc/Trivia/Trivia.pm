@@ -57,8 +57,6 @@ sub starttrivia {
   my $user = shift;
   my $text = shift;
 
-  print "starttrivia\n";
-  
   if($self->{state} ne 'idle') {
     $self->reply_error('A trivia game is already in progress!');
     return;
@@ -78,8 +76,6 @@ sub starttrivia {
 sub stoptrivia {
   my $self = shift;
 
-  print "stoptrivia\n";
-
   $self->{state} = 'idle';
   $self->reply('Trivia stopped!');
   $self->endofgame();
@@ -90,8 +86,6 @@ sub answer {
   my $self = shift;
   my $user = shift;
   my $text = shift;
-
-  print "answer\n";
 
   my $nick = $self->{lastnick};
 
@@ -133,8 +127,6 @@ sub answer {
 sub askquestion {
   my $self = shift;
 
-  print "askquestion\n";
-
   if($self->{state} eq 'idle') {
     return;
   }
@@ -164,8 +156,6 @@ sub hint {
   my $self = shift;
   my $question = shift;
 
-  print "hint\n";
-
   if($self->{state} ne 'asked' || $self->{curquestion} != $question) {
     return;
   }
@@ -193,10 +183,6 @@ sub notanswered {
   my $self = shift;
   my $question = shift;
 
-  print "notanswered\n";
-
-  print "curquestion: $self->{curquestion} / passed: $question\n";
-
   if($self->{state} ne 'asked' || $self->{curquestion} != $question) {
     return;
   }
@@ -214,8 +200,6 @@ sub endofgame {
   my $self = shift;
   my $winner;
   my $winnerscore = -1;
-
-  print "endofgame\n";
 
   foreach my $nick (keys(%{$self->{players}})) {
     if($self->{players}{$nick} > $winnerscore) {
