@@ -320,8 +320,34 @@ sub logserver {
                                             nick => $nick,
                                             type => $type });
 
+      my ($year, $month, $day) = (0, 0, 0);
       foreach my $event (@events) {
-        $response .= $self->event_as_html_string($event);
+        my $datestring = "$year.$month.$day";
+        # why can't localtime be sane?
+        my (undef, undef, undef, $event_day, $event_month, $event_year) = localtime($event->time());
+        $event_year += 1900;
+        $event_month = sprintf("%02d", $event_month + 1);
+        $event_day = sprintf("%02d", $event_day);
+
+        my $channel_name = $options->{channel};
+
+        if($datestring ne "$event_year.$event_month.$event_day") {
+          $year = $event_year;
+          $month = $event_month;
+          $day = $event_day;
+          $datestring = "$year.$month.$day";
+
+          $response .= "<p>
+                        <div style=\"
+                          width: 100%;
+                          border-bottom: 1px dotted;
+                          \">
+                        <a style=\"text-decoration: none; color: black; border-bottom: 1px dotted;\" href=\"/logserver/display?channel=$channel_name&year=$year&month=$month&day=$day\">$datestring</a></div><br/>";
+        }
+
+        my $event_string .= $self->event_as_html_string($event);
+        $event_string =~ s/<a name=\"(.*?)\">/<a style=\"text-decoration: none; color: black; border-bottom: 1px dotted;\" href=\"\/logserver\/display\?channel=$channel_name&year=$year&month=$month&day=$day\#$1\">/;
+        $response .= $event_string . "\n";
       }
 
       return $self->std_response($response);
