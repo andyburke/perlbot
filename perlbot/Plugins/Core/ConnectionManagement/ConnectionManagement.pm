@@ -76,7 +76,7 @@ sub cycle_nick {
   my $nickappend = $self->perlbot->config->value(bot => 'nickappend');
   $nickappend ||= '_';
 
-  $self->perlbot->nick($self->perlbot->curnick . $nickappend));
+  $self->perlbot->nick($self->perlbot->curnick . $nickappend);
 }
 
 1;
