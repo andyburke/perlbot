@@ -43,30 +43,44 @@ plugin could do:
 
 All plugins reside in a subdirectory under your perlbot directory (we'll
 refer to the perlbot directory as "perlbot/" here) called "Plugins".  You
-can change this location if you want, by changing the bot.plugindir
-option in the main perlbot configuration file, but we'll always refer to
-it as "Plugins" here.  Under this directory, plugins are classified by
-type.  "Core" plugins are the core bot functionality, you probably should
-leave these alone.  "Basic" plugins are some basic services expected from
-IRC bots.  "Misc" contains miscellaneous plugins.  Other directories may
-contain other types of plugins. Each plugin resides completely in its own
-directory under "perlbot/Plugins/(something)/PluginName", and the directory
-is simply the name of the plugin.  So if you had a plugin called "Foo",
-it would reside in the directory "perlbot/Plugins/Misc/Foo", for example.
+can change this location if you want, by changing the bot.plugindir option
+in the configuration file, but we'll always refer to it as "Plugins" here.
+Under this directory, plugins are classified by type.  "Core" plugins are
+the core bot functionality, you probably should leave these alone.  "Basic"
+plugins are some basic services expected from IRC bots.  "Misc" contains
+miscellaneous plugins.  Other directories may contain other types of
+plugins.  Each plugin resides completely in its own directory under
+"perlbot/Plugins/(something)/PluginName", and the directory is simply the
+name of the plugin.  So if you had a plugin called "Foo", it would reside
+in the directory "perlbot/Plugins/Misc/Foo", for example.
 
 
 
-3) Installing a plugin
-----------------------
+3) Installing and configuring a plugin
+--------------------------------------
 
 A plugin will come as a .tar.gz or possibly .zip archive.  To install it,
-go to your perlbot plugins directory and extract the archive.  The archive
-should expand into a directory which has the same name as the plugin, as
-described above in Section 2. Read the README file in that directory, if
-there is one.  If the README instructs you to modify your main perlbot
-configuration file or the plugin's configuration file, make the necessary
-modifications.  Now just start perlbot (if it's already running, make sure
-to stop it first) and your shiny new plugin will be enabled.
+go to your Plugins/Misc/ directory and extract the archive (note: advanced
+users who understand multiple plugindirs may use another location).  The
+archive should expand into a directory which has the same name as the
+plugin, as described above in Section 2. Read the README file in that
+directory, if there is one.
+
+If the README instructs you to modify your perlbot configuration file, make
+the necessary modifications.  For example, configuration options for a
+plugin called "PluginName" would be contained inside a section in your
+configuration file that looks like this:
+
+  <plugin name="PluginName">
+    (settings go here)
+  </plugin>
+
+If a plugin's README describes a configuration option "foo", then you would
+set "foo" to 10 by putting the line <foo>10</foo> in between the
+<plugin></plugin> tags.
+
+Now just start perlbot (if it's already running, make sure to stop it
+first) and your shiny new plugin will be enabled.
 
 
 
@@ -81,18 +95,21 @@ to prevent the "Foo" plugin from being loaded, you would add the line
 perlbot, but it will not be loaded at the next startup.
 
 
+
 5) Dynamically loading a plugin
 -------------------------------
 
-You can even tell your perlbot to load a plugin that is currently not loaded.
-Simply message the bot "#plugins load PluginName" where PluginName is the name
-of the plugin you want to load.  You can also use "start" instead of "load" if
-that's easier to remember.  If the plugin you loaded is one of the "noload"
-plugins (see section 4) then it will still be prevented from loading the next
-time you start perlbot.  If you want the plugin to automatically start up,
-you'll have to remove the appropriate "noload" line from your config file.
+You can even tell a running perlbot to load a plugin that is currently not
+loaded.  Simply message the bot:
 
-In addition, you can msg the bot "#plugins unload PluginName" (or "stop") to
-dynamically reload a plugin, and "#plugins reload Pluginname" (or "restart")
-to reload the plugin.  Reload is generally useful to plugin developers.  (See
-plugins-authoring.txt if you're interested.)
+  !loadplugin PluginName
+
+If the plugin you loaded is one of the "noload" plugins (see section 4)
+then it will still be prevented from loading the next time you start
+perlbot.  If you want the plugin to automatically start up, you'll have to
+remove the appropriate "noload" line from your config file.
+
+In addition, you can use !unloadplugin and !reloadplugin to dynamically
+unload or reload a plugin.  The !reloadplugin command is generally useful
+to plugin developers, as is !reloadallplugins which reloads *all* plugins.
+(See plugins-authoring.txt if you're interested in developing a plugin.)
