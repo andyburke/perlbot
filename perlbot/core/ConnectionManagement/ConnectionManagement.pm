@@ -1,10 +1,8 @@
 package Perlbot::Plugin::ConnectionManagement;
 
-use Perlbot::Utils;
-use Perlbot;
-use Plugin;
+use Perlbot::Plugin;
 
-@ISA = qw(Plugin);
+@ISA = qw(Perlbot::Plugin);
 
 sub init {
   my $self = shift;

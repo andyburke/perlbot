@@ -1,6 +1,6 @@
-package Chan;
+package Perlbot::Chan;
 
-use Logs;
+use Perlbot::Logs;
 use strict;
 
 
@@ -12,7 +12,7 @@ sub new {
     name     => $chanhash{'name'},
     flags    => $chanhash{'flags'},
     key      => $chanhash{'key'},
-    log      => new Logs($chanhash{'logdir'}, $chanhash{'name'}),
+    log      => new Perlbot::Logs($chanhash{'logdir'}, $chanhash{'name'}),
     logging  => $chanhash{'logging'}, 
     limit    => $chanhash{'limit'},
     ops      => {},

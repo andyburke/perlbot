@@ -1,12 +1,9 @@
 package Perlbot::Plugin::Authentication;
 
-use Plugin;
-@ISA = qw(Plugin);
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
 
 use strict;
-
-use Perlbot;
-use Perlbot::Utils;
 
 sub init {
   my $self = shift;

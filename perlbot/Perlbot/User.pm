@@ -1,6 +1,6 @@
-package User;
+package Perlbot::User;
 
-use Note;
+use Perlbot::Note;
 use strict;
 use Perlbot::Utils;
 

@@ -1,4 +1,4 @@
-package Note;
+package Perlbot::Note;
 
 use strict;
 

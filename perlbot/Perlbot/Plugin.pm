@@ -4,7 +4,7 @@
 # Plugin base class
 #
 
-package Plugin;
+package Perlbot::Plugin;
 
 use Perlbot::Utils;
 

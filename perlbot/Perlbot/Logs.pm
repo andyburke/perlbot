@@ -1,4 +1,4 @@
-package Logs;
+package Perlbot::Logs;
 
 use Perlbot::Utils;
 use strict;

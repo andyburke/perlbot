@@ -4,8 +4,8 @@ use Perlbot::Utils;
 use Net::IRC;
 use Data::Dumper;
 
-use User;
-use Chan;
+use Perlbot::User;
+use Perlbot::Chan;
 
 
 $VERSION = '1.5.1';
@@ -148,10 +148,10 @@ sub process_config {
   foreach my $user (keys(%{$self->config('user')})) {
     print "process_config: loading user '$user'\n" if $DEBUG;
     $self->{users}{$user} =
-      new User($user,
-               $self->config(user => $user => 'flags'),
-               $self->config(user => $user => 'password'),
-               $self->config(user => $user => 'hostmask'));
+      new Perlbot::User($user,
+                        $self->config(user => $user => 'flags'),
+                        $self->config(user => $user => 'password'),
+                        $self->config(user => $user => 'hostmask'));
     foreach my $admin ($self->config(bot => 'admin')) {
       if($admin eq $user) {
         print "process_config:   is an admin\n" if $DEBUG;
@@ -163,11 +163,11 @@ sub process_config {
   foreach my $channel (keys(%{$self->config('channel')})) {
     print "process_config: loading channel '$channel'\n" if $DEBUG;
     my $chan =
-      new Chan(name => normalize_channel($channel),
-               flags => $self->config(channel => $channel => 'flags'),
-               key => $self->config(channel => $channel => 'key'),
-               logging => $self->config(channel => $channel => 'logging'),
-               logdir => $self->config(bot => 'logdir'));
+      new Perlbot::Chan(name => normalize_channel($channel),
+                        flags => $self->config(channel => $channel => 'flags'),
+                        key => $self->config(channel => $channel => 'key'),
+                        logging => $self->config(channel => $channel => 'logging'),
+                        logdir => $self->config(bot => 'logdir'));
 
     foreach my $op (@{$self->config(channel => $channel => 'op')}) {
       $chan->add_op($op) if (exists($self->{users}{$op}));
