@@ -18,6 +18,7 @@ Table of Contents
     3.3.6) hook_advanced
     3.3.7) hook_admin
     3.3.8) hook_event
+    3.3.9) hook_web
 4) Config files
 5) Cleanup
 6) The plugin help facility
@@ -224,6 +225,29 @@ With this, you can hook any irc event you like.  To hook all messages:
   $self->hook_event('msg', \&something);
 
 You just get passed a self ref and the event.
+
+    3.3.9) hook_web
+    ---------------
+
+This allows plugin authors to 'hook' certain 'web events'.  It takes
+as arguments: the hook, a coderef, and a description of what your
+plugin is providing.  The bot will start a webserver on a
+hostname/port combo specified in its config file if any plugins
+request web hooks.  If you were to:
+
+  $self->hook_web('myplugin', \&handle_web, 'My Plugin Stuff');
+
+And a user went to the hostname:port/myplugin, your sub
+'handle_web' would be called with all the path elements following
+/myplugin.  So, if they entered:
+
+  http://somehost.com:9090/mypluing/here/is/more
+
+The sub 'handle_web' would be called with the array:
+
+  ('here', 'is', 'more')
+
+For good examples, see the StatsServer or LogServer plugins.
 
 
 4) Config files
