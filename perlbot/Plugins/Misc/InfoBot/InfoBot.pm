@@ -103,6 +103,11 @@ sub normal {
   my $self = shift;
   my $user = shift;
   my $text = shift;
+  my $curnick = $self->perlbot->curnick;
+
+  if($text =~ /^$curnick/) { # caught by our hook_addressed
+    return;
+  }
 
   my $term = $self->termify($text);
   my $def = $self->lookup($term);
