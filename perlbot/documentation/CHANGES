@@ -8,7 +8,8 @@ CHANGES:
 - NSLookup plugin: Removed, since the nslookup utility is deprecated.
   It has been replaced with the Host plugin (!host).
 - Host plugin added: As mentioned above
-- PriceWatch plugin: Fixed to work with the new HTML on the site
+- PriceWatch plugin: Fixed to work with the new HTML on the site.
+  Note that it now requires HTML::TableExtract.
 
 1.2.1 - documentation fixes and additions; logsearch CGIs
 - Added a readme to the miscscripts/ directory and cleaned up the comments
