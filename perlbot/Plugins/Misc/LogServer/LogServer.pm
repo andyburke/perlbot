@@ -26,7 +26,7 @@ sub init {
 
   $self->{logdir} = $self->perlbot->config->value(bot => 'logdir');
 
-  $self->hook_web('logs', \&logs);
+  $self->hook_web('logs', \&logs, 'Channel Logs');
 }
 
 sub logs {
@@ -36,8 +36,15 @@ sub logs {
 
   my $response = '<html><head><title>Perlbot Logs</title></head><body><center><h1>Perlbot Logs</h1></center><hr>';
   my ($chan, $year, $month, $day) = @args;
-          
-  if($year eq 'search') {
+  my @searchwords;
+
+  if($year =~ /search/) {
+    $year =~ s/^search//i;
+    $year =~ s/\?//;
+    $year =~ s/words=//;
+
+    @searchwords = split(/\+/, $year);
+
     $year = undef;
     $search = 1;
   }          
@@ -177,7 +184,7 @@ sub logs {
   }                               
   
   if($search) {
-    if($request->uri() !~ /\?/) {
+    if(!scalar @searchwords) {
       $response .= "<a href=\"/logs/${chan}/search\">[search]</a> <a href=\"/logs/${chan}\">[${chan}]</a> <a href=\"/logs\">[top]</a><p>";
       $response .= "<h2>Search logs for channel: $chan</h2><p>";
       $response .= "<form method=\"get\" action=\"/logs/${chan}/search\">";
@@ -186,8 +193,6 @@ sub logs {
       $response .= "</form>";
     } else {
       $response .= "<a href=\"/logs/${chan}/search\">[search]</a> <a href=\"/logs/${chan}\">[${chan}]</a> <a href=\"/logs\">[top]</a><p>";
-      my ($tmpwords) = $request->uri() =~ /words\=(.*?)(?:\&|$)/;
-      my @words = split(/\+/, $tmpwords);
       
       if(opendir(DIR, File::Spec->catfile($logdir, $chan))) {
         @tmp = readdir(DIR);
@@ -200,7 +205,7 @@ sub logs {
           @lines = <FILE>;
           close FILE;
           
-          foreach $word (@words) {
+          foreach $word (@searchwords) {
             @lines = grep(/\Q$word\E/i, @lines);  
           }
           
@@ -231,7 +236,7 @@ sub logs {
         }
         
         if(!$results_found) {
-          $response .= '<center><h2>No results found for: ' . join(' ', @words) . '</h2></center>';
+          $response .= '<center><h2>No results found for: ' . join(' ', @searchwords) . '</h2></center>';
         }
         
         closedir(DIR);

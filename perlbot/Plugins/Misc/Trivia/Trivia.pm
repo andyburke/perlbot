@@ -88,6 +88,8 @@ sub init {
   $self->hook('hint', \&requestedhint);
   $self->hook(\&answer);
 
+  $self->hook_web('triviastats', \&webtriviastats, 'Trivia Statistics');
+
 }
 
 sub starttrivia {

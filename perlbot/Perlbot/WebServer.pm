@@ -59,9 +59,8 @@ sub start {
 sub shutdown {
   my $self = shift;
 
-  $self->perlbot->ircobject->removefh($self->{_server});
-
   if($self->{_server}) {
+    $self->perlbot->ircobject->removefh($self->{_server});
     $self->{_server}->close;
     $self->{_server} = undef;
   }
@@ -91,13 +90,18 @@ sub connection {
 
     while (my $request = $connection->get_request) {
       if ($request->method eq 'GET') {
-        my ($garbage, $dispatch, @args) = split('/', $request->url->path());
+
+        my ($garbage, $dispatch, @args) = split('/', $request->uri());
 
         if($dispatch eq '') {
           my $response = "<html><head><title>Perlbot Web Interface</title></head><body><p><ul>";
 
           foreach my $link (keys(%{$self->{hooks}})) {
-            $response .= "<li><a href=\"/$link\">$link</a>";
+            if(defined($self->{hooks}{$link}[1])) {
+              $response .= "<li><a href=\"/$link\">" . $self->{hooks}{$link}[1] . "</a>";
+            } else {
+              $response .= "<li><a href=\"/$link\">$link</a>";
+            }
           }
 
           $response .= "</ul></body></html>";
@@ -106,7 +110,8 @@ sub connection {
                                                        HTTP::Headers->new(Content_Type => 'text/html'),
                                                          $response));
         } elsif(exists($self->{hooks}{$dispatch})) {
-          my $coderef = $self->{hooks}{$dispatch};
+          my $coderef = $self->{hooks}{$dispatch}[0];
+          my $description = $self->{hooks}{$dispatch}[1];
           my ($contenttype, $content) = $coderef->(@args);
           
           if(defined($contenttype) && defined($content)) {
@@ -131,8 +136,9 @@ sub hook {
   my $self = shift;
   my $hook = shift;
   my $coderef = shift;
+  my $description = shift;
 
-  $self->{hooks}{$hook} = $coderef;
+  $self->{hooks}{$hook} = [$coderef, $description];
 }
 
 
