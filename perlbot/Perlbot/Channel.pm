@@ -79,7 +79,13 @@ sub flags {
 
 sub key {
     my $self = shift;
-    $self->config->set(channel => $self->name => 'key', shift) if @_;
+    # if the key is non-empty, or there is a previous key value to overwrite
+    # (even with an empty value)
+    if (@_ and ((defined $_[0] and length $_[0]) or
+        $self->config->exists(channel => $self->name => 'key'))) {
+
+        $self->config->set(channel => $self->name => 'key', shift) if @_;
+    }
     return $self->config->get(channel => $self->name => 'key');
 }
 
