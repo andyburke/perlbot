@@ -50,7 +50,7 @@ sub init {
   $self->{askedtime} = 0;
   
   $self->{fastest} = {};
-  tie %{$self->{fastestoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'fastetsoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+  tie %{$self->{fastestoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'fastestoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
 
   $self->{curquestion} = 1;
@@ -152,6 +152,8 @@ sub answer {
     $self->{correctlyanswered}{$nick}++;
     if(!defined($self->{fastest}{$nick})) {
       $self->{fastest}{$nick} = $timediff;
+    }
+    if(!defined($self->{fastestoverall}{$nick} {
       $self->{fastestoverall}{$nick} = $timediff;
     }
     
