@@ -102,7 +102,7 @@ sub sodoit {
   push(@{$self->{symbols}}, split(' ', $text));
   $self->{chain}->seed(symbols => $self->{symbols});
 
-  open(KNOWLEDGE, File::Spec->catfile($self->{directory}, 'knowledge'));
+  open(KNOWLEDGE, '>' . File::Spec->catfile($self->{directory}, 'knowledge'));
   foreach my $s (@{$self->{symbols}}) {
     print KNOWLEDGE $s;
   }
