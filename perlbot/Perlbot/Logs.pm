@@ -8,14 +8,17 @@ use File::Spec;
 use Time::Local;
 
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(perlbot);
+use fields qw(perlbot channel config index);
 
 sub new {
-  my ($class, $perlbot) = @_;
+  my ($class, $perlbot, $channel, $config, $index) = @_;
 
   my $self = fields::new($class);
 
   $self->perlbot = $perlbot;
+  $self->channel = $channel;
+  $self->config = $config;
+  $self->index = $index;
 
   return $self;
 }
@@ -33,6 +36,21 @@ sub AUTOLOAD : lvalue {
   debug("Got call for field: $field", 15);
 
   $self->{$field};
+}
+
+sub config_get {
+  my $self = shift;
+  my $field = shift;
+
+  return $self->config->get(channel => $self->channel => log => $self->index => $field);
+}
+
+sub config_set {
+  my $self = shift;
+  my $field = shift;
+  my $value = shift;
+
+  return $self->config->set(channel => $self->channel => log => $self->index => $field, $value);
 }
 
 # dummy subs, meant to be overridden
