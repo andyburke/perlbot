@@ -446,7 +446,6 @@ my %command_handlers =
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $channel = to_channel(shift);
      my $user = host_to_user($userhost);
-     my $username = username($user);
 
      if(!$channel) {
        $conn->privmsg($from, "usage: ${commandprefix}op <channel>");
@@ -463,7 +462,7 @@ my %command_handlers =
        return;
      }
 
-     if(!exists($channels{$channel}->ops->{$username})) {
+     if(!exists($channels{$channel}->ops->{$user->name()})) {
        $conn->privmsg($from, "You are not a valid op for channel $channel");
        return;
      } else {
@@ -496,7 +495,6 @@ my %command_handlers =
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $newpassword = shift;
      my $user = host_to_user($userhost);
-     my $username = username($user);
 
      if(!$newpassword) {
        $conn->privmsg($from, "Must specify a new password!");
@@ -508,18 +506,13 @@ my %command_handlers =
        return;
      }
 
-     if(!$username) {
-       $conn->privmsg($from, "error in password: !username, tell your bot admin");
-       return;
-     }
-
      # FIXME:  This will break if someone has #loaded and is working from
      # a different config, basically if we #load a config, we should
      # probably reset $CONFIG
      my $tmpconfig = parse_config($CONFIG);
      my $usertomodify;
      foreach my $tempuser (@{$tmpconfig->{'user'}}) {
-       if($tempuser->{'name'}[0] eq $username) {
+       if($tempuser->{'name'}[0] eq $user->name()) {
          $usertomodify = $tempuser;
          last;
        }
@@ -540,15 +533,9 @@ my %command_handlers =
    hostmasks => sub {
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $user = host_to_user($userhost);
-     my $username = username($user);
 
      if(!$user) {
        $conn->privmsg($from, "Not a known user, try auth first!");
-       return;
-     }
-
-     if(!$username) {
-       $conn->privmsg($from, "error in hostmasks: !username, tell your bot admin");
        return;
      }
 
@@ -558,7 +545,7 @@ my %command_handlers =
      my $tmpconfig = parse_config($CONFIG);
      my $userfromconfig;
      foreach my $tempuser (@{$tmpconfig->{'user'}}) {
-       if($tempuser->{'name'}[0] eq $username) {
+       if($tempuser->{'name'}[0] eq $user->name()) {
          $userfromconfig = $tempuser;
          last;
        }
@@ -578,7 +565,6 @@ my %command_handlers =
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $hostname = shift;
      my $user = host_to_user($userhost);
-     my $username = username($user);
 
      if(!$hostname) {
        $conn->privmsg($from, "Must specify a hostname!");
@@ -587,11 +573,6 @@ my %command_handlers =
 
      if(!$user) {
        $conn->privmsg($from, "Not a known user, try auth first!");
-       return;
-     }
-
-     if(!$username) {
-       $conn->privmsg($from, "error in addhost: !username, tell your bot admin");
        return;
      }
 
@@ -606,7 +587,7 @@ my %command_handlers =
      my $tmpconfig = parse_config($CONFIG);
      my $usertomodify;
      foreach my $tempuser (@{$tmpconfig->{'user'}}) {
-       if($tempuser->{'name'}[0] eq $username) {
+       if($tempuser->{'name'}[0] eq $user->name()) {
          $usertomodify = $tempuser;
          last;
        }
@@ -628,7 +609,6 @@ my %command_handlers =
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $hostname = shift;
      my $user = host_to_user($userhost);
-     my $username = username($user);
 
      if(!$hostname) {
        $conn->privmsg($from, "Must specify a hostname!");
@@ -640,18 +620,13 @@ my %command_handlers =
        return;
      }
 
-     if(!$username) {
-       $conn->privmsg($from, "error in delhost: !username, tell your bot admin");
-       return;
-     }
-
      # FIXME:  This will break if someone has #loaded and is working from
      # a different config, basically if we #load a config, we should
      # probably reset $CONFIG
      my $tmpconfig = parse_config($CONFIG);
      my $usertomodify;
      foreach my $tempuser (@{$tmpconfig->{'user'}}) {
-       if($tempuser->{'name'}[0] eq $username) {
+       if($tempuser->{'name'}[0] eq $user->name()) {
          $usertomodify = $tempuser;
          last;
        }

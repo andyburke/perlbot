@@ -11,6 +11,7 @@ sub new {
     my $curnick = $nick; #for now...
 
     my $self = {
+	name	 => $nick,
 	nick     => $nick,
 	curnick  => $curnick,
 	curchans => [],
@@ -38,6 +39,12 @@ sub new {
     bless $self, $class;
     $self->hostmasks(@_);
     return $self;
+}
+
+sub name {
+  my $self = shift;
+  $self->{name} = shift if @_;
+  return $self->{name};
 }
 
 sub nick {

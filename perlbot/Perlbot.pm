@@ -226,7 +226,7 @@ sub host_to_user {
   my @tempusers;
 
   foreach my $user (values(%users)) {
-    foreach my $testmask (@{$_->{hostmasks}}) {
+    foreach my $testmask (@{$user->{hostmasks}}) {
       push(@tempusers, $user) if ($realmask =~ /^$testmask$/i);
     }
   }
@@ -236,7 +236,6 @@ sub host_to_user {
   } elsif(@tempusers > 1) {
     if($debug) { print "Multiple users matched $realmask !\n"; }
   }
-
   return undef;
 }
 
