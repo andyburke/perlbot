@@ -26,7 +26,7 @@ sub load_plugin {
   my ($self, $user, $text) = @_;
 
   my $plugin_name = $self->validate_input($text) or return;
-
+  $self->perlbot->find_plugins();
   if ($self->perlbot->load_plugin($plugin_name)) {
     $self->reply("Successfully loaded plugin '$plugin_name'");
   } else {
