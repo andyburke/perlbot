@@ -14,6 +14,8 @@ package Perlbot::Plugin::LogServer;
 use Perlbot::Plugin;
 @ISA = qw(Perlbot::Plugin);
 
+use Perlbot::Utils;
+
 use HTTP::Daemon;
 use HTTP::Response;
 use HTTP::Headers;
@@ -38,7 +40,14 @@ sub logserver {
   my $logdir = $self->{logdir};
 
   my $server = HTTP::Daemon->new(LocalAddr => $self->{config}{server}[0]{hostname}[0],
-                                 LocalPort => $self->{config}{server}[0]{port}[0]) || die;
+                                 LocalPort => $self->{config}{server}[0]{port}[0]);
+
+  if(!$server) {
+    if($DEBUG) {
+      print "Could not start LogServer: $!\n";
+    }
+    return;
+  }
 
   while (my $connection = $server->accept()) {
     my $pid;

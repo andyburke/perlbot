@@ -43,8 +43,12 @@ sub start {
 
   $self->read_config or die "Couldn't read $self->{configfile}!!\n";
   $self->process_config;
-
-  $self->connect or die "Couldn't connect to any servers!!\n";
+  
+  my $i = 0;
+  while(!$self->connect($i)) {
+    $i++;
+    $i = $i % $self->config('server');
+  }
 
   $self->load_all_plugins;
 
@@ -187,44 +191,57 @@ sub process_config {
 
 sub connect {
   my $self = shift;
+  my $index = shift;
+  $index ||= 0;
 
   my $server;
   my $port;
   my $nick;
   my $ircname;
 
-  $self->{ircobject} = new Net::IRC;
-  $self->{ircobject}{_debug} = 1 if $DEBUG >= 10;
+  my $handlers;
 
-  my $i = 0;
-  while(!$self->{ircconn}) {
+  if(!$self->{ircobject}) {
+    $self->{ircobject} = new Net::IRC;
+    $self->{ircobject}{_debug} = 1 if $DEBUG >= 10;
+  }
 
-    $server = $self->config(server => $i => 'address'); # or die ("Server $i has no address specified\n");
-    $port = $self->config(server => $i => 'port'); $port ||= 6667;
+  if($self->{ircconn}) { # had a connection
+    $handlers = $self->{ircconn}{_handler};
+  }
+
+  if($self->config(server => $index)) {
+    $server = $self->config(server => $index => 'address'); # or die ("Server $i has no address specified\n");
+    $port = $self->config(server => $index => 'port'); $port ||= 6667;
     $nick = $self->config(bot => 'nick'); $nick ||= 'perlbot';
     $ircname = $self->config(bot => 'ircname'); $ircname ||= 'imabot';
-    $password = $self->config(server => $i => 'password') ; $password ||= '';
+    $password = $self->config(server => $index => 'password') ; $password ||= '';
 
     print "connect: attempting to connect to server: $server\n" if $DEBUG;
 
     $self->{ircconn} =
-      $self->{ircobject}->newconn(Nick => $nick,
-                                  Server => $server,
-                                  Port => $port,
-                                  Password => $password,
-                                  Ircname => $ircname);
-    $i++;
+        $self->{ircobject}->newconn(Nick => $nick,
+                                    Server => $server,
+                                    Port => $port,
+                                    Password => $password,
+                                    Ircname => $ircname);
   }
 
-  print "connect: connected to server: $server\n" if $DEBUG;
+  if($self->{ircconn} && $self->{ircconn}->connected()) {
+    print "connect: connected to server: $server\n" if $DEBUG;
 
-  $self->{curnick} = $nick;
+    if($handlers) { $self->{ircconn}{_handler} = $handlers; }
 
-  foreach my $hostmask (@{$self->{config}{bot}[0]{ignore}}) {
-    $self->{ircconn}->ignore('all', $hostmask);
+    $self->{curnick} = $nick;
+
+    foreach my $hostmask (@{$self->{config}{bot}[0]{ignore}}) {
+      $self->{ircconn}->ignore('all', $hostmask);
+    }
+
+    return $self->{ircconn};
+  } else {
+    return undef;
   }
-
-  return $self->{ircconn};
 }
 
 sub plugins {

@@ -54,33 +54,17 @@ sub reconnect {
     print "---End dump...\n";
   }
 
-  while(!$self->{perlbot}{ircconn}->connected()) {
-    for($i = 0; $i<$self->{perlbot}->config('server'); $i++) {
-      if($self->{perlbot}->config(server => $i => 'address') eq $old_server) { $i++; last; }
-      if($i == $self->{perlbot}->config('server') - 1) { $i = 0; $old_server = ''; last; }
-    }
+  while($i < $self->{perlbot}->config('server')
+        && $self->{perlbot}->config('server' => $i => 'address') ne $old_server) {
+    print "looking at server: " . $self->{perlbot}->config('server' => $i => 'address') . "\n";
+    $i++;
+  }
 
-    for(; $i < $self->{perlbot}->config('server'); $i++) {
-      $server = join (':', $server, $self->{perlbot}->config(server => $i => 'password') ) if (length($self->{perlbot}->config(server => $i => 'password')));
-      my $address = $self->{perlbot}->config(server => $i => 'address');
-      my $port = $self->{perlbot}->config(server => $i => 'port');
-      $address or last;
-      $port ||= 6667;
+  $i++; #look at the server AFTER the old one
 
-      $server = join(':', $address, $port);
-      print "trying $server\n" if $debug;
-      $self->{perlbot}{ircconn}->server($server);
-      $self->{perlbot}{ircconn}->connect();
-      if($self->{perlbot}{ircconn}->connected()) {
-        return;
-      }
-      if($i == $self->{perlbot}->config('server') - 1) { last; }
-    }
-
-    print "Sleeping for 10 seconds...\n" if $debug;
-    sleep(10);
-    $i = 0;
-    $old_server = '';
+  while(!$self->{perlbot}->connect($i)) {
+    $i++;
+    $i = $i % $self->{perlbot}->config('server');
   }
 }
 
@@ -92,3 +76,4 @@ sub cycle_nick {
 }
 
 1;
+
