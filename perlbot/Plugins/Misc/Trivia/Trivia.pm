@@ -49,7 +49,7 @@ sub init {
 
   $self->hook('trivia', \&starttrivia);
   $self->hook('stoptrivia', \&stoptrivia);
-  $self->hook('topten', \&topten);
+  $self->hook('top', \&top);
   $self->hook(\&answer);
 
 }
@@ -236,15 +236,21 @@ sub endofgame {
   $self->reply("Trivia Winner for this round is: $winner with $winnerscore wins and a fastest time of $fastest!");
 }
 
-sub topten {
+sub top {
   my $self = shift;
-  
+  my $user = shift;
+  my $text = shift;
+
+  my ($num) = $text =~ /(\d+)/;
+
+  if($num > 10) { $num = 10; }
+
   my @ranks = sort { $self->{playersoverall}{$b} <=> $self->{playersoverall}{$a} } keys(%{$self->{playersoverall}});
   my $rank = 1;
   foreach my $name (@ranks) {
     $self->reply("$rank -- $name (Wins: $self->{playersoverall}{$name})");
     $rank++;
-    if($rank >= 10) { last; }
+    if($rank >= $num + 1) { last; }
   }
 }
 
