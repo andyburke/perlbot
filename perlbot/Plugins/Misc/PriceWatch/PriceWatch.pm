@@ -32,6 +32,7 @@ sub pricewatch {
     
   my $url = 'http://queen.pricewatch.com/search/search.idq?qc=';
   $url .= join('+AND+', @words);
+  $url .= "+AND+%40totalcost%3E0";
 
   my $html = get($url);
   if (!$html) {
@@ -42,10 +43,13 @@ sub pricewatch {
   $html =~ s/&reg\;//g;
   $html =~ s/&amp\;/&/g;
 
-  my ($price, $brand, $product, $description, $shipping);
+  my ($price, $brand, $product, $description);
   my ($te, $row);
 
-  $te = new HTML::TableExtract( headers => [qw(Brand Product Description Price Ship)] );
+  $te = new HTML::TableExtract( headers => ['Brand',
+                                            'Product',
+                                            'Description',
+                                            'MaxTotalCost'] );
   $te->parse($html);
   $row = ($te->rows)[0];
 
@@ -56,13 +60,11 @@ sub pricewatch {
   ($price) = $$row[3] =~ /(\$.*?\d+)/;
   $price =~ s/\s+//g;
 
-  ($shipping) = $$row[4];
-
   if ($brand && $product && $price) {
     $brand =~ s/\n//g;
     $product =~ s/\n//g;
     $price =~ s/\n//g;
-    $self->reply("$price / $shipping / $brand / $product / $description");
+    $self->reply("$price / $brand / $product / $description");
   } else {
     $self->reply_error("No pricewatch matches found for: $text");
   }
