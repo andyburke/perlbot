@@ -81,6 +81,15 @@ sub sodoit {
     my @response = $self->{chain}->spew(complete => $text, length => $length);
     $reply = "@response";
     chomp $reply;
+    my $endchar;
+    if(rand(10) % 3 == 0) {
+      $endchar = '!';
+    } elsif(rand(10) % 4 == 0) {
+      $endchar = '?';
+    } else {
+      $endchar = '.';
+    }
+    $reply = $reply . $endchar;
     $reply = $self->babel($reply);
 
     if(int(rand(50)) == 25) {
@@ -108,6 +117,15 @@ sub sodoit {
     my @response = $self->{chain}->spew(complete => $text, length => $length);
     $reply = "@response";
     chomp $reply;
+    my $endchar;
+    if(rand(10) % 3 == 0) {
+      $endchar = '!';
+    } elsif(rand(10) % 4 == 0) {
+      $endchar = '?';
+    } else {
+      $endchar = '.';
+    }
+    $reply = $reply . $endchar;
     $reply = $self->babel($reply);
     my $timediff = time() - $starttime;
     
