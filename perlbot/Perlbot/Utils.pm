@@ -23,11 +23,13 @@ require Exporter;
              &debug
           );
 
-
-if($ENV{PERLBOT_DEBUG} !~ /\D+/) {
-  $DEBUG = $ENV{PERLBOT_DEBUG};
-} else {
-  warn("WARNING: Your PERLBOT_DEBUG variable was non-numerical, debugging not enabled!!\n\n");
+my $DEBUG;
+if(defined($ENV{PERLBOT_DEBUG})) {
+  if($ENV{PERLBOT_DEBUG} !~ /\D+/) {
+    $DEBUG = $ENV{PERLBOT_DEBUG};
+  } else {
+    warn("WARNING: Your PERLBOT_DEBUG variable was non-numerical, debugging not enabled!!\n\n");
+  }
 }
 $DEBUG ||= 0;
 
@@ -36,9 +38,13 @@ sub debug {
   my $level = shift;
   $level ||= 1;
 
-  if($level >= $DEBUG) {
+  if($DEBUG >= $level) {
+    if(!ref($ref)) { # we didn't get a reference, we assume it's a string
+      print $ref . "\n";
+      return;
+    }
     if(ref($ref) eq 'SCALAR') {
-      print $msg . "\n";
+      print $ref . "\n";
       return;
     }
     if(ref($ref) eq 'CODE') {

@@ -6,7 +6,7 @@ use Perlbot::Plugin;
 sub init {
   my $self = shift;
 
-  $self->want_public(0);
+  $self->want_reply_via_msg(1);
 
   $self->hook('help', \&gethelp);
 }

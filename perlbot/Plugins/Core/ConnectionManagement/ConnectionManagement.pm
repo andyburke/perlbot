@@ -1,8 +1,9 @@
 package Perlbot::Plugin::ConnectionManagement;
 
 use Perlbot::Plugin;
-
 @ISA = qw(Perlbot::Plugin);
+
+use Perlbot::Utils;
 
 sub init {
   my $self = shift;
@@ -27,10 +28,10 @@ sub join_channels {
   my $self = shift;
   my $event = shift;
 
-  print "joining channels\n" if $DEBUG;
+  debug("joining channels");
 
   foreach my $channel (values(%{$self->perlbot->channels})) {
-    print "Joining ".$channel->name."\n" if $DEBUG;
+    debug("Joining " . $channel->name);
     $self->perlbot->join($channel);
     $self->perlbot->whois($channel);
   }
@@ -48,15 +49,13 @@ sub reconnect {
     exit;
   }
 
-  if ($DEBUG) {
-    print "Disconnected from: $old_server\n";
-    $event->dump();
-    print "---End dump...\n";
-  }
+  debug("Disconnected from: $old_server");
+  debug($event->dump());
+  debug("---End dump...");
 
   while ($i < @{$self->perlbot->config->value('server')}
          && $self->perlbot->config->value('server' => $i => 'address') ne $old_server) {
-    print "looking at server: " . $self->perlbot->config->value('server' => $i => 'address') . "\n" if $DEBUG;
+    debug("looking at server: " . $self->perlbot->config->value('server' => $i => 'address'));
     $i++;
   }
 

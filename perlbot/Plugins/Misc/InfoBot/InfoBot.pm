@@ -73,11 +73,10 @@ sub load_db {
     }
   }
 
-  if($DEBUG) {
-    print "InfoBot loading $db...\n";
-    print "  $good/$total good entries found\n";
-    print "  $collisions collisions\n";
-  }
+  debug("InfoBot loading $db...", 2);
+  debug("  $good/$total good entries found", 2);
+  debug("  $collisions collisions", 2);
+
   close DBFILE;
 }
 

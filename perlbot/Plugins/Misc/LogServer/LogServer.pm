@@ -42,9 +42,7 @@ sub logserver {
                                  LocalPort => $self->config->value(server => 'port'));
 
   if(!$server) {
-    if($DEBUG) {
-      print "Could not start LogServer: $!\n";
-    }
+    debug("Could not start LogServer: $!");
     return;
   }
 

@@ -256,8 +256,7 @@ sub connect {
   # make an ircobject if one doesn't exist yet
   if (!$self->{ircobject}) {
     $self->{ircobject} = new Net::IRC;
-#    $self->{ircobject}{_debug} = 1 if $DEBUG >= 10;
-    # FIX ME
+    debug( sub { $self->{ircobject}{_debug} = 1; }, 10);
   }
 
   # if we already have a connection, back up our handlers
@@ -281,7 +280,7 @@ sub connect {
     $nick ||= 'perlbot';
     $ircname ||= 'imabot';
 
-    print "connect: attempting to connect to server: $server\n" if $DEBUG;
+    debug("connect: attempting to connect to server: $server");
 
     $self->{ircconn} =
         $self->{ircobject}->newconn(Nick => $nick,
@@ -299,7 +298,7 @@ sub connect {
   # else fail
 
   if ($self->{ircconn} && $self->{ircconn}->connected()) {
-    print "connect: connected to server: $server\n" if $DEBUG;
+    debug("connect: connected to server: $server");
 
     if ($self->{handlers_backup}) {
       $self->{ircconn}{_handler} = $self->{handlers_backup};
@@ -336,7 +335,7 @@ sub load_all_plugins {
 
   foreach my $plugin (@plugins_found) {
     if (grep {lc($plugin) eq lc($_)} @noload) {
-      print "load_all_plugins: Skipping '$plugin': noload\n" if $DEBUG;
+      debug("load_all_plugins: Skipping '$plugin': noload");
     } else {
       push @plugins, $plugin;
     }
@@ -382,18 +381,18 @@ sub find_plugins {
       # ignore non-existent plugin subdirs
       my $dir = File::Spec->catdir($plugindir, $plugin);
       if (! -d $dir) {
-        print "find_plugins: Ignoring '$plugin': $dir is not a directory\n" if $DEBUG;
+        debug("find_plugins: Ignoring '$plugin': $dir is not a directory");
         next;
       }
       # ignore subdirs without a Plugin.pm
       my $module = File::Spec->catfile($dir, "${plugin}.pm");
       if (! -f $module) {
-        print "find_plugins: Ignoring '$plugin': no ${plugin}.pm in $dir\n" if $DEBUG;
+        debug("find_plugins: Ignoring '$plugin': no ${plugin}.pm in $dir");
         next;
       }
 
       # success!
-      print "find_plugins: Found '$plugin'\n" if $DEBUG;
+      debug("find_plugins: Found '$plugin'");
       push @found_plugins, $plugin;
       push @INC, $dir;
     }
@@ -412,11 +411,11 @@ sub find_plugins {
 sub load_plugin {
   my ($self, $plugin) = @_;
 
-  print "load_plugin: loading plugin: $plugin\n" if $DEBUG;
+  debug("load_plugin: loading plugin: $plugin");
   eval "local \$SIG{__DIE__}='DEFAULT'; require ${plugin}";  # try to import the plugin's package
   # check for module load error
   if ($@) {
-    print $@ if $DEBUG;
+    debug($@);
     return 0;
   }
   # determine path to plugin subdirectory
@@ -426,7 +425,7 @@ sub load_plugin {
   my $pluginref = eval "local \$SIG{__DIE__}='DEFAULT'; new Perlbot::Plugin::${plugin}(\$self, \$pluginpath)";
   # check for constructor error
   if ($@) {
-    print $@ if $DEBUG;
+    debug($@);
     return 0;
   }
 
@@ -444,10 +443,10 @@ sub unload_plugin {
   my ($self, $plugin) = @_;
   my ($pluginref);
 
-  print "unload_plugin: unloading plugin: $plugin\n" if $DEBUG;
+  debug("unload_plugin: unloading plugin: $plugin");
   ($pluginref) = grep {$plugin eq $_->name} @{$self->plugins};
   if (!$pluginref) {
-    print "unload_plugin: plugin '$plugin' not loaded!\n" if $DEBUG;
+    debug("unload_plugin: plugin '$plugin' not loaded!");
     return 0;
   }
 
@@ -517,17 +516,17 @@ sub event_multiplexer {
   #   else
   #     do nothing
 
-  print "event_multiplexer: Got event '".$event->type."'\n" if $DEBUG >= 3;
+  debug("event_multiplexer: Got event '".$event->type, 3);
   foreach my $plugin (keys(%{$self->{handlers}{$event->type}})) {
     if (exists($self->{handlers}{$event->type}{$plugin})) {
-      print "  -> dispatching to '$plugin'\n" if $DEBUG >= 3;
+      debug("  -> dispatching to '$plugin'", 3);
       my $handler = $self->{handlers}{$event->type}{$plugin};
       &$handler($event, $user, $text);
     } else {
       # If we get here, we must have already processed an unload
       # request for this plugin in the core handler, so we need
       # to be careful to skip it here!
-      print "  -> '$plugin' unloaded -- skipping\n" if $DEBUG >= 3;
+      debug("  -> '$plugin' unloaded -- skipping", 3);
     }
   }
 
@@ -580,10 +579,10 @@ sub get_user {
   if (@tempusers == 1) {
     return $tempusers[0];
   } elsif (@tempusers > 1) {
-    if ($DEBUG) {
-      print "Multiple users matched $hostmask !\n"; print Dumper(@tempusers);
-    }
+    debug("Multiple users matched $hostmask !");
+    debug(Dumper(@tempusers));
   }
+
   return undef;
 
 }
@@ -596,11 +595,11 @@ sub process_queue {
   # be called again in a bit.  otherwise, just set the empty_queue flag.
   my $params = shift(@{$self->{msg_queue}});
   if ($params) {
-    print "process_queue: sending head of queue: $params->[0] / $params->[1]\n" if $DEBUG >= 3;
+    debug("process_queue: sending head of queue: $params->[0] / $params->[1]", 3);
     $self->{ircconn}->privmsg(@$params);
-    print "==>", $self->{ircconn}->schedule(1, \&process_queue, $self), "\n";
+    debug("==>" . $self->{ircconn}->schedule(1, \&process_queue, $self), 3);
   } else {
-    print "process_queue: queue now empty\n" if $DEBUG >= 3;
+    debug("process_queue: queue now empty", 3);
     $self->{empty_queue} = 1;
   }
 }
@@ -620,9 +619,9 @@ sub msg {
 #    $self->process_queue;
 #    $self->{empty_queue} = 0;
 #  }
-
+  
   $self->{ircconn}->privmsg($target, $text);
-
+  
 }
 
 # joins a channel

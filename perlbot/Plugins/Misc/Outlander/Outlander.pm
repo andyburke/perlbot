@@ -42,8 +42,6 @@ sub babel {
   my $user = shift;
   my $text = shift;
 
-  if($DEBUG) { print "Babelizing: $text\n"; }
-
   my $obj = new WWW::Babelfish( 'agent' => 'Perlbot/$VERSION');
 
   my @languages = ('German', 'French'); # $obj->languages();
