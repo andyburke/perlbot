@@ -140,12 +140,19 @@ my %config_handlers =
        $crashlog = 'crashlog.txt';
      }
 
+     # prevent display of warn()'s
+     local $SIG{__WARN__} = {};
+
      # get our command prefix
-     $commandprefix = $_[0]->{commandprefixr}[0];
+     $commandprefix = $_[0]->{commandprefix}[0];
+     eval "/$commandprefix/";
+     die "Invalid bot.commandprefix.  Try escaping punctuation characters." if $@;
      $commandprefix ||= '#';
 
      # get our plugin prefix
      $pluginprefix = $_[0]->{pluginprefix}[0];
+     eval "/$pluginprefix/";
+     die "Invalid bot.pluginprefix.  Try escaping punctuation characters." if $@;
      $pluginprefix ||= '!';
    }
    );
