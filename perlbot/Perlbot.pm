@@ -16,7 +16,7 @@ use Perlbot::Logs;
 our $VERSION = '1.9.7';
 our $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
 
-use fields qw(starttime configfile config ircobject ircconn msg_queue webserver plugins handlers handlers_backup users channels logs curnick masterpid);
+use fields qw(starttime configfile config ircobject ircconn webserver plugins users channels logs curnick masterpid);
 
 sub new {
   my $class = shift;
@@ -29,11 +29,8 @@ sub new {
   $self->config = undef;
   $self->ircobject = undef;
   $self->ircconn = undef;
-  $self->msg_queue = [];
   $self->webserver = undef;
   $self->plugins = [];
-  $self->handlers = {};
-  $self->handlers_backup = undef;
   $self->users = {};
   $self->channels = {};
   $self->logs = new Perlbot::Logs($self);
@@ -121,9 +118,6 @@ sub shutdown {
   my ($self, $quitmsg, $is_crash) = @_;
 
   debug("Shutting down...") if $$ == $self->masterpid;
-
-  # make sure no handlers are triggered while we do this
-  $self->handlers = {};  
 
   debug("Flushing output queue (this may take a moment)...");
   $self->ircobject->flush_output_queue();
@@ -260,17 +254,10 @@ sub connect {
   my $ssl;
   my $pacing;
 
-  my $handlers;
-
   # make an ircobject if one doesn't exist yet
   if (!$self->ircobject) {
     $self->ircobject = new Net::IRC;
     debug( sub { $self->ircobject->{_debug} = 1; }, 10);
-  }
-
-  # if we already have a connection, back up our handlers
-  if ($self->ircconn) { # had a connection
-    $self->handlers_backup = $self->ircconn->{_handler};
   }
 
   # if the server we've been given exists
@@ -320,20 +307,14 @@ sub connect {
   }
   
   # if our connection exists and it's actually connected
-  #   if we had a backup of our handlers, jam it into this ircconn
   #   set our curnick appropriately
   #   ignore any hostmasks specified in the config
+  #   add our default handler
   #   return the connection
   # else fail
 
   if ($self->ircconn && $self->ircconn->connected()) {
     debug("connected to server: $server");
-
-    if(defined($self->handlers_backup)) {
-      debug("Reusing old handlers for new connection!", 3);
-      $self->ircconn->{_handler} = $self->handlers_backup;
-      $self->handlers_backup = undef;
-    }
 
     $self->curnick = $nick;
 
@@ -342,6 +323,8 @@ sub connect {
         $self->ircconn->ignore('all', $hostmask);
       }
     }
+
+    $self->ircconn->add_default_handler(sub { $self->event_multiplexer(@_) });
 
     return $self->ircconn;
   } else {
@@ -503,7 +486,6 @@ sub unload_plugin {
   # or the mailing list.  Until then, this seems to work OK.
   # (does it leak memory???)
   undef $pluginref;                     # heh, a rhyme
-  $self->remove_all_handlers($plugin);  # unhook it from the bot's multiplexer
   $self->webserver_remove_all_handlers($plugin); # unhook it from the webserver
   eval "no ${plugin}";                  # first step of unloading (necessary?)
   Symbol::delete_package("Perlbot::Plugin::${plugin}"); # delete all symbols
@@ -523,69 +505,6 @@ sub reload_plugin {
   return 1;
 }
 
-
-# This works just like $conn->add_handler but you need to pass the
-# plugin name too
-# params:
-#   1) event type (string or numeric)
-#   2) a code ref to be executed
-#   3) the name of the plugin that the code ref came from
-sub add_handler {
-  my $self = shift;
-  my ($event, $coderef, $plugin) = @_;
-
-  # if no one has hooked this event yet
-  #   make sure we have a hashref for the event type in the bot object
-  #   add a hook for this event type to the ircconn, point it to our multiplexer
-
-  unless ($self->handlers->{$event}) {
-    debug("    event:$event plugin:$plugin", 4);
-    $self->handlers->{$event} = {};
-    $self->ircconn->add_handler($event, sub { $self->event_multiplexer(@_) });
-  }
-
-  # add this handler to the bot's internal handlers
-
-  $self->handlers->{$event}{$plugin} = $coderef;
-}
-
-# Removes the handler for one event type for a given plugin
-# params:
-#   1) event type (same as param 1 to add_handler)
-#   2) plugin name
-sub remove_handler {
-  my $self = shift;
-  my ($event, $plugin) = @_;
-
-  # if the bot knows about at least one handler for this event type
-  #   if the given plugin has actually registered a callback for this type
-  #     delete that callback
-
-  debug("    event:$event plugin:$plugin", 4);
-  if ($self->handlers->{$event}) {
-    if ($self->handlers->{$event}{$plugin}) {
-      delete $self->handlers->{$event}{$plugin};
-    }
-  }
-  # Net::IRC doesn't provide handler removal functionality, so there's
-  # nothing more to do here.
-}
-
-# Removes all handlers for a given plugin
-# params:
-#   1) plugin name
-sub remove_all_handlers {
-  my $self = shift;
-  my ($plugin) = @_;
-
-  # Iterate over every event we're handling, and try to remove $plugin's
-  # handler for that event.  If $plugin doesn't handle an event,
-  # remove_handler just silently fails.
-  foreach my $event (keys %{$self->handlers}) {
-    $self->remove_handler($event, $plugin);
-  }
-}
-
 sub event_multiplexer {
   my $self = shift;
   my $conn = shift;
@@ -593,25 +512,13 @@ sub event_multiplexer {
   my $text = $event->{args}[0];
   my $user = $self->get_user($event->{from});
 
-  # foreach plugin that handles this type of event
-  #   if we really have a coderef for this plugin/event type
-  #     get the coderef
-  #     call the coderef with the event, a user we looked up and the event text
-  #   else
-  #     do nothing
+  # foreach plugin
+  #   dispatch the event to it
 
   debug("Got event '" . $event->type . "'", 4);
-  foreach my $plugin (keys(%{$self->handlers->{$event->type}})) {
-    if (exists($self->handlers->{$event->type}{$plugin})) {
-      debug("  -> dispatching to '$plugin'", 5);
-      my $handler = $self->handlers->{$event->type}{$plugin};
-      &$handler($event, $user, $text);
-    } else {
-      # If we get here, we must have already processed an unload
-      # request for this plugin in the core handler, so we need
-      # to be careful to skip it here!
-      debug("  -> '$plugin' unloaded -- skipping", 5);
-    }
+  foreach my $plugin (@{$self->plugins}) {
+    debug("  -> dispatching to '$plugin'", 5);
+    $plugin->_handle_event($event, $user, $text);
   }
 
 }
@@ -739,6 +646,7 @@ sub remove_admin {
 }
 
 
+#######################################
 # some utility functions
 
 sub uptime {
