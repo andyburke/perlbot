@@ -59,7 +59,7 @@ sub new {
           target     varchar          ,
           userhost   varchar          ,
           text       varchar
-        );
+        )
 
       ";
     } elsif($self->config_get('dbtype') eq 'mysql') {
@@ -74,7 +74,7 @@ sub new {
           target    varchar(100)         ,
           userhost  varchar(100)         ,
           text      text
-        );
+        )
 
       };
     } # else...
@@ -160,7 +160,7 @@ sub search {
       $querystring .= " text LIKE '$term' AND";
     }
   }
-  $querystring .= " eventtime >= $initialdate AND eventtime <= $finaldate ORDER BY eventtime;";
+  $querystring .= " eventtime >= $initialdate AND eventtime <= $finaldate ORDER BY eventtime";
   
   my $query = $self->dbh->prepare($querystring);
   $query->execute or
@@ -195,7 +195,7 @@ sub search {
 
 sub initial_entry_time {
   my $self = shift;
-  my $querystring = "SELECT MIN(eventtime) FROM logs WHERE channel='" . $self->channel . "';";
+  my $querystring = "SELECT MIN(eventtime) FROM logs WHERE channel='" . $self->channel."'";
 
   my $query = $self->dbh->prepare($querystring);
   if(!$query->execute()) {
@@ -209,7 +209,7 @@ sub initial_entry_time {
 
 sub final_entry_time {
   my $self = shift;
-  my $querystring = "SELECT MAX(eventtime) FROM logs WHERE channel='" . $self->channel . "';";
+  my $querystring = "SELECT MAX(eventtime) FROM logs WHERE channel='" . $self->channel."'";
 
   my $query = $self->dbh->prepare($querystring);
   if(!$query->execute()) {
