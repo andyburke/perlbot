@@ -69,7 +69,11 @@ sub password {
   my $password = shift;
 
   if(defined($password)) {
-    $self->config->value(user => $self->name => 'password') = md5_base64($password);
+    if(!defined($self->config->value(user => $self->name => 'password'))) {
+      $self->config->{_config}->{user}->{$self->name}->{password} = md5_base64($password);
+    } else {
+      $self->config->value(user => $self->name => 'password') = md5_base64($password);
+    }
   }
 
   return $self->config->value(user => $self->name => 'password');
