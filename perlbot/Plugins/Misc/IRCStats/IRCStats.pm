@@ -65,7 +65,7 @@ sub ircstats {
     
     $response .= "<p>Channel statistics for #$chan";
     
-    $response .= "<p><center><table width=80% height=150 border=0><tr><th colspan=24>Hourly Traffic</th></tr>";
+    $response .= "<p><center><table width=80% height=220 border=0><tr><th colspan=24>Hourly Traffic</th></tr>";
     
     $response .= "<tr>";
     
@@ -79,7 +79,7 @@ sub ircstats {
       if(exists($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)})) {
         $percentage = sprintf("%0.0f", 100 * ($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)} / $totallines));
       }
-      $response .= "<td width=4% valign=bottom align=middle><img src=\"/ircstats/pixel.jpg\" height=$percentage width=12></td>";
+      $response .= "<td width=4% valign=bottom align=middle><img src=\"/ircstats/pixel.jpg\" height=" . (2 * $percentage) . " width=12></td>";
     }
 
     $response .= "</tr><tr>";
