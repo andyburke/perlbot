@@ -53,6 +53,26 @@ sub new {
   return $self;
 }
 
+sub property {
+  my ($self, $property, $param) = @_;
+  if($param) { $self->{$property} = $param; }
+  return $self->{$property};
+}
+
+sub name {
+  my ($self, $newname) = @_;
+  return $self->property('name', $newname);
+}
+
+sub perlbot {
+  my ($self, $perlbot) = @_;
+  return $self->property('perlbot', $perlbot);
+}
+
+sub directory {
+  my ($self, $directory) = @_;
+  return $self->property('directory', $directory);
+}
 
 # params:
 #   1: behavior name
@@ -485,7 +505,7 @@ sub _dispatch {
   #   just send the event without forking
 
   if ($self->want_fork) {
-
+    print "FORKING IN " . $self->name . "\n";
     if (!defined($pid = fork)) {
       $self->reply_error("fork error in $self->{name} plugin");
       return;

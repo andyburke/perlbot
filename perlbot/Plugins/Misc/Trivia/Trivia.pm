@@ -18,8 +18,6 @@ sub init {
 
   $self->{questions} = {};
 
-  print "file: " . File::Spec->catfile($self->{directory}, 'trivia') . "\n";
-
   open(TRIVIA, File::Spec->catfile($self->{directory}, 'trivia'));
   my $i = 0;
   while(my $q = <TRIVIA>) {
@@ -53,6 +51,8 @@ sub starttrivia {
   my $self = shift;
   my $user = shift;
   my $text = shift;
+
+  print "starttrivia\n";
   
   if($self->{state} ne 'idle') {
     $self->reply_error('A trivia game is already in progress!');
@@ -73,6 +73,8 @@ sub starttrivia {
 sub stoptrivia {
   my $self = shift;
 
+  print "stoptrivia\n";
+
   $self->{state} = 'idle';
   $self->reply('Trivia stopped!');
   $self->endofgame();
@@ -84,6 +86,8 @@ sub answer {
   my $user = shift;
   my $text = shift;
 
+  print "answer\n";
+
   my $nick = $self->{lastnick};
 
   if($self->{state} ne 'asked' || $self->{answered}) {
@@ -93,10 +97,11 @@ sub answer {
   my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
 
   if(lc($text) eq lc($answer)) {
+    my $timediff = sprintf("%0.2f", time() - $self->{askedtime});
     $self->{answered} = 1;
+    $self->{state} = 'answered';
     $self->{players}{$nick}++;
     $self->{playersoverall}{$nick}++;
-    my $timediff = sprintf("%0.2f", time() - $self->{askedtime});
     if(!exists($self->{usersfastest}{$nick})) {
       $self->{usersfastest}{$nick} = $timediff;
       $self->{usersfastestoverall}{$nick} = $timediff;
@@ -122,6 +127,8 @@ sub answer {
 
 sub askquestion {
   my $self = shift;
+
+  print "askquestion\n";
 
   if($self->{state} eq 'idle') {
     return;
@@ -152,6 +159,8 @@ sub hint {
   my $self = shift;
   my $question = shift;
 
+  print "hint\n";
+
   if($self->{state} ne 'asked' || $self->{curquestion} != $question) {
     return;
   }
@@ -179,6 +188,8 @@ sub notanswered {
   my $self = shift;
   my $question = shift;
 
+  print "notanswered\n";
+
   print "curquestion: $self->{curquestion} / passed: $question\n";
 
   if($self->{state} ne 'asked' || $self->{curquestion} != $question) {
@@ -198,6 +209,8 @@ sub endofgame {
   my $self = shift;
   my $winner;
   my $winnerscore = -1;
+
+  print "endofgame\n";
 
   foreach my $nick (keys(%{$self->{players}})) {
     if($self->{players}{$nick} > $winnerscore) {
