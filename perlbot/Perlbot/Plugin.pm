@@ -518,9 +518,7 @@ sub _dispatch {
       # child
       $coderef->($self, @params);
       $self->{perlbot}->empty_queue; # send all waiting events
-      # this is dirty, but nothing else makes everything happy
-      $self->{perlbot}{ircconn}{_connected} = 0;
-      exit;
+      $self->{perlbot}->disconnect;
     }
 
   } else {

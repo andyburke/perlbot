@@ -27,14 +27,15 @@ sub new {
     handlers => {},
     users => {},
     channels => {},
-    curnick => ''
+    curnick => '',
+    masterpid => $$,
   };
 
   bless $self, $class;
 
   $SIG{INT} = sub { $self->shutdown('ctrl-c from console') };
   $SIG{HUP} = sub { $self->reload_config };
-  $SIG{__DIE__} = sub { $self->sigdie_handler };
+  $SIG{__DIE__} = sub { $self->sigdie_handler(@_) };
 
   return $self;
 }
@@ -78,7 +79,13 @@ sub start {
 
 # shuts the bot down gracefully
 sub shutdown {
-  my ($self, $quitmsg) = @_;
+  my ($self, $quitmsg, $is_crash) = @_;
+
+  # if this isn't the master process, just silently exit.
+  if ($$ ne $self->{masterpid}) {
+    $self->{ircconn}{_connected} = 0;
+    exit;
+  }
 
   print "Shutting down...\n" if $DEBUG;
 
@@ -94,7 +101,7 @@ sub shutdown {
   }
 
   # save out our in-memory config file
-  $self->config->save;
+  $self->config->save if !$is_crash;
 
   # sleep a couple seconds to let everything fall apart
   print "Sleeping 2 seconds...\n" if $DEBUG;
@@ -109,16 +116,25 @@ sub sigdie_handler {
   my $self = shift;
   my ($diemsg) = @_;
 
-  $diemsg ||= '(no message)';
-  open CRASHLOG, ">>" . File::Spec->catfile($self->config->value(bot => 'crashlogdir'), 'crashlog') or warn "Could not open crashlog '$crashlog' for writing: $!";
-  print CRASHLOG "Died with: $diemsg\n\n", Carp::longmess(), "\n=====\n\n\n";
-  close CRASHLOG;
+  # if not called from an eval()
+  if (! $^S) {
+    # prevent infinite loops, if this code or the shutdown code die()s
+    $SIG{__DIE__} = 'DEFAULT';
+
+    $diemsg ||= '(no message)';
+    open CRASHLOG, ">>" . File::Spec->catfile($self->config->value(bot => 'crashlogdir'), 'crashlog') or warn "Could not open crashlog '$crashlog' for writing: $!";
+    print CRASHLOG "Died with: $diemsg\n\n", Carp::longmess(), "\n=====\n\n\n";
+    close CRASHLOG;
+
+    $self->shutdown(' CRASHED :[ ', 1);
+  }
 }
 
 
 sub reload_config {
   my $self = shift;
 
+  print "*** RELOADING CONFIG ***\n" if $DEBUG;
   $self->config->load();
 }
 
