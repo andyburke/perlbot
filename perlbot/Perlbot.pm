@@ -393,8 +393,15 @@ sub handle_everything {
   $| = 1;
   foreach my $plug (keys(%{$handlers{$event->type}})) {
     if ($debug == 2) { print "handle $plug:".$event->type."\n" }
-    my $handler = $handlers{$event->type}->{$plug};
-    &$handler($conn, $event);
+    if (exists($handlers{$event->type}->{$plug})) {
+      my $handler = $handlers{$event->type}->{$plug};
+      &$handler($conn, $event);
+    } else {
+      # If we get here, we must have already processed an unload
+      # request for this plugin in the core handler, so we need
+      # to be careful to skip it here!
+      if ($debug == 2) { print "  (unloaded; skipping)\n" }
+    }
   }
 
   #foreach my $handler (values(%{$handlers{$event->type}})) {
