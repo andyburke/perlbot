@@ -4,12 +4,12 @@ use strict;
 use Term::ReadKey;
 use Digest::MD5 qw(md5_base64);
 
-my $passwd1 = '';
-my $passwd2 = 'kludge';
-ReadMode('noecho');
-while(($passwd1 ne $passwd2) or (length($passwd1) < 5)) {
+my ($passwd1, $passwd2);
 
-  print "\nEnter password: ";
+ReadMode('noecho');
+do {
+
+  print "\n\nEnter password: ";
   $passwd1 = ReadLine();
   chomp $passwd1;
 
@@ -23,7 +23,7 @@ while(($passwd1 ne $passwd2) or (length($passwd1) < 5)) {
   if($passwd1 ne $passwd2) {
     print "\nPasswords don't match!";
   }
-}
+} while((length($passwd1) < 5) or ($passwd1 ne $passwd2));
 ReadMode('normal');
 
 my $password = md5_base64($passwd1);
