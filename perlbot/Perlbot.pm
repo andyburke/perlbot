@@ -576,6 +576,22 @@ sub webserver_remove_all_handlers {
   return $ret;
 }
 
+<<<<<<< Perlbot.pm
+# removes all handlers and sends all waiting events, used prior to shutdown
+sub empty_queue {
+  my ($self) = @_;
+
+  debug("outputing " . $self->ircobject->queue . " events...", 3);
+  #while ($self->ircobject->queue) {
+  foreach ($self->ircobject->queue) {
+    debug("Q: $_");
+    debug($self->ircobject->{_queue}{$_});
+    #$self->ircobject->do_one_loop;
+  }
+}
+
+=======
+>>>>>>> 1.108
 # takes a username or hostmask and returns a user if one exists that matches
 sub get_user {
   my $self = shift;
