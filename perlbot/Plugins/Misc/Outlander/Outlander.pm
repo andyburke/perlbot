@@ -103,7 +103,7 @@ sub sodoit {
   $self->{chain}->seed(symbols => $self->{symbols});
 
   open(KNOWLEDGE, File::Spec->catfile($self->{directory}, 'knowledge'));
-  foreach my $s (@symbols) {
+  foreach my $s (@{$self->{symbols}}) {
     print KNOWLEDGE $s;
   }
   close(KNOWLEDGE);
