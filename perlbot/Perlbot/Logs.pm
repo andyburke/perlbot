@@ -110,7 +110,7 @@ sub write {
     $mon += 1;
     
     if(!$self->{file}->opened) { $self->open(); } 
-
+    
     # if the date has changed, roll the log file
     unless ($mday==$self->curday and $mon==$self->curmon and $year==$self->curyr) {
 	print "Rolling log file\n" if $DEBUG;

@@ -7,7 +7,6 @@ use Data::Dumper;
 use Perlbot::User;
 use Perlbot::Chan;
 
-
 $VERSION = '1.9.0';
 $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
 
@@ -38,54 +37,73 @@ sub new {
   return $self;
 }
 
+# starts everything rolling...
 sub start {
   my $self = shift;
 
+  # this reads our config and puts it into $self->{config}
   $self->read_config or die "Couldn't read $self->{configfile}!!\n";
+
+  # this will pull some stuff out of our config and create
+  # appropriate objects in the bot
   $self->process_config;
   
+  # here we loop over our defined servers attempting to connect
   my $i = 0;
   while(!$self->connect($i)) {
     $i++;
     $i = $i % $self->config('server');
   }
 
+  # once we've connected, we load our plugins
   $self->load_all_plugins;
 
+  # we should be all set, so we start the irc loop
   $self->{ircobject}->start();
 }
 
+# shuts the bot down gracefully
 sub shutdown {
   my ($self, $quitmsg) = @_;
 
   print "Shutting down...\n" if $DEBUG;
 
   $quitmsg ||= 'goodbye';
+
+  # we sign off of irc here
   $self->{ircconn}->quit($quitmsg);
 
+  # we go through and call shutdown on each of our plugins
   my @plugins_copy = $self->plugins;
   foreach my $plugin (@plugins_copy) {
     $plugin->shutdown;
   }
 
+  # save out our in-memory config file
   write_config($self->{configfile}, $self->{config});
 
+  # sleep a couple seconds to let everything fall apart
   print "Sleeping 2 seconds...\n" if $DEBUG;
   sleep 2;
+
+  # actually exit
   print "Exiting\n" if $DEBUG;
   exit 0;
 }
 
-
+# reads the bot's config and stores it in $self->{config}
 sub read_config {
   my $self = shift;
 
+  # Perlbot::Utils::read_generic_config just reads XML, basically
   $self->{config} = Perlbot::Utils::read_generic_config($self->{configfile});
 }
 
+# writes out the bot's in-memory config
 sub write_config {
   my $self = shift;
 
+  # Perlbot::Utils::write_generic_config just dumps XML
   Perlbot::Utils::write_generic_config($self->{configfile}, $self->{config});
 }
 
@@ -144,12 +162,21 @@ sub config {
   }
 }
 
-
+# this steps through the config, creating objects when appropriate
 sub process_config {
   my $self = shift;
 
+  # make sure our users and channels are wiped, this is for when
+  # we try to do config reloading.
   $self->{users} = undef;
   $self->{channels} = undef;
+
+  # if there are users defined
+  #   foreach user
+  #     create a user object inside the bot object
+  #     foreach admin listed in the config
+  #       if this user is an admin
+  #         set his/her admin flag
 
   if($self->config('user')) {
     foreach my $user (keys(%{$self->config('user')})) {
@@ -168,6 +195,13 @@ sub process_config {
     }
   }
 
+  # if there are channels defined
+  #   foreach channel
+  #     create a channel object
+  #     foreach op listed in the config
+  #       add them as an op if they exist as a user
+  #     put the channel into the bot object
+  
   if($self->config('channel')) {  
     foreach my $channel (keys(%{$self->config('channel')})) {
       print "process_config: loading channel '$channel'\n" if $DEBUG;
@@ -189,6 +223,7 @@ sub process_config {
   }
 }
 
+# connects the bot to irc, takes an index into the list of servers
 sub connect {
   my $self = shift;
   my $index = shift;
@@ -201,14 +236,20 @@ sub connect {
 
   my $handlers;
 
+  # make an ircobject if one doesn't exist yet
   if(!$self->{ircobject}) {
     $self->{ircobject} = new Net::IRC;
     $self->{ircobject}{_debug} = 1 if $DEBUG >= 10;
   }
 
+  # if we already have a connection, back up our handlers
   if($self->{ircconn}) { # had a connection
     $handlers = $self->{ircconn}{_handler};
   }
+
+  # if the server we've been given exists
+  #   set all our variables
+  #   set our ircconn object to the new one
 
   if($self->config(server => $index)) {
     $server = $self->config(server => $index => 'address'); # or die ("Server $i has no address specified\n");
@@ -226,6 +267,13 @@ sub connect {
                                     Password => $password,
                                     Ircname => $ircname);
   }
+
+  # if our connection exists and it's actually connected
+  #   if we had a backup of our handlers, jam it into this ircconn
+  #   set out curnick appropriately
+  #   ignore any hostmasks specified in the config
+  #   return the connection
+  # else fail
 
   if($self->{ircconn} && $self->{ircconn}->connected()) {
     print "connect: connected to server: $server\n" if $DEBUG;
@@ -250,6 +298,7 @@ sub plugins {
   return @{$self->{plugins}};
 }
 
+# loads all our plugins
 sub load_all_plugins {
   my $self = shift;
 
@@ -257,7 +306,12 @@ sub load_all_plugins {
   my @plugins_found = $self->find_plugins;
   my @noload = $self->config(bot => 'noload');
 
-  # drop noload'ed plugins
+  # foreach plugin
+  #   if it's listed in @noload
+  #     print debug message, but do nothing else
+  #   else
+  #     push it onto our list of plugins to load
+
   foreach my $plugin (@plugins_found) {
     if (grep {lc($plugin) eq lc($_)} @noload) {
       print "load_all_plugins: Skipping '$plugin': noload\n" if $DEBUG;
@@ -265,6 +319,9 @@ sub load_all_plugins {
       push @plugins, $plugin;
     }
   }
+
+  # foreach plugin
+  #   load plugin
 
   foreach my $plugin (@plugins) {
     $self->load_plugin($plugin);
@@ -277,6 +334,22 @@ sub find_plugins {
   my ($self) = @_;
   my @found_plugins;
 
+  # foreach plugindir specified in the config
+  #   open dir
+  #   foreach directory in the open dir (should be a plugin dir)
+  #     if it's '.' or '..'
+  #       skip
+  #     set our dirname to the right thing
+  #     if it's not really a directory
+  #       skip
+  #     set our plugin name correctly
+  #     if it's not there
+  #       skip
+  #     add this plugin to our list of found plugins
+  #     add it's directory to @INC so we can use it later
+  #     close the dir
+  #   return our found plugins
+  
   foreach my $plugindir ($self->config(bot => 'plugindir')) {
     opendir(PDH, $plugindir);
     foreach my $plugin (readdir(PDH)) {
@@ -335,7 +408,10 @@ sub load_plugin {
     return 0;
   }
 
-  # success!
+  # call init on our plugin
+  # push it into the bot's internal list
+  # return the pluginref for fun
+
   $pluginref->init;
   push @{$self->{plugins}}, $pluginref;
   return $pluginref;
@@ -352,14 +428,18 @@ sub add_handler {
   my $self = shift;
   my ($event, $coderef, $plugin) = @_;
 
-  # do some init stuff if nobody has hooked this event yet
+  # if no one has hooked this event yet
+  #   make sure we have a hashref for the event type in the bot object
+  #   add a hook for this event type to the ircconn, point it to our multiplexer
+
   unless ($self->{handlers}{$event}) {
-    if($event eq 'caction') { print "caction handler didn't exist!\n"; }
-    $self->{handlers}{$event} = {};                    # create the hash ref
-    # add our 'multiplexer' sub as the handler
+    $self->{handlers}{$event} = {};
     $self->{ircconn}->add_handler($event, sub { $self->event_multiplexer(@_) });
   }
-  $self->{handlers}{$event}{$plugin} = $coderef;       # store the code ref
+
+  # add this handler to the bot's internal handlers
+
+  $self->{handlers}{$event}{$plugin} = $coderef;
 }
 
 # Removes the handler for one event type for a given plugin
@@ -369,6 +449,10 @@ sub add_handler {
 sub remove_handler {
   my $self = shift;
   my ($event, $plugin) = @_;
+
+  # if the bot knows about at least one handler for this event type
+  #   if the given plugin has actually registered a callback for this type
+  #     delete that callback
 
   if($self->{handlers}{$event}) {
     if($self->{handlers}{$event}{$plugin}) {
@@ -385,6 +469,13 @@ sub event_multiplexer {
   my $event = shift;
   my $text = $event->{args}[0];
   my $user = $self->get_user($event->{from});
+
+  # foreach plugin that handles this type of event
+  #   if we really have a coderef for this plugin/event type
+  #     get the coderef
+  #     call the coderef with the event, a user we looked up and the event text
+  #   else
+  #     do nothing
 
   print "event_multiplexer: Got event '".$event->type."'\n" if $DEBUG >= 3;
   foreach my $plugin (keys(%{$self->{handlers}{$event->type}})) {
@@ -412,10 +503,17 @@ sub empty_queue {
   }
 }
 
+# takes a hostmask and returns a user if one exists that matches
 sub get_user {
   my $self = shift;
   my $hostmask = shift;
   my @tempusers;
+
+  # foreach user
+  #   foreach of their configured hostmasks
+  #     if the given hostmask matches their configured one
+  #       push them onto the list of matching users
+  #       go back to the foreach user loop
 
   foreach my $user (values(%{$self->{users}})) {
     foreach my $tempmask (@{$user->{hostmasks}}) {
@@ -425,6 +523,12 @@ sub get_user {
       }
     }
   }
+
+  # if we only got one user
+  #   return that user
+  # else if we got MORE than one user
+  #   print out some debugging to alert the admin
+  # return nothing, ie: if we got here, there's no matching user
 
   if(@tempusers == 1) {
     return $tempusers[0];
@@ -474,13 +578,23 @@ sub msg {
 
 }
 
+# joins a channel
 sub join {
   my $self = shift;
   my $channel = shift;
 
+  # if logging for this channel is on
+  #   open the logfile
+
   if($channel->{logging} eq 'yes') {
     $channel->{log}->open();
   }
+
+  # if there's a configured channel key
+  #   join using the key
+  # else
+  #   just join the channel
+  # call a names event so we can later populate the channel's member list
 
   if($channel->{key}) {
     $self->{ircconn}->join($channel->{name}, $channel->{key});

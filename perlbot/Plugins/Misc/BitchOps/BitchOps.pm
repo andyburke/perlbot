@@ -33,6 +33,11 @@ sub modechange {
   my %modehash;
   @modehash{@nicks} = @modes;
 
+  print "Got modechange:\n";
+  use Data::Dumper;
+  print Dumper($event);
+  print Dumper(%modehash);
+
   foreach my $nick (keys(%modehash)) {
     my $validop = 0;
       

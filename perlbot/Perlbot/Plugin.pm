@@ -34,12 +34,17 @@ sub new {
 
   bless $self, $class;
 
+  # here we set all our desired default behavior
+
   $self->want_msg(1);
   $self->want_public(1);
   $self->want_action(0);
   $self->want_chat(0);
   $self->want_fork(1);
   $self->want_reply_via_msg(0);
+
+  # try to read their config file
+  # try to read their help file
 
   $self->{config} = $self->read_config();
   $self->{helpitems} = $self->read_help();
@@ -173,6 +178,9 @@ sub hook_event {
   my $event = shift;
   my $call = shift;
 
+  # push the callback onto our list for this event type
+  # add a handler for the event type with our perlbot object
+
   push(@{$self->{event_hooks}{$event}}, $call);
   $self->{perlbot}->add_handler($event, sub {$self->_process(@_)}, $self->{name});
 }
@@ -185,16 +193,26 @@ sub advanced_hook {
   $self->{advanced_hooks}{$hook} = $call;
 }
 
-
+# send a reply to the bot's last contact via the correct path (msg, public, etc.)
+# can take an array of lines to send
 sub reply {
   my $self = shift;
   my @text = @_;
   my @output;
 
+  # foreach line of the array we were passed
+  #   split that line up if it has a newline in it
+  #   add it all to the output
+
   foreach my $textline (@text) {
     my @lines = split('\n', $textline);
     push(@output, @lines);
   }
+
+  # if the admin set a max public reply lines and our output is too big
+  #   send the output via msg
+  # else
+  #   send the output via whatever method it came in by
 
   if($self->{perlbot}->config(bot => max_public_reply_lines) &&
      @output > $self->{perlbot}->config(bot => max_public_reply_lines)) {
@@ -213,10 +231,14 @@ sub reply_via_msg {
   my @text = @_;
   my @output;
 
+  # see reply
+
   foreach my $textline (@text) {
     my @lines = split('\n', $textline);
     push(@output, @lines);
   }
+
+  # send reply via msg
 
   foreach my $line (@output) {
     $self->{perlbot}->msg($self->{lastnick}, $line);
@@ -228,10 +250,17 @@ sub reply_error {
   my @text = @_;
   my @output;
 
+  # see reply
+
   foreach my $textline (@text) {
     my @lines = split('\n', $textline);
     push(@output, @lines);
   }
+
+  # if the admin said to send errors via msg
+  #   send the error via message
+  # else
+  #   send the error back in whatever way we got it
 
   if($self->{perlbot}->config(bot => send_errors_via_msg)) {
     foreach my $line (@output) {
@@ -249,13 +278,24 @@ sub addressed_reply {
   my @text = @_;
   my @output;
 
+  # see reply
+
   foreach my $textline (@text) {
     my @lines = split('\n', $textline);
     push(@output, @lines);
   }
 
-  foreach my $line (@output) {
-    $self->{perlbot}->msg($self->{lastcontact}, $self->{lastnick} . ', ' . $line);
+  # adds a preceding nickname to our output, see reply
+  
+  if($self->{perlbot}->config(bot => max_public_reply_lines) &&
+     @output > $self->{perlbot}->config(bot => max_public_reply_lines)) {
+    foreach my $line (@output) {
+      $self->{perlbot}->msg($self->{lastnick}, $self->{lastnick} . ', ' . $line);
+    }
+  } else {
+    foreach my $line (@output) {
+      $self->{perlbot}->msg($self->{lastcontact}, $self->{lastnick} . ', ' . $line);
+    }
   }
 }
 
@@ -263,6 +303,14 @@ sub _help {
   my $self = shift;
   my $command = shift;
   my @result;
+
+  # if the command we're looking for is actually this plugin's name
+  #   if we have an overview defined
+  #     send back the overview
+  #     send back a list of our available commands
+  # else if we have help for the command they're looking for
+  #   send back the help content for that command
+  # return our (possibly empty) result
 
   if($command eq $self->{name}) {
     if($self->{helpitems}{overview}[0]) {
@@ -283,7 +331,11 @@ sub _process { # _process to stay out of people's way
   my $user  = shift;
   my $text  = shift;
 
-  # make sure we can play w/ this plugin in this channel...
+  # if the type of event isn't a message
+  #   if the channel this event came from has ignoreplugins configured
+  #     if the current plugin is listed amongst those to be ignored
+  #       return without doing anything
+
   if($event->type() ne 'msg') {
     if(defined($self->{perlbot}{config}{channel}{normalize_channel($event->{to}[0])}{ignoreplugin})) {
       if(grep { $_ eq $self->{name}} @{$self->{perlbot}{config}{channel}{normalize_channel($event->{to}[0])}{ignoreplugin}}) {
@@ -294,8 +346,20 @@ sub _process { # _process to stay out of people's way
 
   $text ||= '';
 
+  # set a couple of history things for our reply* methods
+
   $self->{lastnick} = $event->nick();
   $self->{lasthost} = $event->host();
+
+  # foreach normal hook we have
+  #   append the command prefix to it
+  #   if the event's text matches our hook
+  #     strip the hook from the event's text
+  #     if the event was a message or this plugins should reply via msg
+  #       set our last contact to the nick of the person generating the event
+  #     else
+  #       set our last contact to the channel this event came from
+  #     dispatch this event to the appropriate handler with the right args
 
   foreach my $hook (keys(%{$self->{hooks}})) {
     my $regexp = $self->{perlbot}->config(bot => 'commandprefix') . $hook;
@@ -312,6 +376,8 @@ sub _process { # _process to stay out of people's way
     }
   }
 
+  # like above, but with a raw regular expression
+
   foreach my $hookre (keys(%{$self->{hookres}})) {
     if($text =~ /$hookre/) {
       if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
@@ -323,6 +389,8 @@ sub _process { # _process to stay out of people's way
       $self->_dispatch($self->{hookres}{$hookre}, $user, $text);
     }
   }
+  
+  # like above, but here we can return any event in which the bot was addressed
 
   if($text =~ /^$self->{perlbot}{curnick}(?:,|:|\.|\s)*/i) {
     if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
@@ -337,6 +405,9 @@ sub _process { # _process to stay out of people's way
       $self->_dispatch($addressed_hook, $user, $texttocallwith);
     }
   }
+
+  # just like the first one, but with an added check to make sure the
+  # person generating the event is an admin
 
   foreach my $admin_hook (keys(%{$self->{admin_hooks}})) {
     my $regexp = $self->{perlbot}->config(bot => 'commandprefix') . $admin_hook;
@@ -357,6 +428,8 @@ sub _process { # _process to stay out of people's way
     }
   }
 
+  # here we just return the event in addition to the other stuff
+
   foreach my $advanced_hook (keys(%{$self->{advanced_hooks}})) {
     my $regexp = $self->{perlbot}->config(bot => 'commandprefix') . $advanced_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
@@ -372,6 +445,7 @@ sub _process { # _process to stay out of people's way
     }
   }
 
+  # here we just return raw events
 
   foreach my $event_hook (@{$self->{event_hooks}{$event->type()}}) {
     if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
@@ -391,10 +465,24 @@ sub _dispatch {
   my ($self, $coderef, @params) = @_;
   my ($pid);
 
+  # if this plugin wants to fork
+  #   if we couldn't fork
+  #     tell the user
+  #     return
+  #   if we're the parent
+  #     ignore our children
+  #   else (we're the child)
+  #     call the coderef we were given with the params
+  #     empty any events on the queue
+  #     set ourself to not be connected
+  #     exit
+  # else
+  #   just send the event without forking
+
   if ($self->want_fork) {
 
     if (!defined($pid = fork)) {
-      $self->reply("fork error in $self->{name} plugin");
+      $self->reply_error("fork error in $self->{name} plugin");
       return;
     }
 
