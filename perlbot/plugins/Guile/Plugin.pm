@@ -11,6 +11,7 @@ use IO::Select;
 use IO::Handle;
 
 sub get_hooks {
+  Guile_init();
   return { public => \&on_public, msg => \&on_msg };
 }
 
@@ -121,7 +122,7 @@ sub Guile_err {
   my (@ready, $fh, $line, @bc, $ok);
   $ok = 0;
 
-  print "ERR\n" if $debug;
+  print "Guile: ERR\n" if $debug;
   @ready = $Guile_sel->has_error(1);
   foreach $fh (@ready) {
     if ($fh == $Guile_io[2]) {
@@ -145,25 +146,24 @@ sub Guile_init {
   $Guile_io[1] = new IO::Handle;
   $Guile_io[2] = new IO::Handle;
 
-# open3(\*WTRFH, \*RDRFH, \*ERRFH, 'some cmd and args', 'optarg', ...);
+  # open3(\*WTRFH, \*RDRFH, \*ERRFH, 'some cmd and args', 'optarg', ...);
   $Guile_pid = open3($Guile_io[0], $Guile_io[1], $Guile_io[2], 'guile');
-  print "Guile:$Guile_pid\n" if $debug;
+  print "Guile: pid = $Guile_pid\n" if $debug;
 
   $Guile_sel = IO::Select->new();
   $Guile_sel->add($Guile_io[0]);
   $Guile_sel->add($Guile_io[1]);
   $Guile_sel->add($Guile_io[2]);
 
-    my (@ready, $fh, $ln);
-    sleep 1;
-    @ready = $Guile_sel->can_read(1);
-    foreach $fh (@ready) {
-      if ($fh == $Guile_io[1]) {
-        $fh->sysread($ln, 1024);
-        print $ln if $debug;
-      }
+  my (@ready, $fh, $ln);
+  sleep 1;
+  @ready = $Guile_sel->can_read(1);
+  foreach $fh (@ready) {
+    if ($fh == $Guile_io[1]) {
+      $fh->sysread($ln, 1024);
+      print "Guile: guile output = $ln\n" if $debug;
     }
+  }
 }
 
-Guile_init;
 1;
