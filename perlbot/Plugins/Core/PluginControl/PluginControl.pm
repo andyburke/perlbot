@@ -16,13 +16,9 @@ sub init {
   $self->want_fork(0);
 
   $self->hook_admin('loadplugin', \&load_plugin);
-  $self->hook_admin('startplugin', \&load_plugin);
   $self->hook_admin('unloadplugin', \&unload_plugin);
-  $self->hook_admin('stopplugin', \&unload_plugin);
   $self->hook_admin('reloadplugin', \&reload_plugin);
-  $self->hook_admin('restartplugin', \&reload_plugin);
   $self->hook_admin('reloadallplugins', \&reload_all_plugins);
-  $self->hook_admin('restartallplugins', \&reload_all_plugins);
 }
 
 

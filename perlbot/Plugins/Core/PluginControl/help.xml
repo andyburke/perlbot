@@ -1,5 +1,11 @@
 <help>
-  <overview>Allows a bot admin to load and unload plugins</overview>
-  <command name="plugins">loads or unloads a given plugin</command>
-  <usage name="plugins">plugins [load|unload] plugin</usage>
+  <overview>Allows a bot admin to load and unload plugins (plugin names are case sensitive)</overview>
+  <command name="loadplugin">loads a given plugin</command>
+  <usage name="loadplugin">loadplugin Plugin</usage>
+  <command name="unloadplugin">unloads a given plugin</command>
+  <usage name="unloadplugin">unloadplugin Plugin</usage>
+  <command name="reloadplugin">reloads a given plugin</command>
+  <usage name="reloadplugin">reloadplugin Plugin</usage>
+  <command name="reloadallplugins">reloads all plugins</command>
+  <usage name="reloadallplugins">reloadallplugins</usage>
 </help>
