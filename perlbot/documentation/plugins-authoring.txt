@@ -247,6 +247,20 @@ The sub 'handle_web' would be called with the array:
 
   ('here', 'is', 'more')
 
+Your coderef must return in order:
+
+  contenttype, content[, authtyperequired]
+
+Where contenttype is something like 'text/html' or 'img/jpeg',
+content is something like '<html><body>hi!</body></html>' and
+the optional authtyperequired is one of the strings 'none',
+'user' or 'admin'.
+
+The default authtype is 'none', ie: open for anyone to use without
+authorization.  'user' forces the client to enter a username and
+password that exists in the bot config file and admin requires
+a username/password combination that is a bot admin. 
+
 For good examples, see the StatsServer or LogServer plugins.
 
 
