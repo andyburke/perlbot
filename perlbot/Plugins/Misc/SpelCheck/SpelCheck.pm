@@ -1,13 +1,11 @@
 # SpelCheck
 # =========
 #
-# Jeremy Muhlich <jmuhlich@jhu.edu>
+# Andrew Burke <burke@bitflood.org>
 #
-# This plugin does spell-checking using ispell.  Prolly needs to be on
-# a unix system...
+# Spell checks words using the Google API. 
+# You must get a Google API key for this to work.
 #
-# based on:
-# infobot copyright (C) kevin lenzo 1997-98
 
 package Perlbot::Plugin::SpelCheck;
 
