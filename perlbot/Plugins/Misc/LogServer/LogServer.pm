@@ -219,7 +219,7 @@ sub logserver {
       }
 
       foreach my $event (@events) {
-        $response .= $self->event_as_html_string($event) . "\n";
+        $response .= $self->event_as_html_string($event, $options->{channel}, $options->{year}, $options->{month}, $options->{day}) . "\n";
       }
 
       return $self->std_response($response);
@@ -392,8 +392,8 @@ sub logserver {
                         <a style=\"text-decoration: none; color: black; border-bottom: 1px dotted;\" href=\"/logserver/display?channel=$channel_name&year=$year&month=$month&day=$day\">$datestring</a><p class=\"block\">";
         }
 
-        my $event_string .= $self->event_as_html_string($event);
-        $event_string =~ s/<a name=\"(.*?)\">/<a href=\"\/logserver\/display\?channel=$channel_name&year=$year&month=$month&day=$day\#$1\">/;
+        my $event_string .= $self->event_as_html_string($event, $channel_name, $year, $month, $day);
+#        $event_string =~ s/<a name=\"(.*?)\">/<a href=\"\/logserver\/display\?channel=$channel_name&year=$year&month=$month&day=$day\#$1\">/;
         $response .= $event_string . "\n";
       }
 
@@ -405,10 +405,14 @@ sub logserver {
 sub event_as_html_string {
   my $self = shift;
   my $event = shift;
+  my $channel = shift;
+  my $year = shift;
+  my $month = shift;
+  my $day = shift;
 
   my $type = $event->type;
 
-  my $format_string = '<a name="%timestamp"><span class="time">%hour:%min:%sec</span></a><span class="irctext"> ';
+  my $format_string = '<a name="%timestamp" href="/logserver/display?channel=' . $channel . '&year=' . $year . '&month=' . $month . '&day=' . $day . '#%timestamp"><span class="time">%hour:%min:%sec</span></a><span class="irctext"> ';
 
   if($type eq 'public') {
     $format_string .= '<span class="public">&lt;%nick&gt; %text</span>';
