@@ -167,7 +167,7 @@ sub answer {
   for($i = 0; $i < $numwords; $i++) {
     if(defined($answerwords[$i]) && defined($guesswords[$i])) {
       print "comparing: $answerwords[$i] to guess: $guesswords[$i]\n";
-      if(length($answerwords[$i]) < 5) {
+      if(length($answerwords[$i]) < 6) {
         if(lc($answerwords[$i]) eq lc($guesswords[$i])) {
           $right++;
           print "  short and correct\n";

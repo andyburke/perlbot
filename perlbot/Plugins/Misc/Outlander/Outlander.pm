@@ -4,51 +4,129 @@ use Perlbot::Plugin;
 @ISA = qw(Perlbot::Plugin);
 
 use WWW::Babelfish;
+use MegaHAL;
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.2.0';
 
 sub init {
   my $self = shift;
 
   $self->want_msg(0);
 
-  $self->hook_addressed(\&addressed);
-  $self->hook_regular_expression('.*', \&random);
+  $self->{megahal} = new MegaHAL('Path'     => $self->directory,
+                                 'Banner'   => 0,
+                                 'Prompt'   => 0,
+                                 'Wrap'     => 0,
+                                 'AutoSave' => 0);
+  $self->megahal->initial_greeting();
+
+  $self->{confused} = ['what?',
+                       'sorry, understanding is not easy for me',
+                       'I am afflicted, which?',
+                       'I do not include/understand',
+                       'I have a comprehension of time lasts you',
+                       'slow down you, you are confusing me!',
+                       'I am much konfus',
+                       'I do not understand',
+                       ];
+
+  $self->hook(\&random);
+
+}
+
+sub megahal {
+  my $self = shift;
+  return $self->{megahal};
 }
 
 sub addressed {
   my $self = shift;
   my $user = shift;
   my $text = shift;
+  my $event = shift;
 
-  $self->addressed_reply($self->babel($user, $text));
 }
 
 sub random {
   my $self = shift;
   my $user = shift;
   my $text = shift;
+  my $event = shift;
 
   my $curnick = $self->perlbot->curnick;
 
   if($text !~ /$curnick/) {
     if(int(rand(20)) == 0) {
       $text =~ s/^.*?(?:,|:)\s*//;
-      $self->reply($self->babel($user, $text));
+
+      my $starttime = time();
+      print "text: $text\n";
+      my $reply = $self->megahal->do_reply($text);
+      print "reply: $reply\n";
+      $reply = $self->babel($reply);
+      print "after babel: $reply\n";
+      my $timediff = time() - $starttime;
+
+      if($reply =~ /\&nbsp\;/ || length($reply) < 2) {
+        my $reply = $self->{confused}[int(rand(100))%@{$self->{confused}}];
+        sleep($self->delay($reply));
+        $self->reply($reply);
+        return;
+      }
+      
+      if($timediff > $self->delay($reply)) {
+        $self->reply($reply);
+      } else {
+        sleep($self->delay($reply) - $timediff);
+        $self->reply($reply);
+      }
+    }
+  } else {
+    my $regexp = $curnick . '(?:,|:|\.|\s)*';
+    $text =~ s/^$regexp//i;
+    my $theirnick = $event->nick;
+    $text =~ s/$curnick/$theirnick/ig;
+
+    my $starttime = time();
+    print "text: $text\n";
+    my $reply = $self->megahal->do_reply($text);
+    print "reply: $reply\n";
+    $reply = $self->babel($reply);
+    print "after babel: $reply\n";
+    my $timediff = time() - $starttime;
+    
+    if($reply =~ /\&nbsp\;/ || length($reply) < 2) {
+      my $reply = $self->{confused}[int(rand(100))%@{$self->{confused}}];
+      sleep($self->delay($reply));
+      $self->reply($reply);
+      return;
+    }
+    
+    if($timediff > $self->delay($reply)) {
+      $self->addressed_reply($reply);
+    } else {
+      sleep($self->delay($reply) - $timediff);
+      $self->addressed_reply($reply);
     }
   }
 }
 
+sub delay {
+  my $self = shift;
+  my $text = shift;
+
+  return int(length($text) / 12);
+}
+
 sub babel {
   my $self = shift;
-  my $user = shift;
   my $text = shift;
 
   my $obj = new WWW::Babelfish( 'agent' => 'Perlbot/$VERSION');
 
   my @languages = ('German', 'French'); # $obj->languages();
 
-  my $iterations = rand(100) % 3 + 3;
+  my $iterations = 3;
 
   my $source;
   my $dest;
@@ -77,3 +155,4 @@ sub babel {
   $curresult =~ s/\&nbsp\;//g; 
   return $curresult;
 }
+
