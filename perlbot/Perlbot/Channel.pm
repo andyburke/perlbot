@@ -26,7 +26,7 @@ sub new {
 
 sub log_write {
     my $self = shift;
-    if ($self->logging && $self->logging eq 'yes') {
+    if ($self->is_logging) {
 	$self->{log}->write(@_);
     }
 }
@@ -57,6 +57,14 @@ sub key {
 sub logging {
     my $self = shift;
     $self->config->value(channel => $self->name => 'logging') = shift if @_;
+
+    # open/close logfile if logging value is being set
+    if (@_ and $_[0] eq 'yes') {
+      $self->{log}->open;
+    } else {
+      $self->{log}->close;
+    }
+
     return $self->config->value(channel => $self->name => 'logging');
 }
 
@@ -81,6 +89,11 @@ sub is_op {
   }
 
   return 0;
+}
+
+sub is_logging {
+    my $self = shift;
+    return ($self->logging and $self->logging eq 'yes');
 }
 
 sub add_member {
@@ -119,6 +132,18 @@ sub add_op {
     if (! $self->is_op($user)) {
       push @{$self->config->value(channel => $self->name => 'op')}, $user->name;
     }
+}
+
+sub join {
+    my $self = shift;
+
+    $self->{log}->open if $self->is_logging;
+}
+
+sub part {
+    my $self = shift;
+
+    $self->{log}->close if $self->is_logging;
 }
 
 1;

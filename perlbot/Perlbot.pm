@@ -703,24 +703,21 @@ sub join {
   my $self = shift;
   my $channel = shift;
 
-  # if logging for this channel is on
-  #   open the logfile
-
-  if ($channel->logging eq 'yes') {
-    $channel->{log}->open();
-  }
+  $channel->join;
 
   # if there's a configured channel key
   #   join using the key
   # else
   #   just join the channel
-  # call a names event so we can later populate the channel's member list
 
   if ($channel->key) {
     $self->{ircconn}->join($channel->name, $channel->key);
   } else {
     $self->{ircconn}->join($channel->name);
   }
+
+  # call a names event so we can later populate the channel's member list
+  # (a Core plugin handles the response to this event)
   $self->{ircconn}->names($channel->name);
 }
 
@@ -729,9 +726,8 @@ sub part {
   my $channel = shift;
 
   $self->{ircconn}->part($channel->name);
-  if ($channel->{log}) {
-    $channel->{log}->close();
-  }
+
+  $channel->part;
 }
 
 sub op {
