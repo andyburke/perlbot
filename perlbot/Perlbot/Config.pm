@@ -173,7 +173,8 @@ sub _value : lvalue {
 sub value {
   my $self = shift;
 
-  debug("value: deprecated method called");
+  my ($package, $filename, $line) = caller();
+  debug("value: deprecated method called at $filename:$line");
   $self->_value(@_);
 }
 
@@ -204,19 +205,28 @@ sub set {
   $self->_value(@_) = $value;
 }
 
-# only use the array_ and hash_ methods on arrays of regular scalars
+# only use the array_ methods on arrays of regular scalars
 # (i.e. no sub-objects)
 
 sub array_get {
   my $self = shift;
 
-  return @{$self->_value(@_)};
+  return $self->exists(@_) ? @{$self->_value(@_)} : ();
+}
+
+sub array_initialize {
+  my $self = shift;
+  my $key = pop;
+
+  my $arrayref = $self->_value(@_);
+  $arrayref->{$key} = [];
 }
 
 sub array_push {
   my $self = shift;
   my $value = shift;
 
+  $self->exists($arrayref) or $self->array_initialize(@_);
   my $arrayref = $self->_value(@_);
   push @$arrayref, $value;
 }
@@ -225,19 +235,18 @@ sub array_delete {
   my $self = shift;
   my $value = shift;
 
+  $self->exists($arrayref) or return;
   @{$self->_value(@_)} = grep {$_ ne $value} $self->_value(@_);
 }
 
 
-sub hash__keys {
+sub hash_keys {
   my $self = shift;
 
-  return keys %{$self->_value(@_)};
+  return $self->exists(@_) ? keys %{$self->_value(@_)} : ();
 }
 
-# XXX: should this create a full subtree, or just extend an existing branch
-#        by one level as it does now?
-sub hash_create {
+sub hash_initialize {
   my $self = shift;
   my $key = pop;
 
@@ -249,6 +258,7 @@ sub hash_delete {
   my $self = shift;
   my $key = pop;
 
+  $self->exists(@_) or return;
   my $hashref = $self->_value(@_);
   delete $hashref->{$key};
 }
