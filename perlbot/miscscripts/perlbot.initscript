@@ -4,6 +4,7 @@
 # description: Perlbot is an IRC bot written in perl.
 
 NAME=`basename $0`
+NAME=`echo $NAME | perl -pe 's/^[A-Z]\d+//'`
 
 case "$1" in
 
