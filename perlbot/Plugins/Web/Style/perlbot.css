@@ -1,31 +1,29 @@
 	body {
-                font: Arial, Helvetica, sans-serif;
 		color: black; 
 		background: #FFFFFF;
 	}
 
 	a {
-		font-weight: bold;
+                text-decoration: none;
 	}
 
 	a:link {
-		color: #404040;
-		text-decoration: none;
+		color: #555580;
 		border-bottom: 1px dotted;
 	} 
 
 	a:visited {
-		color: #202020;
+		color: #404065;
 		border-bottom: 1px dotted;
-		text-decoration: none;
 	}
  
 	a:active {
-		color: #505050;
+		color: #9090B5;
+                border-bottom: 1px dotted;
 	}
 
 	a:hover {
-		color: #454545;
+		color: #707095;
 		border-bottom: 1px dotted;
 	}
 

@@ -118,11 +118,21 @@ sub logserver {
         $month = sprintf("%02d", $month);
         my $cal = HTML::CalendarMonth->new(year => $year, month => $month);
         foreach my $day ($cal->days()) {
-          my $padded_day = sprintf("%02d", $day);
-          $cal->item($day)->wrap_content(HTML::Element->new('a',
-                                                            href => "/logserver/display?channel="
-                                                            . $options->{channel}
-                                                            . "&year=${year}&month=${month}&day=${padded_day}"));
+          if($channel->logs->search({
+            initialdate
+                => Date::Manip::UnixDate("$year/$month/$day-00:00:00",'%s'),
+            finaldate
+                => Date::Manip::UnixDate("$year/$month/$day-23:59:59",'%s'),
+            boolean
+                => 1
+          })) {
+
+            my $padded_day = sprintf("%02d", $day);
+            $cal->item($day)->wrap_content(HTML::Element->new('a',
+                                                              href => "/logserver/display?channel="
+                                                              . $options->{channel}
+                                                              . "&year=${year}&month=${month}&day=${padded_day}"));
+          }
         }
         $response .= $cal->as_HTML();
         $response .= "</td>\n";
@@ -324,6 +334,13 @@ sub logserver {
                                             nick => $nick,
                                             type => $type });
 
+      # if we get no results...
+      if(!@events) {
+        $response .= "No results found!";
+        return $self->std_response($response);
+      }
+
+      # otherwise, we have some results for them...
       my ($year, $month, $day) = (0, 0, 0);
       foreach my $event (@events) {
         my $datestring = "$year.$month.$day";
