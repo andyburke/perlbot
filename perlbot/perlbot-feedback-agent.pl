@@ -2,9 +2,6 @@
 
 use strict;
 
-use Net::IRC;
-use Perlbot;
-
 my $userid = -1;
 
 if( -f '.perlbot_user_id' ) {
@@ -35,9 +32,23 @@ will be asked a few questions.  This should only take a moment.
 EOG
 
 my $os = $^O;
-my $perlbotversion = $Perlbot::VERSION;
 my $perlversion = $];
-my $netircversion = $Net::IRC::VERSION;
+
+my $netircversion = '';
+eval "use Net::IRC";
+if ($@) {
+  $netircversion = $@;
+} else {
+  $netircversion = $Net::IRC::VERSION;
+}
+
+my $perlbotversion;
+eval "use Perlbot";
+if ($@) {
+  $perlbotversion = $@;
+} else {
+  $perlbotversion = $Perlbot::VERSION;
+}
 
 my $firsttime;
 while($firsttime ne 'y' && $firsttime ne 'n') {
