@@ -21,7 +21,7 @@ sub on_public {
   my $results = 0;
   my $pid;
 
-  if($args =~ /^!logsearch/) { 
+  if($args =~ /^${pluginchar}logsearch/) { 
     if(!defined($pid = fork)) {
       $conn->privmsg($who, "error in logsearch plugin: failed to fork");
       return;
@@ -37,7 +37,7 @@ sub on_public {
       # child
       $args =~ tr/[A-Z]/[a-z]/;
       
-      $args =~ s/^!logsearch\s+//;
+      $args =~ s/^${pluginchar}logsearch\s+//;
       my @words = split(/ /, $args);
       
       my $channel = shift @words;
@@ -55,7 +55,9 @@ sub on_public {
       } else {
         $logdir = $Logs::basedir . "/" . $channel . "/";
       }
-      
+     
+     print $logdir . "\n";
+ 
       if($Logs::basedir =~ /^\./) {
 	my @topleveldir = `pwd`;
 	chomp $topleveldir[0];

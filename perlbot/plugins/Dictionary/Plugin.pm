@@ -1,50 +1,51 @@
 # Andrew Burke <burke@pas.rochester.edu>
 #
-# This looks up a word at www.m-w.com
+# dictionary
 
 package Dictionary::Plugin;
 
+use strict;
+
 use Perlbot;
 
-use Socket;
-use POSIX;
+use LWP::Simple;
 
 sub get_hooks {
   return { public => \&on_public, msg => \&on_msg };
 }
 
 sub on_public {
-  my $conn = shift;
-  my $event = shift;
+  my ($conn, $event) = @_;
   my $args;
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!dictionary\s*/  || $args =~ /^!dict\s*/) {
+  if ($args =~ /^${pluginchar}dict/  || $args =~ /^${pluginchar}dictionary/) {
     get_def($conn, $event, $event->{to}[0]);
   }
 }
 
 sub on_msg {
-  my $conn = shift;
-  my $event = shift;
+  my ($conn, $event) = @_;
   my $args;
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!dictionary\s*/  || $args =~ /^!dict\s*/) {
+  if ($args =~ /^${pluginchar}dict/  || $args =~ /^${pluginchar}dictionary/) {
     get_def($conn, $event, $event->nick);
   }
 }
 
 sub get_def {
-  my $conn = shift;
-  my $event = shift;
-  my $who = shift;
+  my ($conn, $event, $chan) = @_;
+  my ($pid);
 
-  if(!defined($pid = fork)) {
-    $conn->privmsg($who, "error in dictionary plugin...");
-  } elsif($pid) {
+  if (!defined($pid = fork)) {
+    $conn->privmsg($chan, "error in dictionary plugin...");
+    return;
+  }
+
+  if ($pid) {
     #parent
 
     $SIG{CHLD} = sub { wait; };
@@ -55,145 +56,63 @@ sub get_def {
 
     my $args;
     ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-    $args =~ s/^!dictionary\s*//;
-    $args =~ s/^!dict\s*//;
+    $args =~ s/^${pluginchar}dict\s*//;
+    $args =~ s/^${pluginchar}dictionary\s*//;
+    $args =~ tr/[A-Z]/[a-z]/;
 
-    my ($word, $max) = split(' ', $args);
-    if($word eq '') {
-      $conn->privmsg($who, "Must specify a word to look up...");
-    }
-    if($max eq '') {
-      $max = 1;
-    }
+    my $url = "http://www.ibiblio.org/webster/cgi-bin/headword_search.pl?query=${args}&=Submit";
 
-    my($remote,$port,$iaddr,$paddr,$proto,$line);
-    $remote = "www.m-w.com";
-    $port = "80";
-    
-    if(!defined($iaddr = inet_aton($remote))) {
-      $conn->privmsg($who, "Could not get address for $remote");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-    if(!defined($paddr = sockaddr_in($port, $iaddr))) {
-      $conn->privmsg($who, "Could not get port for $remote");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-    if(!defined($proto = getprotobyname('tcp'))) {
-      $conn->privmsg($who, "Could not get tcp protocol");
+    my $html = get($url);
+    if (!$html) {
+      $conn->privmsg($chan, "Could not connect to Dictionary server.");
       $conn->{_connected} = 0;
       exit 1;
     }
     
-    if(!socket(SOCK, PF_INET, SOCK_STREAM, $proto)) {
-      $conn->privmsg($who, "Could not open socket to $remote");
+    chomp $html;
+    $html =~ s/\n//g;
+    $html =~ s/&reg\;//g;
+    $html =~ s/&amp\;/&/g;
+
+    if($html =~ /0 matches/) {
+      $conn->privmsg($chan, "No such word found: $args");
       $conn->{_connected} = 0;
-      exit 1;
-    }
-    if(!connect(SOCK, $paddr)) {
-      $conn->privmsg($who, "Could not connect to $remote");
-      $conn->{_connected} = 0;
-      exit 1;
+      exit 0;
     }
 
-    $msg = "GET /cgi-bin/dictionary?va=";
-    $msg = $msg . $word;
-    $msg = $msg . "\n\n";
+    my @tempwords;
+    my %tmpwordshash;
+    my @words;
+    my $pos;
+    my $ety;
+    my @defs;
 
-    if(!send(SOCK, $msg, 0)) {
-      $conn->privmsg($who, "Could not send to $remote");
-      $conn->{_connected} = 0;
-      exit 1;
+    @tempwords = $html =~ /<b><u>(.*?)<\/u><\/b>/ig;
+    undef %tmpwordshash;
+    @tmpwordshash{@tempwords} = ();
+    @words = keys(%tmpwordshash);
+
+    ($pos) = $html =~ /<i>(.*?)<\/i>/i;
+    $pos =~ s/<.*?>//g;
+
+    ($ety) = $html =~ /<ety>(.*?)<\/ety>/i;
+    $ety =~ s/<.*?>//g;
+
+    @defs = $html =~ /<def>(.*?)<\/def>/ig;
+
+    $conn->privmsg($chan, "Word(s): " . join(', ', @words));
+    $conn->privmsg($chan, "Part of Speech: $pos");
+    $conn->privmsg($chan, "Etymology: $ety");
+    my $i = 1;
+    foreach my $def (@defs) {
+      $def =~ s/<.*?>//g;
+      $conn->privmsg($chan, "  $i: $def");
+      $i++;
     }
 
-    my $entry = '';
-    my $pronunciation = '';
-    my $function = '';
-    my $date = '';
-    my @def;
-    my $tempdef = '';
-
-    while (my $lala = <SOCK>) {
-
-      $lala =~ s/&reg\;//g;
-      $lala =~ s/&amp\;/&/g;
-      $lala =~ s/&auml\;/\(umlaut\)/g;
-
-      if($lala =~ /.*?No entries found.*/) {
-	$conn->privmsg($who, "No entries found that match: $word");
-	$conn->{_connected} = 0;
-	exit 0;
-      }
-
-      if($entry eq '') {
-	($entry) = $lala =~ /.*?pre><br>(.*?)<\/b><br>/;
-	$entry =~ s/<.*>//g;
-	$entry =~ s/\s+/ /g;
-	next;
-      }
-
-      if($pronunciation eq '') {
-	($pronunciation) = $lala =~ /(.*?)<\/tt><br>/;
-	$pronunciation =~ s/<.*>//g;
-	$pronunciation =~ s/\s+/ /g;
-	next;
-      }
-
-      if($function eq '') {
-	($function) = $lala =~ /(.*?)<\/i><br>/;
-	$function =~ s/<.*>//g;
-	$function =~ s/\s+/ /g;
-	next;
-      }
-
-      if($date eq '') {
-	($date) = $lala =~ /(.*?)<br>/;
-	$date =~ s/<.*>//g;
-	$date =~ s/\s+/ /g;
-	next;
-      }
-
-      if($tempdef eq '') {
-	($tempdef) = $lala =~ /<b>(.*)/;
-	$tempdef =~ s/<br>/\!hack\!/g;
-	$tempdef =~ s/<.*?>//g;
-	$tempdef =~ s/&lt\;/</g;
-	$tempdef =~ s/&gt\;/>/g;
-	$tempdef =~ s/\n//g;
-	$tempdef =~ s/\s+/ /g;
-
-	print "<$tempdef>\n";
-
-	@def = split(/\!hack\!/, $tempdef);
-	next;
-      }
-    }
-
-    $conn->privmsg($who, $entry);
-    $conn->privmsg($who, $pronunciation);
-    $conn->privmsg($who, $function);
-    $conn->privmsg($who, $date);
-
-    my $i=1;
-    my $num = 1;
-    foreach(@def) { 
-      if($_ ne '') {
-	if($i > $max) { last; }
-
-	s/\!hack\!//g;
-	$conn->privmsg($who,  $_);
-        $num++;
-	$i++;
-      }
-    }
-
-    close SOCK;
     $conn->{_connected} = 0;
     exit 0;
   }
-
-  close SOCK;
 }
 
 1;
