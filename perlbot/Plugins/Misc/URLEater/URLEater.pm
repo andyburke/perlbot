@@ -17,6 +17,9 @@ sub init {
   $self->want_fork(0);
   
   tie @{$self->{urls}},  'DB_File', File::Spec->catfile($self->{directory}, 'urldb'), O_CREAT|O_RDWR, 0640, $DB_RECNO;
+  if(length(@{$self->{urls}}) == 1) {
+    push(@{$self->{urls}}, 'this is a crappy hack to make unshift work');
+  }
 
   $self->hook_event('public', \&eaturl);
   $self->hook('urls', \&regurgitate);
@@ -55,7 +58,7 @@ sub regurgitate {
   foreach my $storedurl (@{$self->{urls}}) {
     my ($channel, $nick, $time, $url) = split('::::', $storedurl);
     if($channel eq $chan) {
-      push(@reply, $url . ' -- ' . $nick); # . ' -- ' . localtime($time));
+      unshift(@reply, $url . ' -- ' . $nick); # . ' -- ' . localtime($time));
       $printed++;
     }
     if($printed >= $max) { last; }
