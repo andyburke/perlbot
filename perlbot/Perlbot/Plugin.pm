@@ -244,9 +244,12 @@ sub _process { # _process to stay out of people's way
   my $text  = shift;
 
   # make sure we can play w/ this plugin in this channel...
-  if(($event->type() ne 'msg') &&
-      grep($self->{name}, @{$self->{perlbot}{config}{channel}{normalize_channel($event->{to}[0])}{ignoreplugin}})){
-    return;
+  if($event->type() ne 'msg') {
+    if(defined($self->{perlbot}{config}{channel}{normalize_channel($event->{to}[0])}{ignoreplugin})) {
+      if(grep { $_ eq $self->{name}} @{$self->{perlbot}{config}{channel}{normalize_channel($event->{to}[0])}{ignoreplugin}}) {
+        return;
+      }
+    }
   }
 
   $text ||= '';

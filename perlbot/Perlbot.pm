@@ -8,7 +8,7 @@ use Perlbot::User;
 use Perlbot::Chan;
 
 
-$VERSION = '1.5.1';
+$VERSION = '1.9.0';
 $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
 
 sub new {
