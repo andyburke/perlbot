@@ -511,13 +511,15 @@ sub on_join {
   my ($self, $event) = @_;
   my $user;
   my $nick = $event->nick;
+  my $remoteusername = $event->user;
+  my $remotehost = $event->host;
   my $chan = ($event->to)[0]; #don't ask me, yo...
   
   $user = update_user($self, $nick, $event->userhost);
   $chan = to_channel($chan);
   
   if(exists($channels{$chan})) {
-    $channels{$chan}->log_write("$nick joined $chan");
+    $channels{$chan}->log_write("$nick ($remoteusername\@$remotehost) joined $chan");
   }
   
   if($user) {
@@ -540,11 +542,13 @@ sub on_join {
 sub on_part {
   my ($self, $event) = @_;
   my $nick = $event->nick;
+  my $remoteusername = $event->user;
+  my $remotehost = $event->host;
   my $chan = ($event->to)[0];
   
   update_user($self, $event->nick, $event->userhost);
   if(exists($channels{to_channel($chan)})) {
-    $channels{to_channel($chan)}->log_write("$nick left $chan");
+    $channels{to_channel($chan)}->log_write("$nick ($remoteusername\@$remotehost) left $chan");
   }
 }
 

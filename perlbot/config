@@ -6,7 +6,7 @@ chan {
 	key		
 	name		#fdn
 	flag		+t
-	logging		no
+	logging	        yes	
 	limit		0
 	op		plastik
 	op		ender
@@ -22,6 +22,7 @@ bot {
 	noload		Stock
 	noload		Whois
 	noload		Guile
+	noload 		Host
 	nickappend		_
 	nick		perlbot
 	plugindir		./plugins

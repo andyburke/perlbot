@@ -26,17 +26,17 @@ sub on_public {
       $conn->privmsg($who, "error in logsearch plugin: failed to fork");
       return;
     } 
-
+    
     if($pid) {
       #parent
-
+      
       $SIG{CHLD} = sub { wait; };
       return;
-
+      
     } else {
       # child
       $args =~ tr/[A-Z]/[a-z]/;
-    
+      
       $args =~ s/^!logsearch\s+//;
       my @words = split(/ /, $args);
       
@@ -55,15 +55,16 @@ sub on_public {
       } else {
         $logdir = $Logs::basedir . "/" . $channel . "/";
       }
-
+      
       if($Logs::basedir =~ /^\./) {
 	my @topleveldir = `pwd`;
 	chomp $topleveldir[0];
-      
+      }
+
       if(opendir(DIR, $logdir)) {
 	my @tmpfiles = readdir(DIR);
 	close DIR;
-
+	
 	my @files = sort(@tmpfiles);
 	foreach my $file (@files) {
 	  my @lines;
