@@ -38,6 +38,8 @@ sub init {
 
   $self->hook_web('ircstats', \&ircstats, 'IRC Stats');
 
+  $self->perlbot->schedule(10, sub { $self->check_channel_membership() });
+
 }
 
 sub ircstats {
@@ -113,7 +115,13 @@ sub ircstats {
       $response .= "</font></td>";
     }
 
-    $response .= "</tr><tr><td colspan=24 align=right><font size=-1>Total Lines: $totallines</font></tr>";
+    $response .= "</tr><tr>";
+
+    $response .= "<td colspan=12><font size=-1>Average Channel Membership (hourly):" . sprintf("%d", $self->{channels}{$chan}{membership} / $self->{channels}{$chan}{membershipcheckcount}) . "</td>";
+
+    $response .= "<td colspan=12 align=right><font size=-1>Total Lines: $totallines</font></td>";
+
+    $response .= "</tr>";
 
     $response .= "</table></center>";
 
@@ -208,6 +216,24 @@ sub import_from_logs {
 
   $self->reply("Stats updated!");
 
+}
+
+sub check_channel_membership {
+  my $self = shift;
+
+  foreach my $channel (keys(%{$self->{channels}})) {
+    my $chan;
+    if($chan = $self->perlbot->get_channel($channel)) {
+      $self->{channels}{$channel}{membership} += scalar keys(%{$chan->{members}});
+      $self->{channels}{$channel}{membershipcheckcount}++;
+    }
+  }
+
+  open(DATAFILE, '>' . $self->{datafile});
+  print DATAFILE XMLout($self->{channels}, rootname => 'channeldata');
+  close DATAFILE;
+
+  $self->perlbot->ircconn->schedule(3600, sub { $self->check_channel_membership });
 }
 
 sub shutdown {
