@@ -106,8 +106,10 @@ sub ircstats {
       $response .= "</font></td>";
     }
 
-    $response .= "</tr></table></center>";
-                      
+    $response .= "</tr><tr><td colspan=24 align=right><font size=-1>Total Lines: $totallines</font></tr>";
+
+    $response .= "</table></center>";
+
     $response .= "</body></html>";
 
     return('text/html', $response);
