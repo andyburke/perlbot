@@ -421,7 +421,7 @@ sub triviatop {
   my ($num) = $text =~ /(\d+)/;
   $num ||= 5;
 
-  if($num > 10) { $num = 10; }
+  if($num > 20) { $num = 20; }
 
   $self->reply("Top $num trivia players are: (you must answer at least $self->{minquestionsanswered} questions to be ranked!)");
   my $headers = sprintf("%-19s", '% Rankings:') . sprintf("%-19s", 'Wins Rankings:') . sprintf("%-19s", 'Time Rankings:') . sprintf("%-19s", 'Performance Rankings:');
