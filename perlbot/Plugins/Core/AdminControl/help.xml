@@ -1,4 +1,7 @@
 <help>
   <overview>This plugin allows admins to control some bot features.</overview>
-  <command name="reload">Causes the bot to reload its config.<br/>Usage: reload</command>
+  <command name="reload">Causes the bot to reload its config.</command>
+  <usage name="reload">reload</usage>
+  <command name="debug">Sets/Gets the bot's current debug level.</command>
+  <usage name="debug">debug [level]</usage>
 </help>
