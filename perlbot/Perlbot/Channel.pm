@@ -4,7 +4,7 @@ use Perlbot::LogFile;
 use strict;
 
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(config name log members currentopped currentvoiced perlbot);
+use fields qw(config name logs members currentopped currentvoiced perlbot);
 
 sub new {
   my $class = shift;
@@ -15,7 +15,8 @@ sub new {
 
   $self->config = $config;
   $self->name = $name;
-  $self->log = new Perlbot::LogFile($name, $config);
+  use Perlbot::Logs::FlatFile;
+  $self->logs = new Perlbot::Logs::FlatFile($perlbot, $name);
   $self->members = {};
   $self->currentopped = {};
   $self->currentvoiced = {};
@@ -39,11 +40,12 @@ sub AUTOLOAD : lvalue {
   $self->{$field};
 }
 
-sub log_write {
-    my $self = shift;
-    if ($self->is_logging) {
-	$self->log->write(@_);
-    }
+sub log {
+  my $self = shift;
+  my $event = shift;
+  if ($self->is_logging) {
+    $self->logs->log($event);
+  }
 }
 
 sub flags {
