@@ -40,11 +40,11 @@ sub debug {
 
   if($DEBUG >= $level) {
     if(!ref($ref)) { # we didn't get a reference, we assume it's a string
-      print $ref . "\n";
+      print "($$) $ref\n";
       return;
     }
     if(ref($ref) eq 'SCALAR') {
-      print $ref . "\n";
+      print "($$) $ref\n";
       return;
     }
     if(ref($ref) eq 'CODE') {
