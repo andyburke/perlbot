@@ -63,19 +63,10 @@ sub lookup {
     }
 
     my @lookup = `host $in`;
-    foreach (@lookup) {
-      chomp;
-      if (/has address/) {
-        $conn->privmsg($who, $_);
-        $conn->{_connected} = 0;
-        exit 0;
-      }
-    }
-
-    # if no results, we fall through to here
-    $conn->privmsg($who, "$in not found: has no DNS entry");
+    chomp $lookup[0];
+    $conn->privmsg($who, $lookup[0]);
     $conn->{_connected} = 0;
-    exit 0;			# kill child
+    exit 0;
   }
 }
 
