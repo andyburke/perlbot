@@ -382,9 +382,9 @@ sub endofgame {
 
   foreach my $nick (keys(%{$self->{score}})) {
     if($self->{answeredthisround}{$nick} > 0) {
-      if(($self->{score}{$nick} / $self->{answeredthisround}{$nick}) > $winnerscore) {
+      if($self->{score}{$nick} > $winnerscore) {
         $winner = $nick;
-        $winnerscore = $self->{score}{$nick} / $self->{answeredthisround}{$nick};
+        $winnerscore = $self->{score}{$nick};
       }
     }
     delete $self->{score}{$nick}; # reset wins
@@ -396,7 +396,7 @@ sub endofgame {
 
   my $fastest = $self->{fastest}{$winner};
 
-  $self->reply("Trivia Winner for this round is: $winner with a score of " . sprintf("%0.1f%", 100 * $winnerscore) . " and a fastest time of $fastest!");
+  $self->reply("Trivia Winner for this round is: $winner with $winnerscore wins and a fastest time of $fastest!");
 
   foreach my $nick (keys(%{$self->{playing}})) {
     delete $self->{playing}{$nick};
