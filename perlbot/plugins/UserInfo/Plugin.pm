@@ -12,9 +12,9 @@ sub on_msg {
   my $conn = shift;
   my $event = shift;
 
-  if($event->{args}[0] =~ /^!seen/) {
+  if($event->{args}[0] =~ /^${pluginchar}seen/) {
     seen($conn, $event, $event->nick);
-  } elsif ($event->{args}[0] =~ /^!userinfo/) {
+  } elsif ($event->{args}[0] =~ /^${pluginchar}userinfo/) {
     userinfo($conn, $event, $event->nick);
   }
 }
@@ -23,7 +23,7 @@ sub on_public {
   my $conn = shift;
   my $event = shift;
 
-  if($event->{args}[0] =~ /^!seen/) {
+  if($event->{args}[0] =~ /^${pluginchar}seen/) {
     seen($conn, $event, $event->{to}[0]);
   }
 }
@@ -35,15 +35,15 @@ sub userinfo {
     my @args = split(' ', ($event->args)[0]);
     my $user = host_to_user($event->nick.'!'.$event->userhost);
 
-    if($args[0] eq '!userinfo') {
+    if($args[0] eq "${pluginchar}userinfo") {
 	if($args[1] eq 'help') {
 	    $conn->privmsg($who, "UserInfo Plugin Version: $version");
 	    $conn->privmsg($who, "Help:");
 
-	    $conn->privmsg($who, "!seen <user> - returns user lastseen info");
-	    $conn->privmsg($who, "syntax: /msg <botnick> !seen <user>");
+	    $conn->privmsg($who, "${pluginchar}seen <user> - returns user lastseen info");
+	    $conn->privmsg($who, "syntax: /msg <botnick> ${pluginchar}seen <user>");
 
-	    $conn->privmsg($who, "#userinfo commands / syntax: /msg <botnick> !userinfo <password> <cmd> <args>");
+	    $conn->privmsg($who, "#userinfo commands / syntax: /msg <botnick> ${pluginchar}userinfo <password> <cmd> <args>");
 	    $conn->privmsg($who, "password: /msg <botnick> <password> password <newpass>");
 	    $conn->privmsg($who, "changes your password");
 	    return;

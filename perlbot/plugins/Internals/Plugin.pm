@@ -24,7 +24,7 @@ sub on_msg {
   my $userhost = $event->nick . '!' . $event->userhost;
   my $user = Perlbot::host_to_user($userhost);
 
-  if ($args[0] eq '!internal') {
+  if ($args[0] eq "${pluginchar}internal") {
     ($var, $location) = @args[1,2];
     if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
       @data = split '\n', Dumper (eval sprintf "%s", $var);

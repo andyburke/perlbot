@@ -18,7 +18,7 @@ sub on_public {
   my $conn = shift;
   my $event = shift;
 
-  if (($event->{args}[0] =~ /^!traceroute\s*/) || ($event->{args}[0] =~ /^!tr\s*/)) {
+  if (($event->{args}[0] =~ /^${pluginchar}traceroute\s*/) || ($event->{args}[0] =~ /^${pluginchar}tr\s*/)) {
     troute($conn, $event, $event->{to}[0]);
   }
 }  
@@ -27,7 +27,7 @@ sub on_msg {
   my $conn = shift;
   my $event = shift;
 
-  if (($event->{args}[0] =~ /^!traceroute\s*/)  || ($event->{args}[0] =~ /^!tr\s*/)) {
+  if (($event->{args}[0] =~ /^${pluginchar}traceroute\s*/)  || ($event->{args}[0] =~ /^${pluginchar}tr\s*/)) {
     troute($conn, $event, $event->nick);
   }
 }  
@@ -52,7 +52,8 @@ sub troute {
   } else {
     # child...
 
-    ($in = $event->{args}[0]) =~ s/^!traceroute\s*//;
+    ($in = $event->{args}[0]) =~ s/^${pluginchar}traceroute\s*//;
+    ($in = $event->{args}[0]) =~ s/^${pluginchar}tr\s*//;
 
     $in =~ s/\`//g; #security?
     $in =~ s/\$//g;

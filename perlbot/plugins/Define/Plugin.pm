@@ -28,10 +28,10 @@ sub do_processing {
   my $args;
   ($args = ($event->args)[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if ($args =~ /^!define/) {
+  if ($args =~ /^${pluginchar}define/) {
     if(host_to_user($userhost)) {
       if(($event->args)[0] !~ /:/) {
-	$conn->privmsg($who, 'syntax: !define <term> : <definition>');
+	$conn->privmsg($who, "syntax: ${pluginchar}define <term> : <definition>");
 	return;
       }
       define($conn, $event, $who);
@@ -42,10 +42,10 @@ sub do_processing {
     return;
   }
 
-  if ($args =~ /^!redefine/) {
+  if ($args =~ /^${pluginchar}redefine/) {
     if(host_to_user($userhost)) {
       if(($event->args)[0] !~ /:/) {
-	$conn->privmsg($who, 'syntax: !redefine <term> : <definition>');
+	$conn->privmsg($who, "syntax: ${pluginchar}redefine <term> : <definition>");
 	return;
       }
       redefine($conn, $event, $who);
@@ -56,13 +56,13 @@ sub do_processing {
     return;
   }
 
-  if ($args =~ /^!(?:lookup|whatis)/) {
+  if ($args =~ /^${pluginchar}(?:lookup|whatis)/) {
     lookup($conn, $event, $who);
     return;
   }
 
   # ignore other ! and # commands to be polite
-  if($args =~ /^[!\#]/) {
+  if($args =~ /^[${pluginchar}\${commandchar}]/) {
     return;
   }
 
@@ -192,7 +192,7 @@ sub redefine {
 
       $conn->privmsg($who, "$term redefined in database.");
     } else {
-      $conn->privmsg($who, "$term not yet defined. Try !define.");
+      $conn->privmsg($who, "$term not yet defined. Try ${pluginchar}define.");
     } 
 
     $conn->{_connected} = 0;

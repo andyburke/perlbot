@@ -20,7 +20,7 @@ sub on_public {
   my $event = shift;
   my $who = $event->{to}[0];
 
-  if ($event->{args}[0] =~ /^!math/) {
+  if ($event->{args}[0] =~ /^${pluginchar}math/) {
     math($conn, $event, $who);
   }
 
@@ -31,7 +31,7 @@ sub on_msg {
   my $event = shift;
   my $who = $event->nick;
 
-  if($event->{args}[0] =~ /^!math/) {
+  if($event->{args}[0] =~ /^${pluginchar}math/) {
     math($conn, $event, $who);
   }
 }
@@ -58,7 +58,7 @@ sub math {
     # child...
     
     my $args;
-    ($args = $event->{args}[0]) =~ s/^!math\s*//;
+    ($args = $event->{args}[0]) =~ s/^${pluginchar}math\s*//;
     
     $args =~ s/\s*//g;     #eat whitespace
     

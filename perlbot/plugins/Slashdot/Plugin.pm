@@ -57,7 +57,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if(($args =~ /^!slashdot\s/) || ($args =~ /^!slashdot/)) {
+  if($args =~ /^${pluginchar}slashdot\s*/) {
       if($args =~ /\s+search/){
 	  get_ss($conn, $event, $event->{to}[0]);
       }else{
@@ -73,7 +73,7 @@ sub on_msg {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!slashdot\s*/) {
+  if($args =~ /^${pluginchar}slashdot\s*/) {
     if($args =~ /\s+search/){
       get_ss($conn, $event, $event->nick);
     }else{
@@ -89,7 +89,7 @@ sub get_slashdot {
   my $max;
 
   ($max = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-  $max =~ s/^!slashdot\s*//;
+  $max =~ s/^${pluginchar}slashdot\s*//;
   $max =~ s/\s+(\d+)\s*.*/\1/;
 
   if($max eq '') { $max = 5; }
@@ -219,7 +219,7 @@ sub get_ss {
     chomp $term;
 
     if($term eq ''){
-	$conn->privmsg($who, "usage: !slashdot search <keyword(s)>  : <max hits (optional)>");
+	$conn->privmsg($who, "usage: ${pluginchar}slashdot search <keyword(s)>  : <max hits (optional)>");
 	return;
     }
     

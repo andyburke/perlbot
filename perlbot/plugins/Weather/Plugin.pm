@@ -37,7 +37,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!weather/) {
+  if($args =~ /^${pluginchar}weather/) {
     get_weather($conn, $event, $event->{to}[0]);
   }
 }
@@ -49,7 +49,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!weather/) {
+  if($args =~ /^${pluginchar}weather/) {
     get_weather($conn, $event, $event->nick);
   }
 }
@@ -77,7 +77,7 @@ sub get_weather {
     my $args;
     $args = $event->{args}[0];
     $args =~ tr/[A-Z]/[a-z]/;
-    $args =~ s/^!weather\s*//;
+    $args =~ s/^${pluginchar}weather\s*//;
 
     my $location = $args;
     $location =~ s/\s+/\+/g;       # for searches...

@@ -135,6 +135,14 @@ my %config_handlers =
      # get crash log filename
      $crashlog = $_[0]->{crashlog}[0];
      $crashlog ||= './crash.log';
+
+     # get our command prefix char
+     $commandchar = $_[0]->{commandchar}[0];
+     $commandchar ||= '#';
+
+     # get our plugin prefix char
+     $pluginchar = $_[0]->{pluginchar}[0];
+     $pluginchar ||= '!';
    }
    );
 
@@ -489,14 +497,13 @@ sub on_msg {
   
   if($msglog) { $msglog->write('<' . $event->nick . '!' . $event->userhost . '> ' . $event->{args}[0]); }
   
-  # our commands are signaled by a leading '#'
-  if(($event->args)[0] =~ /^\#.*/) {
+  if(($event->args)[0] =~ /^$commandchar.*/) {
     # split text (on whitespace) into words
     my @commands = split(';', $event->{args}[0]);
     foreach my $command (@commands) {
       my @params = split (' ', $command);
       # shift off the command and strip the leading #
-      my ($tmpcommand) = (shift @params) =~ /^#(.*)/;
+      my ($tmpcommand) = (shift @params) =~ /^$commandchar(.*)/;
       # see if we have a handler for this command
       if (exists($command_handlers{$tmpcommand})) {
 	# 3rd param is standard IRC nick!ident@host string

@@ -21,7 +21,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if ($args =~ /^!pricewatch/  || $args =~ /^!pw/) {
+  if ($args =~ /^${pluginchar}pricewatch/  || $args =~ /^${pluginchar}pw/) {
     get_pw($conn, $event, $event->{to}[0]);
   }
 }
@@ -32,7 +32,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if ($args =~ /^!pricewatch/  || $args =~ /^!pw/) {
+  if ($args =~ /^${pluginchar}pricewatch/  || $args =~ /^${pluginchar}pw/) {
     get_pw($conn, $event, $event->nick);
   }
 }
@@ -57,8 +57,8 @@ sub get_pw {
 
     my $args;
     ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-    $args =~ s/^!pricewatch\s*//;
-    $args =~ s/^!pw\s*//;
+    $args =~ s/^${pluginchar}pricewatch\s*//;
+    $args =~ s/^${pluginchar}pw\s*//;
     $args =~ tr/[A-Z]/[a-z]/;
 
     my @words = split(' ', $args);

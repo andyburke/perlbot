@@ -4,6 +4,8 @@ TODO:
   hard-coded.  possibly also add some functionality to handler
   code to allow easily hooking a command via msg or public, with
   the command character stuff taken care of by the bot code.
+    -- this is done, pretty much, there is now Perlbot::pluginchar and
+       Perlbot::commandchar, both user-configgable
 - per-channel option to auto-rejoin when kicked
 - write help files for all the plugins that are included in the base
   distribution.

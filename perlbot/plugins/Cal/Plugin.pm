@@ -16,7 +16,7 @@ sub on_public {
   my $conn = shift;
   my $event = shift;
 
-  if ($event->{args}[0] =~ /^!cal\s*/) {
+  if ($event->{args}[0] =~ /^${pluginchar}cal\s*/) {
     cal($conn, $event, $event->{to}[0]);
   }
 }  
@@ -25,7 +25,7 @@ sub on_msg {
   my $conn = shift;
   my $event = shift;
 
-  if ($event->{args}[0] =~ /^!cal\s*/) {
+  if ($event->{args}[0] =~ /^${pluginchar}cal\s*/) {
     cal($conn, $event, $event->nick);
   }
 }  
@@ -51,7 +51,7 @@ sub cal {
     # child...
 
     # strip !cal command, and leading/trailing spaces
-    ($in = $event->{args}[0]) =~ s/^!cal\s*(.*?)\s*/$1/;
+    ($in = $event->{args}[0]) =~ s/^${pluginchar}cal\s*(.*?)\s*/$1/;
 
     $in =~ s/\`//g; #security?
     $in =~ s/\$//g;

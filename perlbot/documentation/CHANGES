@@ -1,6 +1,6 @@
 CHANGES:
 
-1.2.3 - crash log, new plugin, plugin fixes, misc core updates/fixes
+1.2.3 - crash log, configurable plugin and command trigger characters, new plugin, plugin fixes, misc core updates/fixes
 - Mike Edwards contributed the neat Internals plugin.  It allows bot owners
   to debug things remotely by viewing internal perlbot variables.  Sometimes
   this can be easier than using "perl -d" and mucking with breakpoints...
@@ -24,6 +24,8 @@ CHANGES:
 - Updated Host plugin to deal with CNAMEs and other such DNS details
 - PriceWatch plugin now works a lot better and the code is cleaner
 - Guile plugin now only prints stuff to the console if debugging is on
+- commandchar and pluginchar are two new options in the bot { } field of
+  the config file.
 
 1.2.2 - misc updates, stability fixes, plugin modifications
 - Fixed the flooding crashing the bot bug, stupid fork
