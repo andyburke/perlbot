@@ -173,7 +173,6 @@ my %command_handlers =
    status => sub {
      my $conn = shift;
      my $from = shift;
-     my $userhost = shift;
 
      my $uptime = time() - $starttime;
      my $uptimedays = sprintf("%02d", $uptime / 86400);
@@ -285,6 +284,14 @@ my %command_handlers =
        $channel_list .= "$chan ";
      }
      $conn->privmsg($from, "channels: $channel_list");
+   },
+   listusers => sub {
+     my ($conn, $from, $userhost) = (shift, shift, shift);
+     my $userlist;
+     foreach my $user (keys(%users)) {
+       $userlist .= "$user ";
+     }
+     $conn->privmsg($from, "known users: $userlist");
    },
    say => sub {
      my ($conn, $from, $userhost) = (shift, shift, shift);
@@ -785,7 +792,10 @@ sub on_msg {
 	&{$command_handlers{$tmpcommand}}($self, $event->nick, $event->nick.'!'.$event->userhost, @params);
       }
     }
-  }
+  } elsif(($event->args)[0] =~ /^\s*(hi|hello|help|ident).*?/i) {
+    $self->privmsg($event->nick, "Hi, i'm a Perlbot! I need this for my boot.  Here is some help!:");
+    get_help($self, $event->nick, $event->nick.'!'.$event->userhost);
+  } 
 }
 
 sub on_public {
