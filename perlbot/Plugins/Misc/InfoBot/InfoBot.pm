@@ -12,18 +12,19 @@ use Perlbot::Plugin;
 @ISA = qw(Perlbot::Plugin);
 
 use File::Spec;
+use DB_File;
 
 our $VERSION = '1.0.0';
 
 sub init {
   my $self = shift;
 
-  $self->{facts} = {};
+  tie %{$self->{facts}},  'DB_File', File::Spec->catfile($self->{directory}, 'factsdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
   $self->load_dbs();
 
   $self->hook_addressed(\&addressed);
-  $self->hook_regular_expression('.*?', \&normal);
+  $self->hook(\&normal);
 
 }
 
@@ -53,6 +54,7 @@ sub load_db {
   if(-d $db) {
     return;
   } else {
+    debug("InfoBot loading $db...", 2);
     open(DBFILE, "<$db") or die "Couldn't open $db\n";
 
     while(my $line = <DBFILE>) {
@@ -73,13 +75,13 @@ sub load_db {
 
       $total++;   
     }
+
+    debug("  $good/$total good entries found", 2);
+    debug("  $collisions collisions", 2);
+
+    close DBFILE;
+
   }
-
-  debug("InfoBot loading $db...", 2);
-  debug("  $good/$total good entries found", 2);
-  debug("  $collisions collisions", 2);
-
-  close DBFILE;
 }
 
 sub addressed {
