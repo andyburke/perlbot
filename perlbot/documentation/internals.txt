@@ -225,6 +225,8 @@ found.
     If search is called in an array context, it should return an array of
 Perlbot::Logs::Event objects.  If it is called in a scalar context, it should
 return the number of log entries found.
+    search is REQUIRED to return its events in chonological order from
+earliest to latest.
 
 -- Perlbot::Logs::Medium::initial_entry_time();
 

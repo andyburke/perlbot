@@ -79,8 +79,7 @@ sub initialize_loggers {
           local \$SIG{__DIE__}='DEFAULT';
           new Perlbot::Logs::${logtype}(\$self->perlbot,
                                         \$self->name,
-                                        \$self->config,
-                                        \$i);
+                                        \$self->config)
         ";
     
     if ($@ or !$logger) {

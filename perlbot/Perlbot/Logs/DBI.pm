@@ -15,14 +15,13 @@ use fields qw(dbh insertquery);
 
 
 sub new {
-  my ($class, $perlbot, $channel, $config, $index) = @_;
+  my ($class, $perlbot, $channel, $config) = @_;
 
   my $self = fields::new($class);
 
   $self->perlbot = $perlbot;
   $self->channel = $channel;
   $self->config = $config;
-  $self->index = $index;
 
   my $dbistring = "dbi:"
                   . $self->config_get('dbtype')
