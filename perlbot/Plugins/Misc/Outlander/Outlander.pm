@@ -3,6 +3,7 @@ package Perlbot::Plugin::Outlander;
 use strict;
 use Perlbot::Plugin;
 use base qw(Perlbot::Plugin);
+use fields qw(chain symbols lastseedtime);
 
 use Algorithm::MarkovChain;
 use WWW::Babelfish;
