@@ -33,7 +33,7 @@ sub join_channels {
   debug("joining channels");
 
   foreach my $channel (values(%{$self->perlbot->channels})) {
-    debug("Joining " . $channel->name);
+    debug("  Joining " . $channel->name);
     $self->perlbot->join($channel);
     $self->perlbot->whois($channel);
   }

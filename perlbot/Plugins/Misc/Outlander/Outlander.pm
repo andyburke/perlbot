@@ -19,7 +19,7 @@ sub init {
                                  'Banner'   => 0,
                                  'Prompt'   => 0,
                                  'Wrap'     => 0,
-                                 'AutoSave' => 0);
+                                 'AutoSave' => 1);
   $self->megahal->initial_greeting();
 
   $self->{confused} = ['what?',

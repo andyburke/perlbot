@@ -523,6 +523,7 @@ sub add_handler {
   #   add a hook for this event type to the ircconn, point it to our multiplexer
 
   unless ($self->{handlers}{$event}) {
+    debug("    add_handler: event:$event plugin:$plugin", 4);
     $self->{handlers}{$event} = {};
     $self->{ircconn}->add_handler($event, sub { $self->event_multiplexer(@_) });
   }
@@ -544,7 +545,7 @@ sub remove_handler {
   #   if the given plugin has actually registered a callback for this type
   #     delete that callback
 
-  debug("remove_handler: event:$event plugin:$plugin");
+  debug("    remove_handler: event:$event plugin:$plugin", 4);
   if ($self->{handlers}{$event}) {
     if ($self->{handlers}{$event}{$plugin}) {
       delete $self->{handlers}{$event}{$plugin};

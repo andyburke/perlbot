@@ -133,11 +133,14 @@ sub updater {
     }
     $self->{seen}{$nick} = time() . ':' . 'NICK:' . $event->{args}[0];
   } elsif($event->type eq 'quit') {
+    my ($junk, $otherjunk, $lastthingsaid);
     if($user) {
       my ($junk, $otherjunk, $lastthingsaid) = split(':', $self->{seen}{$user->name}, 3);
       $self->{seen}{$user->name} = time() . ':' . 'QUIT:' . $lastthingsaid;
     }
-    my ($junk, $otherjunk, $lastthingsaid) = split(':', $self->{seen}{$event->nick}, 3);
+    if(defined($self->{seen}{$event->nick})) {
+      ($junk, $otherjunk, $lastthingsaid) = split(':', $self->{seen}{$event->nick}, 3);
+    }
     $self->{seen}{$nick} = time() . ':' . 'QUIT:' . $lastthingsaid;
   } elsif($event->type eq 'caction') {
     if($user) {
@@ -148,6 +151,7 @@ sub updater {
 
   my $curtime = time();
   foreach my $name (keys(%{$self->{seen}})) {
+    defined($self->{seen}{$name}) or next;
     my ($lastseentime, $lasttext) = split(':', $self->{seen}{$name}, 2);
     if($curtime - $lastseentime > $self->{expiretime}) {
       delete $self->{seen}{$name};
