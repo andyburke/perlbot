@@ -83,15 +83,14 @@ sub get_pw {
     $te->parse($html);
     $row = ($te->rows)[0];
 
-    $brand = $$row[0];
+    ($brand) = $$row[0] =~ /(.*?)\W/;
     $product = $$row[1];
     $description = $$row[2];
 
     ($price) = $$row[3] =~ /(\$.*?\d+)/;
     $price =~ s/\s+//g;
 
-    $shipping = $$row[4];
-    $shipping  =~ s/\s\s+//gs;
+    ($shipping) = $$row[4];
 
     if ($brand && $product && $price) {
       $conn->privmsg($chan, "$price / $shipping / $brand / $product / $description");
