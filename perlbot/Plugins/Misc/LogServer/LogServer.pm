@@ -408,7 +408,7 @@ sub event_as_html_string {
 
   my $type = $event->type;
 
-  my $format_string = '<a name="%timestamp"></a><span class="time">%hour:%min:%sec</span><span class="irctext"> ';
+  my $format_string = '<a name="%timestamp"><span class="time">%hour:%min:%sec</span></a><span class="irctext"> ';
 
   if($type eq 'public') {
     $format_string .= '<span class="public">&lt;%nick&gt; %text</span>';
