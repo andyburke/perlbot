@@ -79,9 +79,11 @@ sub starttrivia {
 sub stoptrivia {
   my $self = shift;
 
-  $self->{state} = 'idle';
-  $self->reply('Trivia stopped!');
-  $self->endofgame();
+  if($self->{state} ne 'idle') {
+    $self->{state} = 'idle';
+    $self->reply('Trivia stopped!');
+    $self->endofgame();
+  }
 
 }
 
