@@ -46,13 +46,16 @@ bot {
 user {
 	flag		w #make this guy an owner of the bot
 	name		leet_admin
+# note: the password is crypted and perlbot expects this to be the case!
+        password        vvTHJiOIQW.vV
 	hostmask	*!*bob@something.foo.com
 	hostmask	*!*robert@somewhere.else.org
 }
 
 user {
 	name		lame_user
-# THIS WOULD BE INSECURE, since we don't do passwords yet!
+# THIS WOULD BE INSECURE: the host range is very wide and the user
+#                         has no password set.
 	hostmask	*!*lamer@*.aol.com
 }
 

@@ -7,6 +7,11 @@ CHANGES:
   are the config values to set (the defaults are # and ! to mimic previous
   behavior).  All stock plugins have been modified to work with this
   setting.  (Note: this is actually a regexp, shhh!)
+- Due to further popular demand, perlbot now supports password-based user
+  authentication.  What does this mean?
+    If you log in from someplace other than the usual, you can now
+    authenticate yourself, change your password, add a hostmask to your
+    list of hostmasks, remove old hostmasks, etc.
 - Mike Edwards contributed the neat Internals plugin.  It allows bot owners
   to debug things remotely by viewing internal perlbot variables.  Sometimes
   this can be easier than using "perl -d" and mucking with breakpoints...

@@ -76,7 +76,15 @@ Table of Contents
   your config file due to bad syntax.  Many of the problems that users
   have emailed us about are syntax errors and such that would have been
   solved had they used gperlbotcfg.  gperlbotcfg does require the GTK
-  module for perl, so make sure you install that.
+  module for perl, so make sure you install that.  It's extremely easy:
+
+    root:/root# perl -MCPAN -e shell
+
+    ...
+
+    cpan> install Gtk
+
+  that's it, you should be all set.
 
   But if you want to edit your config by hand or can't run gperlbotcfg:
 
@@ -95,6 +103,7 @@ Table of Contents
 
   user {
     name       jimmy
+    password   jhHHvkLL.IOo
     hostmask   jim!*jim@somewhere.com
     hostmask   jim!*jsmith@company.com
   }
@@ -230,11 +239,10 @@ Table of Contents
 		      ...
 		    }
 
-    - password  - Currently unimplemented, but in the future it will
-                  allow users to identify themselves when their current
-                  hostmask is not recognized by the bot (for instance, if
-                  they are on IRC from a friend's computer or their
-                  computer's IP address changes).
+    - password  - Allows users to authenticate themselves when not
+                  connected via a hostmask specified in the config file.
+                  Look in miscscripts/ for the perlbotpasswd script to
+                  help you generate user passwords.
 
   3.4  chan
     - name      - The name of the channel.  If the leading # or & character
@@ -298,21 +306,32 @@ Table of Contents
 4.0 Using It
 ============
 
-So you have this shiny new perlbot, all configured, and you want to know
-what you can do with it.  The basic bot functionality (the stuff that's
-not provided by a plugin) already has online documentation.  Simply msg
-the bot "#help" and you'll get information on how to use the online help
-facility.  To find out what commands the basic perlbot (without plugins)
-understands, msg it "#help Core".  To find out about one of the subtopics
-(commands) that it lists, msg it "#help Core <subtopic>".  For instance,
-"#help Core quit" will tell you about the #quit command.  Soon all the
-plugins will have help files, and you'll be able to access them in the same
-way, by msging the bot "#help <plugin> <subtopic>".
+  4.1  What now?
 
-In addition, there is a file called commands.txt in the main perlbot
-directory.  It contains a list of all the commands provided by the basic
-bot and a brief description.  Each plugin will eventually have its own
-commands.txt in its subdirectory as well.
+    So you have this shiny new perlbot, all configured, and you want to know
+    what you can do with it.  The basic bot functionality (the stuff that's
+    not provided by a plugin) already has online documentation.  Simply msg
+    the bot "#help" and you'll get information on how to use the online help
+    facility.  To find out what commands the basic perlbot (without plugins)
+    understands, msg it "#help Core".  To find out about one of the subtopics
+    (commands) that it lists, msg it "#help Core <subtopic>".  For instance,
+    "#help Core quit" will tell you about the #quit command.  Soon all the
+    plugins will have help files, and you'll be able to access them in the same
+    way, by msging the bot "#help <plugin> <subtopic>".
+
+  4.2  How do I freakin' run this thing?
+
+    4.2.1  I'm the bot admin
+
+      The commands you'll most often use are probably #join, #reload and
+      #quit.  They join channels, reload the config file and quit the bot,
+      respectively.  Message the bot:  #help Core  for more information.
+
+    4.2.2  I'm a user
+
+      The commands you'll most often use are #auth, #password, #addhost,
+      and the note-related commands.  Message the bot:  #help Core
+      for more information.
 
 
 5.0 Debugging
