@@ -40,7 +40,7 @@ sub log {
 
   if($type eq 'public') {
     my $text = $event->{args}[0];
-    if ($chan)) {
+    if ($chan) {
       $chan->log_write("<$nick> $text");
     }
   } elsif($type eq 'caction') {

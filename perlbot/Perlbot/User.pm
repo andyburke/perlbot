@@ -6,6 +6,7 @@ use Perlbot::Utils;
 sub new {
     my $class = shift;
     my ($nick, $config) = @_;
+
     my $self =
       {
        config     => $config,
@@ -13,6 +14,8 @@ sub new {
        curnick    => $nick,
        curchans   => [],
        lastnick   => undef,
+
+       temphostmasks => [],
 
        allowed    => {}
       };
@@ -78,6 +81,13 @@ sub add_hostmask {
 }
 
 
+sub add_temp_hostmask {
+  my ($self, $hostmask) = @_;
+
+  validate_hostmask($hostmask) or return;
+  push @{$self->temphostmasks}, $hostmask;
+}
+
 sub del_hostmask {
   my ($self, $hostmask) = @_;
 
@@ -94,6 +104,10 @@ sub hostmasks {
   return $self->config->value(user => $self->name => 'hostmask');
 }
 
+sub temphostmasks {
+  my $self = shift;
+  return $self->{temphostmasks};
+}
 
 sub update_channels {
   my $self = shift;
@@ -107,6 +121,5 @@ sub update_channels {
     push @{$self->{curchans}}, $chan;
   }
 }
-
 
 1;

@@ -54,8 +54,9 @@ sub useradmin {
       $self->reply("User $username already exists!");
       return;
     }
-    $self->{perlbot}{users}{$username} = new Perlbot::User($username, $self->{perlbot}->config);
+    $self->{perlbot}->config->value('user')->{$username} = {};
     $self->{perlbot}->config->save;
+    $self->{perlbot}{users}{$username} = new Perlbot::User($username, $self->{perlbot}->config);
     $self->reply("Added user: $username");
 
   } elsif ($command eq 'remove') {
@@ -69,7 +70,6 @@ sub useradmin {
     foreach my $hostmask (@{$other_user->hostmasks}) {
       $self->reply($hostmask);
     }
-
   } elsif ($command eq 'addhostmask') {
     my $hostmask = $arguments;
     if (!$hostmask) {

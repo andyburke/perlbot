@@ -37,7 +37,7 @@ sub auth {
   if (my $check_user = $self->{perlbot}->get_user($username)) {
     if ($check_user->password
         && (crypt($password, $check_user->password) eq $check_user->password())) {
-      $check_user->add_hostmask($userhost);
+      $check_user->add_temp_hostmask($userhost);
       $check_user->curnick($event->nick);
       $self->reply("User $username authenticated!");
     } else {

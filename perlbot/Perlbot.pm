@@ -469,7 +469,8 @@ sub get_user {
   #       go back to the foreach user loop
 
   foreach my $user (values %{$self->users}) {
-    foreach my $tempmask (@{$user->hostmasks}) {
+    my @hostmasks = (@{$user->hostmasks}, @{$user->temphostmasks});
+    foreach my $tempmask (@hostmasks) {
       $regex = hostmask_to_regexp($tempmask);
       if ($param =~ /^$regex$/i) {
         push(@tempusers, $user);
