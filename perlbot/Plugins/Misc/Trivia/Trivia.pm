@@ -231,10 +231,13 @@ sub answer {
     $timerank = $self->{timeranks}{$nick};
 
     my $numanswerers = keys(%{$self->{answeredthisquestion}});
+    print "numanswerers: $numanswerers\n";
     if(!defined($self->{performanceoverall}{$nick})) {
       $self->{performanceoverall}{$nick} = 0;
     }
+    print "perf of $nick: $self->{performanceoverall}{$nick}\n";
     $self->{performanceoverall}{$nick} = $self->{performanceoverall}{$nick} + $numanswerers - 1;
+    print "perf of $nick: $self->{performanceoverall}{$nick}\n";
 
     my @perfranks = $self->rankplayersbyperformance($self->getqualifyingplayers());
     my $oldperfrank = $self->{performanceranks}{$nick};
