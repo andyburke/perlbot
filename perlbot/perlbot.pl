@@ -15,7 +15,7 @@ use Perlbot;
 use PerlbotCore;
 
 # from Perlbot.pm
-$debug = 2;
+$debug = $ENV{PERLBOT_DEBUG};
 
 if($^O =~ /mac/i) {
   $dirsep = ':';

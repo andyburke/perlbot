@@ -282,16 +282,8 @@ commands.txt in its subdirectory as well.
 5.0 Debugging
 =============
 
-  Should you have problems, please edit perlbot.pl and near the top where
-  it says:
-
-    $debug = 0;
-
-  change it to:
-
-    $debug = 1;
-
-  Then, from your shell, run:
+  If you have major problems, please set the environment variable
+  PERLBOT_DEBUG to 1.  Then, run:
 
     ./perlbot.pl > pb_log.txt
 
