@@ -61,6 +61,10 @@ sub update_date {
     $year += 1900; #yay, y2k!
     $mon += 1;
 
+    if($debug) {
+      print "Updating date to: $year.$mon.$mday\n";
+    }
+
     $self->curyr($year);
     $self->curmon($mon);
     $self->curday($mday);
@@ -74,9 +78,14 @@ sub open {
     stat $basedir or mkdir($basedir, 0755);
     stat $basedir.$dirsep.from_channel($self->chan) or mkdir($basedir.$dirsep.from_channel($self->chan), 0755);
 
+    $self->update_date();
     $date = sprintf("%04d.%02d.%02d", $self->curyr, $self->curmon, $self->curday);
 
-    $self->update_date();
+    if($debug) {
+      print "Opening log file: " . $self->curyr . "." . $self->curmon . "." . $self->curday . "\n";
+    }
+
+
     $self->{file}->close if $self->{file}->opened;   # is this necessary?
     my $result = $self->{file}->open(">>$basedir".$dirsep.from_channel($self->chan).$dirsep."$date");
     if (!$result) {
@@ -102,6 +111,10 @@ sub write {
     # make sure the log file's there...
     #    stat ">>basedir".$dirsep.from_channel($self->chan).$dirsep.$self->curyr.'.'.$self->curmon.'.'.$self->curday or
     if(!$self->{file}->opened) { $self->open(); } 
+
+    if($debug) {
+      print "Logging at: real: $year.$mon.$mday / internal: " . $self->curyr . "." . $self->curmon . "." . $self->curday . "\n";
+    }
 
     # if the date has changed, roll the log file
     unless ($mday==$self->curday and $mon==$self->curmon and $year==$self->curyr) {
