@@ -50,7 +50,8 @@ sub init {
 
   $self->hook('trivia', \&starttrivia);
   $self->hook('stoptrivia', \&stoptrivia);
-  $self->hook('top', \&top);
+  $self->hook('triviatop', \&triviatop);
+  $self->hook('triviastats', \&triviastats);
   $self->hook(\&answer);
 
 }
@@ -247,7 +248,7 @@ sub endofgame {
   $self->reply("Trivia Winner for this round is: $winner with $winnerscore wins and a fastest time of $fastest!");
 }
 
-sub top {
+sub triviatop {
   my $self = shift;
   my $user = shift;
   my $text = shift;
@@ -263,6 +264,31 @@ sub top {
     $self->reply("$rank -- $name (Wins: $self->{playersoverall}{$name})");
     $rank++;
     if($rank >= $num + 1) { last; }
+  }
+}
+
+sub triviastats {
+  my $self = shift;
+  my $user = shift;
+  my $text = shift;
+
+  my ($nick) = $text =~ /(\w+)/;
+
+  if(!defined($nick)) {
+    $self->reply_error('You must specify a nick to get stats on!');
+    return;
+  }
+
+  if(defined($self->{playersoverall}{$nick})) {
+    my @ranks = sort { $self->{playersoverall}{$b} <=> $self->{playersoverall}{$a} } keys(%{$self->{playersoverall}});
+
+    my $rank = 1;
+    foreach my $name (@ranks) {
+      $self->{ranks}{$name} = $rank;
+      $rank++;
+    }
+
+    $self->reply("$nick: Rank: $self->{ranks}{$nick} Wins: $self->{playersoverall}{$nick} Fastest: $self->{usersfastestoverall}{$nick}");
   }
 }
 
