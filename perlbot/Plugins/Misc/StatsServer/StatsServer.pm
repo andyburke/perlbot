@@ -43,13 +43,30 @@ sub stats {
   my @args = @_;
 
   if(!scalar @args) {
-    my $response = "<html><head><title>Bot Stats</title></head><body><ul><li><a href=\"/stats/html\">HTML Stats</a><li><a href=\"/stats/xml\">XML Stats</a></body></html>";
+    my $response = '
+<html>
+  <head>
+    <title>Bot Stats</title>
+    <link rel="stylesheet" href="/perlbot.css" type="text/css" />
+  </head>
+  <body>
+    <ul>
+      <li><a href="/stats/html">HTML Stats</a>
+      <li><a href="/stats/xml">XML Stats</a>
+  </body>
+</html>';
 
     return ('text/html', $response);
   }
 
   if($args[0] eq 'html') {
-    my $response = "<html><head><title>Bot Stats</title></head><body>";
+    my $response = '
+<html>
+  <head>
+    <title>Bot Stats</title>
+    <link rel="stylesheet" href="/perlbot.css" type="text/css" />
+  </head>
+  <body>';
 
     $response .= "<p>Perlbot " . $Perlbot::VERSION . " by " . $Perlbot::AUTHORS;
     $response .= "<br>Known Users: " . scalar keys(%{$self->perlbot->users});

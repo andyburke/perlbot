@@ -49,7 +49,12 @@ sub ircstats {
   my @args = @_;
 
   if(!scalar @args) {
-    my $response = "<html><head><title>IRC Stats</title></head>";
+    my $response = '
+<html>
+  <head>
+    <title>IRC Stats</title>
+    <link rel="stylesheet" href="/perlbot.css" type="text/css" />
+  </head>';
 
     $response .= "<body>Stats for channel:<p><ul>";
 
@@ -73,7 +78,13 @@ sub ircstats {
     # dump stats for $channel
     
     my $chan = $args[0];
-    my $response = "<html><head><title>IRC Stats</title></head><body>";
+    my $response = '
+<html>
+  <head>
+    <title>IRC Stats</title>
+    <link rel="stylesheet" href="/perlbot.css" type="text/css" />
+  </head>
+  <body>';
     
     $response .= "<p>Channel statistics for #$chan";
     
@@ -109,7 +120,8 @@ sub ircstats {
       if(exists($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)})) {
         $percentage = sprintf("%0.0f", 100 * ($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)} / $totallines));
       }
-      $response .= "<td width=4% valign=bottom align=middle><img src=\"/ircstats/pixel.jpg\" height=" . ($normalization_factor * $percentage) . " width=12></td>";
+      $response .= "<td width=4% valign=bottom align=middle><div class=\"tableheader\" style=\"height: " . ($normalization_factor * $percentage) . "px; width: 12px;\"></div>";
+#<img src=\"/ircstats/pixel.jpg\" height=" . ($normalization_factor * $percentage) . " width=12></td>";
     }
 
     $response .= "</tr><tr height=10>";

@@ -74,7 +74,13 @@ sub regurgitate_web {
 
   my %urls;
 
-  my $response = "<html><head><title>URLs</title></head><body>";
+  my $response = '
+<html>
+  <head>
+    <title>URLs</title>
+    <link rel="stylesheet" href="/perlbot.css" type="text/css" />
+  </head>
+  <body>';
 
   foreach my $storedurl (@{$self->{urls}}) {
     my ($channel, $nick, $time, $url) = split('::::', $storedurl);
