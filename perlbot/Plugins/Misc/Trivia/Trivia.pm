@@ -590,7 +590,7 @@ sub rankplayersbyperformance {
   my $self = shift;
   my @players = @_;
 
-  my @ranks = sort { $self->{performanceoverall}{$a} <=> $self->{performaceoverall}{$b} }
+  my @ranks = sort { $self->{performanceoverall}{$b} <=> $self->{performaceoverall}{$a} }
                    @players;
 
   return @ranks;
