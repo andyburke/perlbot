@@ -12,10 +12,17 @@ sub init {
   $self->want_fork(0);
 
   tie %{$self->{notes}},  'DB_File', File::Spec->catfile($self->{directory}, 'notesdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+  tie %{$self->{notified}},  'DB_File', File::Spec->catfile($self->{directory}, 'notifieddb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
   $self->hook('note', \&note);
   $self->hook('listnotes', \&listnotes);
   $self->hook('readnote', \&readnote);
+
+  $self->hook_event('public', \&notify);
+  $self->hook_event('msg', \&notify);
+  $self->hook_event('join', \&notify);
+  $self->hook_event('part', \&notify);
+
 }
 
 sub note {
@@ -34,6 +41,7 @@ sub note {
     if($recipient eq $tmpuser || $recipient eq $self->{perlbot}{users}{$tmpuser}{curnick}) {
       $self->{notes}{$tmpuser} .= time() . ":::${sender}:::${note}::::";
       $self->reply("Note stored for $recipient");
+      $self->{notified}{$tmpuser} = 0;
       return;
     }
   }      
@@ -103,6 +111,21 @@ sub readnote {
     } 
   } else {
     $self->reply('You are not a known user!');
+  }
+}
+
+sub notify {
+  my $self = shift;
+  my $event = shift;
+  my $user = $self->{perlbot}->get_user($event->from);
+
+  if($user) {
+    if(exists($self->{notified}{$user->name})) {
+      if(!$self->{notified}{$user->name}) {
+        $self->{perlbot}->msg($user->curnick, 'You have notes stored for you!');
+        $self->{notified}{$user->name} = 1;
+      }
+    }
   }
 }
 

@@ -362,7 +362,7 @@ sub _process { # _process to stay out of people's way
 
   foreach my $hook (keys(%{$self->{hooks}})) {
     my $regexp = $self->{perlbot}->config->value(bot => 'commandprefix') . $hook;
-    if($text =~ /^\Q${regexp}\E?(?:\s+|$)/i) {
+    if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
 
@@ -440,7 +440,7 @@ sub _process { # _process to stay out of people's way
       } else {
         $self->{lastcontact} = $event->{to}[0];
       }
-      $self->_dispatch($self->{advanced_hooks}{$advanced_hook}, $user, $event, $texttocallwith);
+      $self->_dispatch($self->{advanced_hooks}{$advanced_hook}, $user, $texttocallwith, $event);
     }
   }
 

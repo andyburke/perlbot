@@ -23,9 +23,10 @@ sub init {
 sub auth {
     my $self = shift;
     my $user = shift;
+    my $text = shift;
     my $event = shift;
     my $userhost = $event->from();
-    my ($username, $password) = split(' ', shift, 2);
+    my ($username, $password) = split(' ', $text, 2);
 
     if(!$username || !$password || $password eq "''") {
 	#FIXME: make this return the help shit
@@ -37,6 +38,8 @@ sub auth {
 	if($self->{perlbot}{users}{$username}->password()
 	   && (crypt($password, $self->{perlbot}{users}{$username}->password()) eq $self->{perlbot}{users}{$username}->password())) {
 	    $self->{perlbot}{users}{$username}->hostmasks($userhost); # add this hostmask
+            my $user = $self->{perlbot}->get_user($userhost);
+            $user->curnick($event->nick);
 	    $self->reply("User $username authenticated!");
 	} else {
 	    $self->reply_error('Bad password!');
