@@ -8,6 +8,8 @@ use strict;
 
 
 if (!@ARGV) {
+  print "Perlbot 1.x->2.x logfile converter\n";
+  print "---\n\n";
   print "Please specify a channel log directory (e.g. ../logs/channame).\n";
   exit 1;
 }
