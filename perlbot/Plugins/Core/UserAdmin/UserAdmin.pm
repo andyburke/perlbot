@@ -124,7 +124,7 @@ sub useradmin {
     }
     $channel->add_op($other_user);
     $self->perlbot->config->save;
-    $self->reply("Added $username to the list of ops for $channel");
+    $self->reply("Added $username to the list of ops for $channame");
 
   } else {
     $self->reply_error("Unknown command: $command");

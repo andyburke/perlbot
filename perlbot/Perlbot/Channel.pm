@@ -123,13 +123,18 @@ sub is_member {
 }
 
 sub add_op {
-    my $self = shift;
-    my $user = shift;
-
-    defined $user or return;
-    if (! $self->is_op($user)) {
-      push @{$self->config->value(channel => $self->name => 'op')}, $user->name;
+  my $self = shift;
+  my $user = shift;
+  
+  defined $user or return;
+  if (!$self->is_op($user)) {
+    if(!defined($self->config->value(channel => $self->name => 'op'))) {
+      $self->{config}->{_config}->{channel}->{$self->name}->{'op'} = [];
     }
+    
+    push @{$self->config->value(channel => $self->name => 'op')}, $user->name;
+    
+  }
 }
 
 sub join {
@@ -144,3 +149,10 @@ sub part {
 }
 
 1;
+
+
+
+
+
+
+
