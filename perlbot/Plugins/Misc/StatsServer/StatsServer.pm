@@ -49,7 +49,7 @@ sub stats {
     $response .= "<br>Known Users: " . scalar keys(%{$self->perlbot->users});
     $response .= "<br>Active Channels: " . scalar keys(%{$self->perlbot->channels});
     $response .= "<br>Active Plugins: " .  scalar @{$self->perlbot->plugins};
-    $respinse .= "<br>Uptime: " . $self->perlbot->humanreadableuptime();
+    $response .= "<br>Uptime: " . $self->perlbot->humanreadableuptime();
 
     $response .= "<p><b>Channels:</b>";
     $response .= "<table width=100% border=1><tr><th width=20%>Name</th><th>Topic</th></tr>";

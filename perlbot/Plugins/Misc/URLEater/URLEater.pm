@@ -20,6 +20,7 @@ sub init {
 
   $self->hook_event('public', \&eaturl);
   $self->hook('urls', \&regurgitate);
+  $self->hook_web('urls', \&regurgitate_web, 'Recent URLs');
 }
 
 sub eaturl {
@@ -65,3 +66,42 @@ sub regurgitate {
 
   $self->reply(@reply);
 }
+
+sub regurgitate_web {
+  my $self = shift;
+  my @args = @_;
+
+  my %urls;
+
+  my $response = "<html><head><title>URLs</title></head><body>";
+
+  foreach my $storedurl (@{$self->{urls}}) {
+    my ($channel, $nick, $time, $url) = split('::::', $storedurl);
+    push(@{$urls{$channel}}, [$nick, $time, $url]);
+  }
+
+  foreach my $channel (keys(%urls)) {
+    if($channel =~ /\s/) { next; }
+    $response .= "<p><b>$channel:</b><p>";
+    for(my $i = 0; $i < 5; $i++) {
+      if(defined($urls{$channel}[$i])) {
+        my ($nick, $time, $url) = @{$urls{$channel}[$i]};
+        $response .= "<a href=\"$url\">$url</a> -- $nick<br>";
+      }
+    }
+  }
+
+  $response .= "</body></html>";
+
+  return ('text/html', $response);
+}
+
+1;
+      
+
+
+
+
+
+
+
