@@ -159,6 +159,21 @@ Table of Contents
                   ircname would be a good idea on these nets.  The default
                   is "imabot".
 
+    - commandchar-This is the character (or string) to prefix internal
+                  commands when speaking them to the bot in public or via
+		  msg.  The default is "#" to mimic "classic" behavior.
+
+    - pluginchar- This is the character (or string) to prefix plugin
+		  commands when speaking them to the bot in public or via
+		  msg.  The default is "!" to mimic "classic" behavior.
+		  Feel free to set pluginchar and commandchar to the same
+		  thing if you like.  Also, you could set pluginchar to
+		  something like "mybotname," which would allow you to say,
+		  for example, "mybotname, foo 123" instead of "!foo 123".
+		  However, the character is the same in public and in
+		  messages, so this trick might make msg commands
+		  cumbersome.
+
     - crashlogdir-This is the directory to which crash logs will be written.
                   When something goes wrong and the bot crashes unexpectedly,
 		  a perl stack trace will be dumped to "crashlog.txt" in this
