@@ -396,6 +396,8 @@ sub endofgame {
   }
 
   if($winnerscore == -1) {
+    $self->{curquestion} = 1;
+    $self->{state} = 'idle';
     return;
   }
 
