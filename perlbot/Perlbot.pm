@@ -10,7 +10,7 @@ use Perlbot::Config;
 use Perlbot::User;
 use Perlbot::Channel;
 
-our $VERSION = '1.9.5';
+our $VERSION = '1.9.6';
 our $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
 
 use fields qw(starttime configfile config ircobject ircconn msg_queue empty_queue webserver plugins handlers handlers_backup users channels curnick masterpid);
