@@ -98,7 +98,15 @@ sub answer {
 
   my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
 
-  if(amatch(lc($answer), lc($text))) {
+  my $correct = 0;
+
+  if(length($answer) < 5) {
+    if(lc($answer) eq lc($text)) { $correct = 1; }
+  } else {
+    if(amatch(lc($answer), lc($text))) { $correct = 1; }
+  }
+
+  if($correct) {
     my $timediff = sprintf("%0.2f", time() - $self->{askedtime});
     $self->{answered} = 1;
     $self->{state} = 'answered';
