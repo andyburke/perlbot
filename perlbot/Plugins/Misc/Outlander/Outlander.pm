@@ -3,6 +3,8 @@ package Perlbot::Plugin::Outlander;
 use Perlbot::Plugin;
 @ISA = qw(Perlbot::Plugin);
 
+use strict;
+
 use WWW::Babelfish;
 use MegaHAL;
 
@@ -27,7 +29,7 @@ sub init {
                        'I have a comprehension of time lasts you',
                        'slow down you, you are confusing me!',
                        'I am much konfus',
-                       'I do not understand',
+                       'I do not understand'
                        ];
 
   $self->hook(\&sodoit);
@@ -147,3 +149,5 @@ sub babel {
   $curresult =~ s/\&nbsp\;//g; 
   return $curresult;
 }
+
+1;
