@@ -1,0 +1,5 @@
+<help>
+  <overview>This plugin allows you to set an alarm.</overview>
+  <command name="alarm">This sets an alarm time and message.</command>
+  <usage name="alarm">alarm [[[dd:]hh:]mm:]ss (message)</usage>
+</help>
