@@ -113,18 +113,25 @@ sub start {
   my $self = shift;
 
   # this reads our config and puts it into $self->{config}
-  $self->{config} = new Perlbot::Config($self->{configfile})
-      or die "Couldn't read main config file '$self->{configfile}'\n";
+  $self->{config} = new Perlbot::Config($self->{configfile});
+  if (!$self->{config}) {
+    print "Couldn't read main config file '$self->{configfile}'\n";
+    exit -1;
+  }
 
   # this will pull some stuff out of our config and create
   # appropriate objects in the bot
   $self->process_config;
 
   # config file must at the very least define a bot section and a server
-  $self->config->value('bot')
-      or die "No bot section in config file '$self->{configfile}'\n";
-  $self->config->value('server')
-      or die "No servers specified in config file '$self->{configfile}'\n";
+  if (! $self->config->value('bot')) {
+    print "No bot section in config file '$self->{configfile}'\n";
+    exit -1;
+  }
+  if (! $self->config->value('server')) {
+    print "No servers specified in config file '$self->{configfile}'\n";
+    exit -1;
+  }
 
   # here we loop over our defined servers attempting to connect.  we pause
   # after trying all the servers, before trying the first one again.
