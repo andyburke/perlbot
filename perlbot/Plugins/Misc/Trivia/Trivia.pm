@@ -242,6 +242,7 @@ sub top {
   my $text = shift;
 
   my ($num) = $text =~ /(\d+)/;
+  $num ||= 5;
 
   if($num > 10) { $num = 10; }
 
