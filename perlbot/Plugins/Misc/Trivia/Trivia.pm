@@ -182,8 +182,19 @@ sub answer {
 
     $winsrank = $self->{winsranks}{$nick};
 
+    my @timeranks = $self->rankplayersbytime();
+    my $oldtimerank = $self->{timeranks}{$nick};
+    
+    my $timerank = 1;
+    foreach my $name (@timeranks) {
+      $self->{timeranks}{$name} = $timerank;
+      $timerank++;
+    }
+
+    $timerank = $self->{timeranks}{$nick};
+
     $self->reply("The answer was: $answer");
-    $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} PR:$percentagerank WR:$winsrank");
+    $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} PR:$percentagerank WR:$winsrank TR:$timerank");
     $self->reply("        This round: FT:$self->{fastest}{$nick} S:" . sprintf("%0.1f", 100 * ($self->{score}{$nick} / $self->{answeredthisround}{$nick})) . "% W:$self->{score}{$nick} A:$self->{answeredthisround}{$nick}");
 
     if($timediff < $self->{fastest}{$nick}) {
@@ -343,11 +354,12 @@ sub triviatop {
   if($num > 10) { $num = 10; }
 
   $self->reply("Top $num trivia players are: (you must answer at least $self->{minquestionsanswered} questions to be ranked!)");
+  $self->reply("Percentage Rankgings:  Wins Rankings:      Time Rankings:");
 
   my @ranks = $self->rankplayersbypercentage();
   my $rank = 1;
   foreach my $name (@ranks) {
-    push(@response, "$rank -- " . sprintf("%-10s", $name) . " (Score: " . $self->score($name) . "%)");
+    push(@response, "$rank - " . sprintf("%-10s", $name) . " (" . $self->score($name) . "%)");
     $rank++;
     if($rank >= $num + 1) { last; }
   }
@@ -356,7 +368,17 @@ sub triviatop {
   $rank = 1;
   foreach my $name (@ranks) {
     if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . "   $rank -- " . sprintf("%-10s", $name) . " (Wins: " . $self->{correctlyanswered}{$name} . ")";
+      $response[$rank - 1] = $response[$rank - 1] . " $rank - " . sprintf("%-10s", $name) . " (" . $self->{correctlyanswered}{$name} . ")";
+      $rank++;
+      if($rank >= $num + 1) { last; }
+    }
+  }
+
+  @ranks = $self->rankplayersbytime();
+  $rank = 1;
+  foreach my $name (@ranks) {
+    if($response[$rank - 1]) {
+      $response[$rank - 1] = $response[$rank - 1] . " $rank - " . sprintf("%-10s", $name) . " (" . $self->{fastestoverall}{$name} . ")";
       $rank++;
       if($rank >= $num + 1) { last; }
     }
@@ -381,8 +403,6 @@ sub triviastats {
   if($self->{totalanswered}{$nick}) {
 
     my @percentageranks = $self->rankplayersbypercentage();
-    my $oldpercentagerank = $self->{percentageranks}{$nick};
-    
     my $percentagerank = 1;
     foreach my $name (@percentageranks) {
       $self->{percentageranks}{$name} = $percentagerank;
@@ -391,9 +411,7 @@ sub triviastats {
 
     $percentagerank = $self->{percentageranks}{$nick};
 
-    my @winsranks = $self->rankplayersbywins();
-    my $oldwinsrank = $self->{winsranks}{$nick};
-    
+    my @winsranks = $self->rankplayersbywins();    
     my $winsrank = 1;
     foreach my $name (@winsranks) {
       $self->{winsranks}{$name} = $winsrank;
@@ -402,7 +420,16 @@ sub triviastats {
 
     $winsrank = $self->{winsranks}{$nick};
 
-    $self->reply("$nick: % Rank: $percentagerank  Wins Rank: $winsrank  Wins: $self->{correctlyanswered}{$nick}  Answered: $self->{totalanswered}{$nick}  Score: " . $self->score($nick) . "%  Fastest: $self->{fastestoverall}{$nick}");
+    my @timeranks = $self->rankplayersbytime();
+    my $timerank = 1;
+    foreach my $name (@timeranks) {
+      $self->{timeranks}{$name} = $timerank;
+      $timerank++;
+    }
+
+    $winsrank = $self->{winsranks}{$nick};
+
+    $self->reply("$nick: %R:$percentagerank  WR:$winsrank  TR:$timerank  W:$self->{correctlyanswered}{$nick}  TA:$self->{totalanswered}{$nick}  S:" . $self->score($nick) . "%  FT: $self->{fastestoverall}{$nick}");
   }
 }
 
@@ -450,6 +477,15 @@ sub rankplayersbywins {
   my $self = shift;
 
   my @ranks = sort { $self->{correctlyanswered}{$b} <=> $self->{correctlyanswered}{$a} }
+                   $self->getqualifyingplayers();
+
+  return @ranks;
+}
+
+sub rankplayersbytime {
+  my $self = shift;
+
+  my @ranks = sort { $self->{fastestoverall}{$a} <=> $self->{fastestoverall}{$b} }
                    $self->getqualifyingplayers();
 
   return @ranks;
