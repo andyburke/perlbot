@@ -2,17 +2,21 @@ CHANGES:
 
 1.9.4 - showstopper forking bug in webserver fixed, misc fixes, additions
 - Added the Perlbot::schedule method to abstract some more IRC-specific stuff
-- DTD updates, MLView (http://www.freesoftware.fsf.org/mlview/) can now edit our stuff.
+- DTD updates, MLView (http://www.freesoftware.fsf.org/mlview/) can now
+  edit our stuff.
 - Added the process id to debug output to ease tracing of forking problems.
 - Moved accept() before fork() to fix hung children problem in the webserver.
 Plugins:
 - Redir: fixed the list command.
-- UserUpdater: Converted to use Perlbot::schedule instead of Perlbot::ircconn::schedule
+- UserUpdater: Converted to use Perlbot::schedule instead of
+  Perlbot::ircconn::schedule
 - BitchOps: Unnecessary debugging info removed
-- IRCStats: Added, publishes hourly channel traffic figures and average channel membership to a web page
+- IRCStats: Added, publishes hourly channel traffic figures and average
+  channel membership to a web page
 - LogServer: Definedness checks added to reduce whining
-- StatsServer: Better HTML output, topic setter published, sorted userlist, member count, etc.
-- Trivia: Checks for existence before outputting web trivia stats. Perlbot::schedule.
+- StatsServer: Better HTML output, topic setter published, sorted userlist,
+  member count, etc.
+- Trivia: Checks for existence before outputting web trivia stats.
 - URLEater: Web stuff made to print URLs in a sane order
 - Weather: Better definedness checking.
 
