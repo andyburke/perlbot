@@ -18,9 +18,18 @@ sub new {
 
   bless $self, $class;
 
-  $self->load or $self = undef; # return undef if loading fails
+  # if we didn't get a filename, just send back a config object
+  # otherwise
+  #   try to load the config
+  #   if we can't, then return undef
 
-  return $self;
+  if(!$filename) {
+    return $self;
+  } else {
+    $self->load or $self = undef;
+    return $self;
+  }
+
 }
 
 

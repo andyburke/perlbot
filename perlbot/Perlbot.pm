@@ -34,6 +34,7 @@ sub new {
 
   $SIG{INT} = sub { $self->shutdown('ctrl-c from console') };
   $SIG{HUP} = sub { $self->reload_config };
+  $SIG{__DIE__} = sub { $self->sigdie_handler };
 
   return $self;
 }
@@ -104,6 +105,14 @@ sub shutdown {
   exit 0;
 }
 
+sub sigdie_handler {
+  my $self = shift;
+
+  open CRASHLOG, ">>" . File::Spec->catfile($self->config->value(bot => 'crashlogdir'), 'crashlog') or warn "Could not open crashlog '$crashlog' for writing: $!";
+  print CRASHLOG "Died with: $_[0]\n\n", Carp::longmess(), "\n=====\n\n\n";
+  close CRASHLOG;
+}
+
 
 sub reload_config {
   my $self = shift;
@@ -153,7 +162,7 @@ sub process_config {
     foreach my $channel (keys(%{$self->config->value('channel')})) {
       $channel = normalize_channel($channel);
       print "process_config: loading channel '$channel'\n" if $DEBUG;
-      my $chan = new Perlbot::Chan($channel, $self->config);
+      my $chan = new Perlbot::Channel($channel, $self->config);
       $self->channels->{$channel} = $chan;
     }
   }

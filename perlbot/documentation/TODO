@@ -16,13 +16,13 @@ for 2.0:
   of warnings without this check)
 - User and Chan objects should know how to build a skeleton version of
   themselves in the config if their entry doesn't already exist
-- join/part shouldn't touch Chan objects
+- join/part should use dummy config objects
 - see if anyone else has written something like our Config.  if so, look
   into using it.  if not, perhaps generalize our code and publish
   separately.
 - caching hostmasks for use by get_user - may help performance issues, but
   do those issues even exist?
-- crashlog
+- crashlog looks a little odd, check it out
 - profile code, look for candidates for optimization (no need to rush this)
 
 

@@ -2,7 +2,7 @@ package Perlbot::Plugin::UserControl;
 
 use Perlbot;
 use Perlbot::Utils;
-use Perlbot::Chan;
+use Perlbot::Channel;
 use Perlbot::Plugin;
 
 @ISA = qw(Perlbot::Plugin);
@@ -49,7 +49,7 @@ sub join {
   my ($channel, $key) = split(' ', shift, 2);
 
   $channel = normalize_channel($channel);
-  my $chan = new Perlbot::Chan($channel, $self->{perlbot}->config);
+  my $chan = new Perlbot::Channel($channel, new Perlbot::Config());
   $chan->key($key);
   $self->{perlbot}->channels->{$channel} = $chan;
   $self->{perlbot}->join($chan);
@@ -65,6 +65,7 @@ sub part {
   if ($self->{perlbot}->get_channel($channel)) {
     $self->{perlbot}->part($self->{perlbot}->get_channel($channel));
     delete $self->{perlbot}->channels->{$channel};
+    $self->{perlbot}->lajsd;
   } else {
     $self->reply("I am not currently in $channel");
   }
