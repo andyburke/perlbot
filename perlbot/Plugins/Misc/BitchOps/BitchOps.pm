@@ -1,5 +1,6 @@
 package Perlbot::Plugin::BitchOps;
 
+use strict;
 use Perlbot::Plugin;
 use base qw(Perlbot::Plugin);
 

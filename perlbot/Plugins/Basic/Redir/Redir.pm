@@ -1,5 +1,6 @@
 package Perlbot::Plugin::Redir;
 
+use strict;
 use Perlbot::Plugin;
 use base qw(Perlbot::Plugin);
 use fields qw(redirs);

@@ -1,5 +1,6 @@
 package Perlbot::Plugin::Protection;
 
+use strict;
 use Perlbot::Plugin;
 use base qw(Perlbot::Plugin);
 use fields qw(deoppers);

@@ -1,5 +1,6 @@
 package Perlbot::Plugin::Babelfish;
 
+use strict;
 use Perlbot::Plugin;
 use base qw(Perlbot::Plugin);
 
@@ -35,7 +36,7 @@ sub translate {
     $source =~ s/(.)(.*)/\u$1\L$2\E/;
     $dest =~ s/(.)(.*)/\u$1\L$2\E/;
 
-    $result = $obj->translate( 'source' => $source,
+    my $result = $obj->translate( 'source' => $source,
                                'destination' => $dest,
                                'text' => $string);
 

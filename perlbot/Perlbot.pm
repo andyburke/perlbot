@@ -1,5 +1,6 @@
 package Perlbot;
 
+use strict;
 use Net::IRC;
 use Data::Dumper;
 use Symbol;
@@ -9,8 +10,8 @@ use Perlbot::Config;
 use Perlbot::User;
 use Perlbot::Channel;
 
-$VERSION = '1.9.5';
-$AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
+our $VERSION = '1.9.5';
+our $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
 
 use fields qw(starttime configfile config ircobject ircconn msg_queue empty_queue webserver plugins handlers handlers_backup users channels curnick masterpid);
 
@@ -265,13 +266,13 @@ sub connect {
   #   set our ircconn object to the new one
 
   if ($self->config->exists(server => $index)) {
-    $server    = $self->config->get(server => $index => 'address'); # or die ("Server $i has no address specified\n");
-    $port      = $self->config->get(server => $index => 'port');
-    $password  = $self->config->get(server => $index => 'password');
-    $nick      = $self->config->get(bot => 'nick');
-    $ircname   = $self->config->get(bot => 'ircname');
-    $localaddr = $self->config->get(bot => 'localaddr');
-    $username  = $self->config->get(bot => 'username');
+    my $server    = $self->config->get(server => $index => 'address'); # or die ("Server $i has no address specified\n");
+    my $port      = $self->config->get(server => $index => 'port');
+    my $password  = $self->config->get(server => $index => 'password');
+    my $nick      = $self->config->get(bot => 'nick');
+    my $ircname   = $self->config->get(bot => 'ircname');
+    my $localaddr = $self->config->get(bot => 'localaddr');
+    my $username  = $self->config->get(bot => 'username');
 
     $port ||= 6667;
     $password ||= '';
@@ -547,7 +548,7 @@ sub remove_all_handlers {
   # Iterate over every event we're handling, and try to remove $plugin's
   # handler for that event.  If $plugin doesn't handle an event,
   # remove_handler just silently fails.
-  foreach $event (keys %{$self->handlers}) {
+  foreach my $event (keys %{$self->handlers}) {
     $self->remove_handler($event, $plugin);
   }
 }
@@ -672,7 +673,7 @@ sub get_user {
   foreach my $user (values %{$self->users}) {
     my @hostmasks = ($user->hostmasks, @{$user->temphostmasks});
     foreach my $tempmask (@hostmasks) {
-      $regex = hostmask_to_regexp($tempmask);
+      my $regex = hostmask_to_regexp($tempmask);
       if ($param =~ /^$regex$/i) {
         push(@tempusers, $user);
         last;

@@ -1,5 +1,6 @@
 package Perlbot::Plugin::Opper;
 
+use strict;
 use Perlbot::Plugin;
 use base qw(Perlbot::Plugin);
 
