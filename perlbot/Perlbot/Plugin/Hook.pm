@@ -7,7 +7,7 @@ use fields qw(trigger code authtype eventtypes attributes);
 sub new {
   my $class = shift;
   my $trigger = shift;
-  my $code = shift;
+  my $coderef = shift;
   my $authtype = shift;
   my $eventtypes = shift;
   my $attributes = shift;
@@ -15,7 +15,7 @@ sub new {
   my $self = fields new($class);
 
   $self->trigger = $value;
-  $self->code = $code;
+  $self->coderef = $coderef;
   $self->authtype = $authtype;
   $self->eventtypes = $eventtypes || ['public', 'msg'];
   $self->attributes = $attributes || { respond_when_addressed => 1 };
@@ -45,15 +45,33 @@ sub process {
   my $text = shift;
   my $botnick = shift;
 
-  # return if we ignore this type of event
-  grep(/$event->type/, @{$self->eventtypes}) or return;
-
   if(!ref($self->trigger)) {
-    #if it's just a command...
 
-    #if it's a regexp
+    # return if we ignore this type of event
+    grep(/$event->type/, @{$self->eventtypes}) or return;
+
+    #if it's just a command...
+    if($self->trigger =~ /\w+/) {
+
+      my $regexp = $self->perlbot->config->get(bot => 'commandprefix') . $self->trigger;
+      if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
+        $self->coderef->($self, $user, $text, $event);
+      }
+
+    } else { #if it's a regexp
+
+      if($text =~ /$self->trigger/) {
+        $self->coderef->($self, $user, $text, $event);
+      }
+
+    }
+
   } elsif(ref($self->trigger) eq 'CODE') {
+
     #if $self->trigger returns true...
+    if($self->trigger->($self, $user, $text, $event)) {
+      $self->coderef->($self, $user, $text, $event);
+    }
 
   }
   
