@@ -27,12 +27,17 @@ my $irc;
 my $pid;
 
 # from Perlbot.pm
-$VERSION = '1.2.1';
+$VERSION = '1.2.2';
 $AUTHORS = 'jmuhlich@jhu.edu, burke@pas.rochester.edu';
 
 # Let the user specify a config file as the first command line param, or
 # default to 'config'.
 $PerlbotCore::CONFIG = ($ARGV[0] ? $ARGV[0] : 'config');
+if (! -f $PerlbotCore::CONFIG) {
+  print "\nYou have no config file.  You obviously haven't read the README.\n";
+  print "Please read documentation/manual.txt before running perlbot.\n\n";
+  exit;
+}
 &PerlbotCore::parse_main_config;
 
 $irc = new Net::IRC;
