@@ -75,6 +75,9 @@ sub perldoc_response {
        # Send stderr to stdout, so the bot will report errors back to the user
        open (STDERR, ">&STDOUT") or die "Can't dup stdout: $!\n";
        exec 'perldoc', '-t', split(' ', $query) or die "Can't exec perldoc: $!\n";
+       $conn->{_connected} = 0;
+       exit 0;
+
     }
 
     chomp @text;
