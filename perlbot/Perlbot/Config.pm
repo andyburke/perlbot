@@ -157,7 +157,7 @@ sub _value : lvalue {
       # if we get here, we've reached a "leaf" in the tree but there are
       # still more keys to deal with... that's bad.  complain and stop
       # iterating.  we will return undef.
-      carp "extra config keys specified (" . join(", ", $key, @keys), ") - returning undef";
+      debug("_value: extra config keys specified: " . join('=>', $key, @keys));
       $current = $ref = undef;
       last;
     }
@@ -175,6 +175,12 @@ sub value {
 
   debug("value: deprecated method called");
   $self->_value(@_);
+}
+
+sub exists {
+  my $self = shift;
+
+  return defined $self->_value(@_);
 }
 
 sub get {
