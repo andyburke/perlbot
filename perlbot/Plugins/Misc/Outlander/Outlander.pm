@@ -104,7 +104,7 @@ sub sodoit {
 
   open(KNOWLEDGE, '>' . File::Spec->catfile($self->{directory}, 'knowledge'));
   foreach my $s (@{$self->{symbols}}) {
-    print KNOWLEDGE "$s ";
+    print KNOWLEDGE "$s\n";
   }
   close(KNOWLEDGE);
 }
