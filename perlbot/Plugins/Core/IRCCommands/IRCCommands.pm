@@ -112,7 +112,7 @@ sub op {
   my $channel = shift;
 
   if (!$channel) {
-    # FIXME: tell them about help here
+    $self->reply_error("Please refer to the help for the IRCCommands plugin!");
     return;
   }
 

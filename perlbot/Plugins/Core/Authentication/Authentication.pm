@@ -31,8 +31,7 @@ sub auth {
   my ($username, $password) = split(' ', $text, 2);
 
   if (!$username || !$password || $password eq "''") {
-    #FIXME: make this return the help shit
-    $self->reply_error('usage: auth <username> <password>');
+    $self->reply_error('Please refer to the help for the Authentication plugin!');
     return;
   }
 

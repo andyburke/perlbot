@@ -52,7 +52,10 @@ sub update {
   }
 
   if ($type eq 'quit') {
-    $self->{lastquit} = $nick;
+    # FIXME: consider a solution like plugins being able to defer
+    # here we delay removing them from the channel member list so that the logger
+    # can log their quit.
+    $self->perlbot->ircconn->schedule(1, sub { $self->delayed_quit_remove($nick); });
   }
 
   if ($type eq 'nick') {
@@ -83,12 +86,6 @@ sub update {
     }
   }
 
-  if ($self->{lastquit}) {
-    foreach my $channel (values(%{$self->perlbot->channels})) {
-      $channel->remove_member($nick);
-    }
-  }
-
   if ($user) {
     $user->curnick($nick);
   }
@@ -97,4 +94,21 @@ sub update {
 
 }
 
+sub delayed_quit_remove {
+  my $self = shift;
+  my $nick = shift;
+
+  foreach my $channel (values(%{$self->perlbot->channels})) {
+    $channel->remove_member($nick);
+  }
+}
+
 1;
+
+
+
+
+
+
+
+
