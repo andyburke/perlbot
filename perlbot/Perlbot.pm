@@ -430,11 +430,11 @@ sub find_plugins {
 sub load_plugin {
   my ($self, $plugin) = @_;
 
-  debug("load_plugin: loading plugin: $plugin");
+  debug("load_plugin: loading plugin '$plugin'");
   eval "local \$SIG{__DIE__}='DEFAULT'; require ${plugin}";  # try to import the plugin's package
   # check for module load error
   if ($@) {
-    debug($@);
+    debug("load_plugin:   failed to load '$plugin': $@");
     return 0;
   }
   # determine path to plugin subdirectory
@@ -444,7 +444,7 @@ sub load_plugin {
   my $pluginref = eval "local \$SIG{__DIE__}='DEFAULT'; new Perlbot::Plugin::${plugin}(\$self, \$pluginpath)";
   # check for constructor error
   if ($@) {
-    debug($@);
+    debug("load_plugin:   failed construction of '$plugin': $@");
     return 0;
   }
 
