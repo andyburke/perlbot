@@ -142,7 +142,9 @@ sub sodoit {
     }
   }
 
-  $self->addline($text);
+  if(length($text) > 50) {
+    $self->addline($text);
+  }
   if(time() - $self->{lastseedtime} > 120) {
     $self->seed();
     $self->{lastseedtime} = time();
