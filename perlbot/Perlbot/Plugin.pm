@@ -18,6 +18,7 @@ sub new {
     name => $name,
     perlbot => $perlbot,
     directory => $directory,
+    config => {},
     hooks => {},
     hookres => {},
     addressed_hooks => [],
@@ -38,6 +39,8 @@ sub new {
   $self->want_chat(0);
   $self->want_fork(1);
   $self->want_reply_via_msg(0);
+
+  $self->{config} = $self->read_config();
 
   return $self;
 }

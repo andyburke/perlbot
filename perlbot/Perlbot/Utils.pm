@@ -2,6 +2,7 @@ package Perlbot::Utils;
 
 use strict;
 
+use IO::File;
 use File::Spec;
 use XML::Simple;
 
@@ -29,8 +30,14 @@ $DEBUG ||= 0;
 sub read_generic_config {
   my ($filename) = @_;
 
-  return XMLin($filename,
-               forcearray => 1);
+  my $fh = new IO::File($filename);
+
+  if($fh) {
+    return XMLin($fh,
+                 forcearray => 1);
+  } else {
+    return undef;
+  }
 }
 
 sub write_generic_config {

@@ -1,0 +1,49 @@
+package Perlbot::Plugin::BitchOps;
+
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
+
+use Perlbot::Utils;
+
+sub init {
+  my $self = shift;
+
+  $self->want_public(0);
+  $self->want_msg(0);
+  $self->want_fork(0);
+
+  $self->hook_event('mode', \&modechange);
+}
+
+sub modechange {
+  my $self = shift;
+  my $event = shift;
+  my $modeline = shift @{$event->{args}};
+  my @nicks = @{$event->{args}}; pop @nicks; # stupid irc
+  my $channel = normalize_channel($event->{to}[0]);
+
+  while ($modeline !~ /^([+-][a-z])+$/) {
+    $modeline =~ s/([+-])([a-z])([a-z])/$1$2$1$3/;
+  }
+  my @modes = $modeline =~ /([+-][a-z])/g;
+
+  my %modehash;
+  @modehash{@nicks} = @modes;
+
+  foreach my $nick (keys(%modehash)) {
+    if($nick eq $self->{perlbot}{curnick}) { next; } #heh
+    if($modehash{$nick} eq '+o') {
+      my $validop = 0;
+      foreach my $user (values(%{$self->{perlbot}{users}})) {
+        if(($user->{curnick} eq $nick) && $self->{perlbot}{channels}{$channel}{ops}{$user->{name}}) {
+          $validop = 1;
+        }
+      }
+    }
+    if(!$validop) {
+      $self->{perlbot}->deop($channel, $nick);
+    }
+  }
+}
+
+1;
