@@ -437,9 +437,6 @@ sub event_as_html_string {
                                   [ 'html',
                                     sub {
                                       s#(\w+://.*?|www\d*\..*?|ftp\d*\..*?|web\d*\..*?)(\s+|'|,|$)#<a href="$1">$1</a>$2#g;
-                                    },
-                                    sub {
-                                      s/\s/&nbsp;/g;
                                     }
                                     ]);  
 
