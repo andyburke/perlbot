@@ -125,7 +125,7 @@ sub start {
   while (!$self->connect($i)) {
     $i++;
     if ($i >= @{$self->config->value('server')}) {
-      print "connect: server list exhausted; sleeping and trying again\n" if $DEBUG;
+      debug("connect: server list exhausted; sleeping and trying again");
       $i = 0;
       sleep 5;
     }
@@ -148,7 +148,7 @@ sub shutdown {
     exit;
   }
 
-  print "Shutting down...\n" if $DEBUG;
+  debug("Shutting down...");
 
   $quitmsg ||= 'goodbye';
 
@@ -165,11 +165,11 @@ sub shutdown {
   $self->config->save if !$is_crash;
 
   # sleep a couple seconds to let everything fall apart
-  print "Sleeping 2 seconds...\n" if $DEBUG;
+  debug("Sleeping 2 seconds...");
   sleep 2;
 
   # actually exit
-  print "Exiting\n" if $DEBUG;
+  debug("Exiting");
   exit 0;
 }
 
@@ -195,7 +195,7 @@ sub sigdie_handler {
 sub reload_config {
   my $self = shift;
 
-  print "*** RELOADING CONFIG ***\n" if $DEBUG;
+  debug("*** RELOADING CONFIG ***");
   $self->config->load();
 }
 
@@ -217,7 +217,7 @@ sub process_config {
 
   if ($self->config->value('user')) {
     foreach my $user (keys(%{$self->config->value('user')})) {
-      print "process_config: loading user '$user'\n" if $DEBUG;
+      debug("process_config: loading user '$user'");
       $self->users->{$user} = new Perlbot::User($user, $self->config);
     }
   }
@@ -232,7 +232,7 @@ sub process_config {
   if ($self->config->value('channel')) {
     foreach my $channel (keys(%{$self->config->value('channel')})) {
       $channel = normalize_channel($channel);
-      print "process_config: loading channel '$channel'\n" if $DEBUG;
+      debug("process_config: loading channel '$channel'");
       my $chan = new Perlbot::Channel($channel, $self->config);
       $self->channels->{$channel} = $chan;
     }
@@ -256,7 +256,8 @@ sub connect {
   # make an ircobject if one doesn't exist yet
   if (!$self->{ircobject}) {
     $self->{ircobject} = new Net::IRC;
-    $self->{ircobject}{_debug} = 1 if $DEBUG >= 10;
+#    $self->{ircobject}{_debug} = 1 if $DEBUG >= 10;
+    # FIX ME
   }
 
   # if we already have a connection, back up our handlers

@@ -9,7 +9,6 @@ use Carp;
 
 use vars qw(
             @ISA @EXPORT
-            $DEBUG
             );
 require Exporter;
 
@@ -17,17 +16,37 @@ require Exporter;
 
 # symbols to export
 @EXPORT = qw(
-             $DEBUG
              &read_generic_config &write_generic_config
              &normalize_channel &strip_channel
              &validate_hostmask &hostmask_to_regexp
              &exec_command
+             &debug
           );
 
 
-$DEBUG = $ENV{PERLBOT_DEBUG};
+if($ENV{PERLBOT_DEBUG} !~ /\D+/) {
+  $DEBUG = $ENV{PERLBOT_DEBUG};
+} else {
+  warn("WARNING: Your PERLBOT_DEBUG variable was non-numerical, debugging not enabled!!\n\n");
+}
 $DEBUG ||= 0;
 
+sub debug {
+  my $ref = shift;
+  my $level = shift;
+  $level ||= 1;
+
+  if($level >= $DEBUG) {
+    if(ref($ref) eq 'SCALAR') {
+      print $msg . "\n";
+      return;
+    }
+    if(ref($ref) eq 'CODE') {
+      &$ref;
+      return;
+    }
+  }
+}
 
 sub read_generic_config {
   my ($filename) = @_;
@@ -77,11 +96,11 @@ sub validate_hostmask {
   $hostmask or return 0;
 
   if ($hostmask !~ /^[^!@]+![^!@]+@[^!@]+$/) {
-    print "validate_hostmask: '$hostmask' has bad syntax\n" if $DEBUG;
+    debug("validate_hostmask: '$hostmask' has bad syntax");
     return undef;
   }
   if ($hostmask =~ /!\*@/ or $hostmask =~ /@[\*\.]*$/) {
-    print "validate_hostmask: '$hostmask' is an open hostmask (insecure)\n" if $DEBUG;
+    debug("validate_hostmask: '$hostmask' is an open hostmask (insecure)");
     return undef;
   }
   return 1;

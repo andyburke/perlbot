@@ -283,6 +283,13 @@ Table of Contents
 
           <server address="irc.fdntech.com" port="6667" />
 
+    password
+      - This sets the server password if your server requires authentication.
+
+        Example:
+
+          <server address="irc.fdntech.com" port="6667" password="secret" />
+
   3.3  user
   ---------
 

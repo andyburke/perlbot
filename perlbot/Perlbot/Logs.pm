@@ -62,9 +62,7 @@ sub update_date {
     $year += 1900; #yay, y2k!
     $mon += 1;
 
-    if($DEBUG) {
-      print "Updating date to: $year.$mon.$mday for channel: $self->{chan}\n";
-    }
+    debug("Updating date to: $year.$mon.$mday for channel: $self->{chan}");
 
     $self->curyr($year);
     $self->curmon($mon);
@@ -82,16 +80,11 @@ sub open {
     $self->update_date();
     $date = sprintf("%04d.%02d.%02d", $self->curyr, $self->curmon, $self->curday);
 
-    if($DEBUG) {
-      print "Opening log file: " . File::Spec->catfile(strip_channel($self->{chan}) , $self->curyr . "." . $self->curmon . "." . $self->curday) . "\n";
-    }
-
+    debug("Opening log file: " . File::Spec->catfile(strip_channel($self->{chan}) , $self->curyr . "." . $self->curmon . "." . $self->curday), 2);
 
     $self->{file}->close if $self->{file}->opened;   # is this necessary?
     my $result = $self->{file}->open(">>" . File::Spec->catfile($self->{logdir}, strip_channel($self->chan), "$date"));
-    if (!$result) {
-      print "Could not open logfile " . File::Spec->catfile($self->{logdir}, strip_channel($self->chan), "$date") . ": $!\n" if $DEBUG;
-    }
+    $result or debug("Could not open logfile " . File::Spec->catfile($self->{logdir}, strip_channel($self->chan), "$date") . ": $!");
 }
 
 sub close {
@@ -113,7 +106,7 @@ sub write {
     
     # if the date has changed, roll the log file
     unless ($mday==$self->curday and $mon==$self->curmon and $year==$self->curyr) {
-	print "Rolling log file\n" if $DEBUG;
+	debug("Rolling log file", 2);
 	$self->open();
     }
 
