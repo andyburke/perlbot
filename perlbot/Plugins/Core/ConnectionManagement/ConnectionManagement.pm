@@ -36,6 +36,7 @@ sub join_channels {
     $self->perlbot->join($channel);
     debug("    Sending whois to channel: " . $channel->name, 2);
     $self->perlbot->whois($channel);
+    sleep(1); # so we don't flood
   }
 
 }
