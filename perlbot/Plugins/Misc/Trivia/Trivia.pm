@@ -129,8 +129,11 @@ sub answer {
   }
 
   if(!defined($self->{answeredthisquestion}{$nick})) {
-    if(!defined($self->{answeredthisround}{$nick})) { $self->{answeredthisround}{$nick} = 0; }
-    $self->{answeredthisround}{$nick}++;
+    if(!defined($self->{answeredthisround}{$nick})) {
+      $self->{answeredthisround}{$nick} = 1;
+    } else {
+      $self->{answeredthisround}{$nick}++;
+    }
   }
   $self->{answeredthisquestion}{$nick} = 1;
   
@@ -297,11 +300,13 @@ sub endofgame {
   my $winnerscore = -1;
 
   foreach my $nick (keys(%{$self->{score}})) {
-    if(($self->{score}{$nick} / $self->{answeredthisround}{$nick}) > $winnerscore) {
-      $winner = $nick;
-      $winnerscore = $self->{score}{$nick} / $self->{answeredthisround}{$nick};
+    if($self->{answeredthisround}{$nick} > 0) {
+      if(($self->{score}{$nick} / $self->{answeredthisround}{$nick}) > $winnerscore) {
+        $winner = $nick;
+        $winnerscore = $self->{score}{$nick} / $self->{answeredthisround}{$nick};
+      }
     }
-    $self->{score}{$nick} = 0; # reset wins
+    delete $self->{score}{$nick}; # reset wins
   }
 
   if($winnerscore == -1) {
