@@ -5,6 +5,8 @@ use Perlbot::Plugin;
 
 use strict;
 
+use Perlbot::Utils;
+
 sub init {
   my $self = shift;
 
@@ -37,10 +39,10 @@ sub auth {
 	    $self->{perlbot}{users}{$username}->hostmasks($userhost); # add this hostmask
 	    $self->reply("User $username authenticated!");
 	} else {
-	    $self->reply('Bad password!');
+	    $self->reply_error('Bad password!');
 	}
     } else {
-	$self->reply("No such user: $username");
+	$self->reply_error("No such user: $username");
 	return;
     }
 }
@@ -51,12 +53,12 @@ sub password {
   my $newpassword = shift;
 
   if(!$newpassword) {
-    $self->reply('Must specify a new password!');
+    $self->reply_error('Must specify a new password!');
     return;
   }
 
   if(!$user) {
-    $self->reply('Not a known user, try auth first!');
+    $self->reply_error('Not a known user, try auth first!');
     return;
   }
 
@@ -73,7 +75,7 @@ sub hostmasks {
   my $user = shift;
 
   if(!$user) {
-    $self->reply('Not a known user, try auth first!');
+    $self->reply_error('Not a known user, try auth first!');
     return;
   }
 
@@ -91,19 +93,19 @@ sub addhostmask {
   my $hostmask = shift;
   
   if(!$hostmask) {
-    $self->reply('You must specify a hostmask to add!');
+    $self->reply_error('You must specify a hostmask to add!');
     return;
   }
   
   if(!$user) {
-    $self->reply('You are not a known user!');
+    $self->reply_error('You are not a known user!');
     return;
   }
 
   if(!validate_hostmask($hostmask)) {
-    $self->reply("Invalid hostmask: $hostmask");
+    $self->reply_error("Invalid hostmask: $hostmask");
   } elsif(!$self->{perlbot}{config}{user}{$user->{name}}) {
-    $self->reply("Your user object doesn't exist, that is bad... contact your bot admin");
+    $self->reply_error("Your user object doesn't exist, that is bad... contact your bot admin");
   } else {
     push(@{$self->{perlbot}{config}{user}{$user->{name}}{hostmask}}, $hostmask);
     $self->{perlbot}->write_config();

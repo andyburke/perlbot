@@ -8,6 +8,8 @@ package Perlbot::Plugin::UserAdmin;
 use Perlbot::Plugin;
 @ISA = qw(Perlbot::Plugin);
 
+use strict;
+
 use Perlbot::Utils;
 use Perlbot::User;
 
@@ -27,6 +29,8 @@ sub useradmin {
   my $text = shift;
 
   my ($command, $username, $arguments) = split(' ', $text, 3);
+
+  print "IN USERADMIN: $command $username $arguments\n\n";
 
   if(!$command) {
     $self->reply('You must specify a command!');
@@ -172,12 +176,7 @@ sub useradmin {
     $self->reply_error("Unknown command: $command");
     return;
   }
-  
-
-      
 }
 
-
-
-
+1;
 
