@@ -5,6 +5,7 @@ use Perlbot::Plugin;
 
 use strict;
 use Time::HiRes qw(time);
+use DB_File;
 
 sub init {
   my $self = shift;
@@ -29,11 +30,14 @@ sub init {
   close(TRIVIA);
 
   $self->{players} = {};
+  tie %{$self->{playersoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'playersoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
   $self->{askedtime} = 0;
   
-  $self->{fastest} = 9999;
   $self->{usersfastest} = {};
+  tie %{$self->{usersfastestoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'usersfastetsoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+
+  tie %{$self->{rank}}, 'DB_File', File::Spec->catfile($self->{directory}, 'rankdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
   $self->{curquestion} = 1;
   $self->{numquestions} = 0;
@@ -91,17 +95,22 @@ sub answer {
   if(lc($text) eq lc($answer)) {
     $self->{answered} = 1;
     $self->{players}{$nick}++;
+    $self->{playersoverall}{$nick}++;
     my $timediff = sprintf("%0.2f", time() - $self->{askedtime});
     if(!exists($self->{usersfastest}{$nick})) {
       $self->{usersfastest}{$nick} = $timediff;
+      $self->{usersfastestoverall}{$nick} = $timediff;
     }
+
+#    foreach my $tmpnick (keys(%{$self->{playersoverall}})) {
+#
+#    }
+
     $self->reply("The answer was: $answer");
-    $self->reply("Winner: $nick  Time: $timediff (fastest: $self->{usersfastest}{$nick}) Wins: $self->{players}{$nick}");
-    if($timediff < $self->{fastest}) {
-      $self->{fastest} = $timediff;
-    }
+    $self->reply("Winner: $nick  Time: $timediff (This Round: Fastest: $self->{usersfastest}{$nick} Wins: $self->{players}{$nick}) Overall: Fastest: $self->{usersfastestoverall}{$nick} Wins: $self->{playersoverall}{$nick} Rank: $rank");
     if($timediff < $self->{usersfastest}{$nick}) {
       $self->{usersfastest}{$nick} = $timediff;
+      $self->{usersfastestoverall}{$nick} = $timediff;
     }
 
     $self->{curquestion}++;
@@ -119,7 +128,7 @@ sub askquestion {
   
   if($self->{curquestion} <= $self->{numquestions}) {
 
-    $self->{question} = rand(100000) % keys(%{$self->{questions}}) + 1;
+    $self->{question} = rand(100000) % keys(%{$self->{questions}});
     $self->{state} = 'asked';
     
     my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
@@ -157,9 +166,9 @@ sub hint {
 
   my $hint;
   if(int(rand(2)) == 1) {
-    substr($a, 0, (length($a) - $blackout)) =~ tr[ A-Za-z0-9][ _];
+    substr($a, 0, (length($a) - $blackout)) =~ tr[ A-Za-z0-9][ #];
   } else {
-    substr($a, (length($a) - $blackout)) =~ tr[ A-Za-z0-9][ _];
+    substr($a, (length($a) - $blackout)) =~ tr[ A-Za-z0-9][ #];
   }
 
   $self->reply("Hint: $a");
@@ -193,8 +202,8 @@ sub endofgame {
     if($self->{players}{$nick} > $winnerscore) {
       $winner = $nick;
       $winnerscore = $self->{players}{$nick};
-      $self->{players}{$nick} = 0; # reset wins
     }
+    $self->{players}{$nick} = 0; # reset wins
   }
 
   if($winnerscore == -1) {
@@ -203,7 +212,7 @@ sub endofgame {
 
   my $fastest = $self->{usersfastest}{$winner};
 
-  $self->reply("Trivia Winner is: $winner with $winnerscore wins and a fastest time of $fastest!");
+  $self->reply("Trivia Winner for this round is: $winner with $winnerscore wins and a fastest time of $fastest!");
 }
 
 1;
