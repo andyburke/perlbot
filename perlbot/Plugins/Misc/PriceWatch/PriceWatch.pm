@@ -59,6 +59,9 @@ sub pricewatch {
   ($shipping) = $$row[4];
 
   if ($brand && $product && $price) {
+    $brand =~ s/\n//g;
+    $product =~ s/\n//g;
+    $price =~ s/\n//g;
     $self->reply("$price / $shipping / $brand / $product / $description");
   } else {
     $self->reply_error("No pricewatch matches found for: $text");
@@ -67,4 +70,6 @@ sub pricewatch {
 }
 
 1;
+
+
 
