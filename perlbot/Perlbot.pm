@@ -126,12 +126,17 @@ sub shutdown {
   $self->handlers = {};  
 
   debug("Flushing output queue (this may take a moment)...");
-  $self->empty_queue;
+  $self->ircobject->flush_output_queue();
+  debug("Finsihed flushing output queue...");
 
   # if this isn't the master process, just silently exit.
   if ($$ != $self->masterpid) {
+    debug("Forked plugin exiting... (PID: $$)", 3);
+    debug("|->  Unsetting Net::IRC::Connection::_connected...", 3);
     $self->ircconn->{_connected} = 0;
+    debug("|->  Undeffing channels...", 3);
     $self->channels = undef; # !!! ?
+    debug("\\->  Calling exit...", 3);
     exit;
   }
 
@@ -139,6 +144,7 @@ sub shutdown {
 
   # we sign off of irc here
   debug("Disconnecting from IRC...");
+  debug("\\->  No ircconn object!") if(!$self->ircconn);
   $self->ircconn->quit($quitmsg) if $self->ircconn;
 
   # we go through and call shutdown on each of our plugins
@@ -654,18 +660,6 @@ sub webserver_remove_all_handlers {
   }
 
   return $ret;
-}
-
-# removes all handlers and sends all waiting events, used prior to shutdown
-sub empty_queue {
-  my ($self) = @_;
-
-  debug("outputing " . $self->ircobject->queue . " events...", 3);
-  use Data::Dumper;
-  print Dumper $self->ircobject->queue;
-  while ($self->ircobject->queue) {
-    $self->ircobject->do_one_loop;
-  }
 }
 
 # takes a username or hostmask and returns a user if one exists that matches

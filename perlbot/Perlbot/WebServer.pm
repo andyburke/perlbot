@@ -91,7 +91,7 @@ sub connection {
 
   $connection = $server->accept();
     
-  debug("forking off child", 3);
+  debug("Forking off child process to handle web connection...", 3);
   if (!defined($pid = fork)) {
     return;
   }

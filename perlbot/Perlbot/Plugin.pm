@@ -634,12 +634,14 @@ sub _dispatch {
   if ($self->want_fork) {
     debug("Forking off plugin: " . $self->name, 3);
     if (!defined($pid = fork)) {
+      debug("Error forking plugin: " . $self->name);
       $self->reply_error("fork error in $self->name plugin");
       return;
     }
 
     if ($pid) {
       # parent
+      debug("Forked plugin: " . $self->name . " (PID: " . $pid . ")", 3);
       $SIG{CHLD} = 'IGNORE'; #sub { wait };
     } else {
       # child
