@@ -35,7 +35,7 @@ sub weather {
     my $conditions = $report->{cond};
     my $tempf = $report->{temp};
     my $tempc = sprintf("%d", ($tempf - 32) * (5/9));
-    my $heatindexf = $report->{heat};
+    my ($heatindexf) = ($report->{heat} =~ /(\d+)/);
     my $heatindexc = sprintf("%d", ($heatindexf - 32) * (5/9));
     my $wind = $report->{wind};
     my ($windm) = ($report->{wind} =~ /(\d+)/); $windm = sprintf("%d", $windm * 1.6);

@@ -53,22 +53,22 @@ sub join {
   my $config = $self->{perlbot}->read_config();
   my $chan_hash = $config->{channel}{$channel};
   if($chan_hash) {
-    my $chan = new Chan(name => $channel,
-                        flags => $chan_hash->{flags},
-                        key => $chan_hash->{key},
-                        logging => $chan_hash->{logging},
-                        logdir => $self->{perlbot}{config}{bot}{logdir});
+    my $chan = new Perlbot::Chan(name => $channel,
+                                 flags => $chan_hash->{flags},
+                                 key => $chan_hash->{key},
+                                 logging => $chan_hash->{logging},
+                                 logdir => $self->{perlbot}{config}{bot}{logdir});
     foreach my $op (@{$chan_hash->{op}}) {
       $chan->add_op($op) if (exists($self->{perlbot}{users}{$op}));
     }
 
     $self->{perlbot}{channels}{$chan->{name}} = $chan;
     $self->{perlbot}->join($chan);
-
+    
     return;
   }
-  my $chan = new Chan(name => normalize_channel($channel),
-                      key => $key);
+  my $chan = new Perlbot::Chan(name => normalize_channel($channel),
+                               key => $key);
                         
   $self->{perlbot}{channels}{$chan->{name}} = $chan;
   $self->{perlbot}->join($chan);
