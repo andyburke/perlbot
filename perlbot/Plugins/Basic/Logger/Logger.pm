@@ -35,7 +35,7 @@ sub log {
   my $event = shift; 
   my $channel;
   # stupid, stupid irc
-  $event->type eq 'kick' ? $channel = $event->{args}[0] : $channel = $event->{to}[0];
+  $channel = $event->type eq 'kick' ? $event->{args}[0] : $event->{to}[0];
 
   # nick changes and quits are not associated with channels,
   # so we need to brutal force it

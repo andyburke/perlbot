@@ -141,6 +141,7 @@ sub shutdown {
   # if this isn't the master process, just silently exit.
   if ($$ ne $self->masterpid) {
     $self->ircconn->{_connected} = 0;
+    $self->channels = undef; # !!! ?
     exit;
   }
 
@@ -149,13 +150,19 @@ sub shutdown {
   $quitmsg ||= 'goodbye';
 
   # we sign off of irc here
+  debug("Disconnecting from IRC...");
   $self->ircconn->quit($quitmsg) if $self->ircconn;
 
   # we go through and call shutdown on each of our plugins
+  debug("Unloading all plugins...");
   my @plugins_copy = @{$self->plugins};
   foreach my $plugin (@plugins_copy) {
     $self->unload_plugin($plugin->name);
   }
+
+  # make our Channels get GC'd
+  debug("Removing channel objects...");
+  $self->channels = undef;
 
   # save out our in-memory config file
   $self->config->save if !$is_crash;
