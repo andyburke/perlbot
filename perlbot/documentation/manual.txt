@@ -482,6 +482,16 @@ Table of Contents
 
           <webserver host="www.fdntech.com" port="9000" />
 
+    enabled
+      - This option allows you to disable the webserver.  A value
+        other than 'no' or '0' will enable the webserver.  If this
+        key is absent, the webserver is ENABLED by default.
+
+        Example:
+
+          <webserver host="www.fdntech.com" port="9000" enabled="no" />
+
+
 4.0 Using It
 ============
 

@@ -45,6 +45,14 @@ sub AUTOLOAD : lvalue {
 sub start {
   my $self = shift;
 
+  if($self->perlbot->config->exists(webserver => 'enabled')) {
+    if(!$self->perlbot->config->get(webserver => 'enabled') ||
+       lc($self->perlbot->config->get(webserver => 'enabled')) eq 'no') {
+      debug('Disabling internal webserver due to configuration value.');
+      return;
+    }
+  }
+
   my $hostname = $self->perlbot->config->get(webserver => 'hostname');
   my $port = $self->perlbot->config->get(webserver => 'port');
 
