@@ -243,6 +243,8 @@ sub _process { # _process to stay out of people's way
   my $user  = shift;
   my $text  = shift;
 
+  $text ||= '';
+
   $self->{lastnick} = $event->nick();
   $self->{lasthost} = $event->host();
 
@@ -273,19 +275,17 @@ sub _process { # _process to stay out of people's way
     }
   }
 
-  if($self->{perlbot}{curnick} ne '') {
-    if($text =~ /^$self->{perlbot}{curnick}(?:,|:|\.|\s)*/i) {
-      if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
-        $self->{lastcontact} = $event->nick();
-      } else {
-        $self->{lastcontact} = $event->{to}[0];
-      }
+  if($text =~ /^$self->{perlbot}{curnick}(?:,|:|\.|\s)*/i) {
+    if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
+      $self->{lastcontact} = $event->nick();
+    } else {
+      $self->{lastcontact} = $event->{to}[0];
+    }
 
-      my $texttocallwith = $text;
-      $texttocallwith =~ s/^$self->{perlbot}{curnick}(?:,|:|\.|\s)*//i;
-      foreach my $addressed_hook (@{$self->{addressed_hooks}}) {
-        $self->_dispatch($addressed_hook, $user, $texttocallwith);
-      }
+    my $texttocallwith = $text;
+    $texttocallwith =~ s/^$self->{perlbot}{curnick}(?:,|:|\.|\s)*//i;
+    foreach my $addressed_hook (@{$self->{addressed_hooks}}) {
+      $self->_dispatch($addressed_hook, $user, $texttocallwith);
     }
   }
 
