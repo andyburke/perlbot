@@ -4,18 +4,47 @@
   <channel name="#perlbot"
            flags="+t-ns"
            logging="yes"
-           singlelogfile="no"
            limit="0">
     <op>someone</op>
     <op>otherperson</op>
     <ignoreplugin>SomePlugin</ignoreplugin>
   </channel>
+  <channel name="#dbloggedchannel"
+           logging="yes">
+    <log>
+      <dbuser>perlbot</dbuser>
+      <dbtype>Pg</dbtype>
+      <dbpassword>pw4877sj</dbpassword>
+      <type>DBI</type>
+      <dbname>perlbotlogs</dbname>
+    </log>
+  </channel>
+  <channel name="#remotedbloggedchannel"
+           logging="yes">
+    <log>
+      <dbuser>billykins</dbuser>
+      <dbtype>Pg</dbtype>
+      <dbpassword>kasyd987</dbpassword>
+      <type>DBI</type>
+      <dbname>perlbotlogs@some.other.host:port</dbname>
+    </log>
+  </channel>
+  <channel name="#singlefileloggedchannel"
+           logging="yes">
+    <log>SingleFile</log>
+  </channel>
+  <channel name="#multifileloggedchannel"
+           logging="yes">
+    <log>Files</log>
+  </channel>
   <bot nick="perlbot"
        nickappend="-"
        ircname="imabot"
+       defaultlogtype="Files"
        logdir="./logs"
        crashlogdir="./"
-       commandprefix="!">
+       commandprefix="!"
+       localaddr="this.machines.outside.interface.ip">
     <plugindir>Plugins/Core</plugindir>
     <plugindir>Plugins/Basic</plugindir>
     <plugindir>Plugins/Misc</plugindir>
