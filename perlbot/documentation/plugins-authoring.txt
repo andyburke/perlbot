@@ -351,7 +351,21 @@ that data.
 
 
 
-6) The plugin help facility
+6) Initialization and Cleanup
+-----------------------------
+
+To perform some initialization routines in your plugin when it is loaded for
+the first time, implement a sub named "BEGIN".  (This is a feature of the perl
+module system)  To perform cleanup routines when the bot is shut down or your
+plugin is explicitly unloaded, implement a sub named "END".
+
+Advanced programmers may also implement INIT and CHECK subs if they so desire.
+Plugins are loaded via the normal perl module loading mechanism, thus any
+standard features of the module system may be utilized.
+
+
+
+7) The plugin help facility
 ---------------------------
 
 Perlbot provides a standard way for users to get online help for your
@@ -383,7 +397,7 @@ more blank lines to separate a help text entry from the next subtopic.
 
 
 
-7) Forking / threading
+8) Forking / threading
 ----------------------
 
 Any plugin that could potentially take a long time to do its thing (such
@@ -399,7 +413,7 @@ you have any suggestions, please mail the authors.
 
 
 
-8) Sharing data or interfacing multiple plugins
+9) Sharing data or interfacing multiple plugins
 -----------------------------------------------
 
 You might want to write a plugin that provides some functionality for a
@@ -424,24 +438,21 @@ You might also have shared files (perhaps a database of some sort) that
 reside in the common plugin's directory. 
 
 If your plugin requires another plugin, and you want to check to see if that
-other plugin is installed, just grep @plugins (from the Perlbot module) for
-the name of that plugin in your get_hooks sub.  If the grep fails, which means
-the required plugin isn't installed, then you could say:
+other plugin is installed, just grep @plugins (from the Perlbot module) for the
+name of that plugin, from inside a BEGIN block (see Section 6 on Initialization
+and Cleanup).  If the grep fails, which means the required plugin isn't
+installed, die() with an appropriate error message.  The plugin will not be
+loaded, and the error message will be displayed if debugging is enabled.  (This
+will likely change in the future, such that the die() string will be printed
+regardless of the debug setting)
 
-	return {};
-
-which will effectively disable your plugin (but users will still see it in
-the list of loaded plugins, and will be able to request help on it).
-
-In the future we will probably make this process a little cleaner.  Maybe
-get_hooks will be allowed to return a string containing the name of the
-required plugin if that plugin isn't found.  If get_hooks returns a string
-instead of a hash reference, an error message will be printed, and your
-plugin will be properly and completely disabled. 
+In the future we will probably make this process a little cleaner.  For
+example, a plugin might be allowed to provide a list of other plugins it
+requires, and the dependency tree will be evaluated before even attempting to
+load plugins.
 
 
-
-9) Designing well-behaved plugins
+10) Designing well-behaved plugins
 ---------------------------------
 
 - Plugins should never ever export any symbols by default.
@@ -462,3 +473,4 @@ plugin will be properly and completely disabled.
   that looks for "!spell <a list of words to spellcheck>" and another that
   looks for "what is X" in general speech, you don't want the second
   plugin to trigger when someone says "!spell what is yor questt?" 
+

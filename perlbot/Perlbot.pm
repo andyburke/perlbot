@@ -259,8 +259,8 @@ sub validate_plugin {
 sub load_one_plugin {
   my $pi = shift;
   eval "require ${pi}::Plugin";  # try to import the plugin's package
-  if ($@ and $debug) {           # print error
-    print $@;
+  if ($@) {                      # if error...
+    print $@ if $debug;
     return 0;
   }
   push @plugins, $pi;            # add plugin to our list
@@ -297,18 +297,9 @@ sub unload_one_plugin {
   my $pi = shift;
   print "Stopping '$pi'\n" if $debug;
   remove_handlers($pi);
-  # check to see if plugin defines unimport
-  if (eval "*${pi}::Plugin::unimport == undef") {
-    # patch in default unimport
-    eval "*${pi}::Plugin::unimport = \\&default_unimport";
-  }
-  if ($@ and $debug) {                 # print error
-    print $@;
-    return 0;
-  }
   eval "no ${pi}::Plugin";             # try to unload the plugin's package
-  if ($@ and $debug) {                 # print error
-    print $@;
+  if ($@) {                            # if error...
+    print $@ if $debug;
     return 0;
   }
   # remove plugin from %INC, to force it to be read from disk if it gets reloaded
