@@ -41,7 +41,7 @@ sub useradmin {
     return;
   }
 
-  my $other_user = $self->{perlbot}->get_user_by_name($username);
+  my $other_user = $self->{perlbot}->get_user($username);
   if (grep {$_ eq $command} qw(remove hostmasks addhostmask delhostmask password addop)) {
     if (!$other_user) {
       $self->reply("$username is not a known user!");
