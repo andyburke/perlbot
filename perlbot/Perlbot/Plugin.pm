@@ -52,6 +52,8 @@ sub new {
   # try to read their help file
 
   $self->{config} = new Perlbot::Config(File::Spec->catfile($self->{directory}, 'config.xml'));
+  # if config.xml failed to load, try config-sample.xml but do it read-only
+  $self->{config} ||= new Perlbot::Config(File::Spec->catfile($self->{directory}, 'config-sample.xml'), 1);
   $self->{helpitems} = $self->_read_help();
   $self->{infoitems} = $self->_read_info();
   
