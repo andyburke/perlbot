@@ -354,6 +354,7 @@ sub add_handler {
 
   # do some init stuff if nobody has hooked this event yet
   unless ($self->{handlers}{$event}) {
+    if($event eq 'caction') { print "caction handler didn't exist!\n"; }
     $self->{handlers}{$event} = {};                    # create the hash ref
     # add our 'multiplexer' sub as the handler
     $self->{ircconn}->add_handler($event, sub { $self->event_multiplexer(@_) });
@@ -369,7 +370,11 @@ sub remove_handler {
   my $self = shift;
   my ($event, $plugin) = @_;
 
-  delete $self->{handlers}{$event}{$plugin};
+  if($self->{handlers}{$event}) {
+    if($self->{handlers}{$event}{$plugin}) {
+      delete $self->{handlers}{$event}{$plugin};
+    }
+  }
   # Net::IRC doesn't provide handler removal functionality, so there's
   # nothing more to do here.
 }

@@ -7,7 +7,7 @@ use DB_File;
 
 sub init {
   my $self = shift;
-  
+
   $self->want_fork(0);
 
   tie %{$self->{seen}},  'DB_File', File::Spec->catfile($self->{directory}, 'seendb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
@@ -20,6 +20,7 @@ sub init {
   $self->hook_event('part', \&updater);
   $self->hook_event('quit', \&updater);
   $self->hook_event('nick', \&updater);
+  $self->hook_event('caction', \&updater);
 }
 
 sub seen {
@@ -85,13 +86,16 @@ sub seen {
     } elsif($type eq 'PART') {
       $replystring .= "leaving $lasttext";
     } elsif($type eq 'NICK') {
-      $replystring .= "changing their nick to $lasttext";
+      $replystring .= "changing his/her nick to $lasttext";
     } elsif($type eq 'QUIT') {
       $replystring .= "quitting with quit message '${lasttext}'";
+    } elsif($type eq 'ACTION') {
+      $replystring .= "doing '${name} ${lasttext}'";
     }
+
     $self->reply($replystring);
   } else {
-    $self->reply("I haven't seen ${name}!");
+    $self->reply_error("I haven't seen ${name}!");
   }
 }
 
@@ -126,6 +130,10 @@ sub updater {
       $self->{seen}{$user->{name}} = time() . ':' . 'QUIT:' . $event->{args}[0];
     }
     $self->{seen}{$event->{nick}} = time() . ':' . 'QUIT:' . $event->{args}[0];
+  } elsif($event->{type} eq 'caction') {
+    if($user) {
+      $self->{seen}{$user->{name}} = time() . ':' . 'ACTION:' . $event->{args}[0];    }
+    $self->{seen}{$event->{nick}} = time() . ':' . 'ACTION:' . $event->{args}[0];
   }
 
   my $curtime = time();
