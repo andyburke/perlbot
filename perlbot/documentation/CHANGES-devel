@@ -15,6 +15,7 @@ Plugins:
 - Cal: now uses Cal::Simple so it's cross-platform
 - LogServer: misc tweaks
 - Pricewatch: now reports MaxTotalCost (cost + shipping)
+- StatsServer: definedness checking to reduce whining
 - Trivia: misc fixes
 
 1.9.4 - showstopper forking bug in webserver fixed, misc fixes, additions
