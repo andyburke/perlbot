@@ -28,7 +28,7 @@ sub init {
   $self->hook_event('topic', \&set_topic);
   # ('topicinfo' tells us *who* set the topic, should anyone want to grab that too)
 
-  $self->hook_web('stats', sub { $self->stats(@_) });
+  $self->hook_web('stats', \&stats);
 
 }
 

@@ -329,7 +329,7 @@ sub hook_web {
   my $hook = shift;
   my $call = shift;
 
-  $self->perlbot->webserver->hook($hook, $call);
+  $self->perlbot->webserver->hook($hook, sub { $call->($self, @_) });
 }
 
 # send a reply to the bot's last contact via the correct path (msg, public, etc.)

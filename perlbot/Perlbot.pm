@@ -193,6 +193,10 @@ sub shutdown {
   # save out our in-memory config file
   $self->config->save if !$is_crash;
 
+  # shut down the webserver
+  debug("Shutting down web services...");
+  $self->webserver->shutdown();
+
   # sleep a couple seconds to let everything fall apart
   debug("Sleeping 2 seconds...");
   sleep 2;

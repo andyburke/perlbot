@@ -93,18 +93,31 @@ sub connection {
       if ($request->method eq 'GET') {
         my ($garbage, $dispatch, @args) = split('/', $request->url->path());
 
-        if(exists($self->{hooks}{$dispatch})) {
+        if($dispatch eq '') {
+          my $response = "<html><head><title>Perlbot Web Interface</title></head><body><p><ul>";
+
+          foreach my $link (keys(%{$self->{hooks}})) {
+            $response .= "<li><a href=\"/$link\">$link</a>";
+          }
+
+          $response .= "</ul></body></html>";
+
+          $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
+                                                       HTTP::Headers->new(Content_Type => 'text/html'),
+                                                         $response));
+        } elsif(exists($self->{hooks}{$dispatch})) {
           my $coderef = $self->{hooks}{$dispatch};
           my ($contenttype, $content) = $coderef->(@args);
-
-          if($contenttype && $content) {
+          
+          if(defined($contenttype) && defined($content)) {
             $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
                                                          HTTP::Headers->new(Content_Type => $contenttype),
                                                            $content));
           } else {
-            print "error!\n";
+            $connection->send_error(RC_NOT_FOUND);
           }
-
+        } else {
+          $connection->send_error(RC_NOT_FOUND);
         }
       }
     }
