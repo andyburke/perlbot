@@ -215,6 +215,10 @@ sub connect {
 
   $self->{curnick} = $nick;
 
+  foreach my $hostmask (@{$self->{config}{bot}[0]{ignore}}) {
+    $self->{ircconn}->ignore('all', $hostmask);
+  }
+
   return $self->{ircconn};
 }
 

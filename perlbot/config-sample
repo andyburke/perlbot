@@ -4,6 +4,7 @@
     <logging>yes</logging>
     <op>someone</op>
     <op>otherperson</op>
+    <ignoreplugin>SomePlugin</ignoreplugin>
     <limit>0</limit>
   </channel>
   <bot>
@@ -20,6 +21,7 @@
     <nickappend>_</nickappend>
     <ircname>imabot</ircname>
     <admin>someone</admin>
+    <ignore>*!*someannoyinguser@*.some.host.com</ignore>
   </bot>
   <server address="irc.fdntech.com" />
   <server address="localhost" />
