@@ -91,7 +91,7 @@ sub stats {
                     activeplugins => scalar @{$self->perlbot->plugins}};
     
     foreach my $channel (values %{$self->perlbot->channels}) {
-      $chan_data = {name => $channel->name, topic => $self->{_topics}{$channel->name}[0], topicsetter => $self->{_topics}{$channel->name}[1], member => [ keys(%{$channel->{members}}) ], logging => $channel->logging, limit => $channel->limit, flags => $channel->flags};
+      $chan_data = {name => $channel->name, topic => { text => $self->{_topics}{$channel->name}[0], nick => $self->{_topics}{$channel->name}[1] }, member => [ keys(%{$channel->{members}}) ], logging => $channel->logging, limit => $channel->limit, flags => $channel->flags};
       push @{$data->{channel}}, $chan_data;
     }
     
