@@ -9,14 +9,6 @@ sub init {
 
   $self->want_fork(0);
 
-#  $self->{perlbot}->add_handler('endofmotd', sub { $self->join_channels }, $self->{name});
-#  $self->{perlbot}->add_handler('nomotd', sub { $self->join_channels }, $self->{name});
-
-#  $self->{perlbot}->add_handler('disconnect', sub { $self->reconnect(@_) }, $self->{name});
-
-#  $self->{perlbot}->add_handler('nicknameinuse', sub { $self->cycle_nick(@_) }, $self->{name});
-#  $self->{perlbot}->add_handler('nickcollision', sub { $self->cycle_nick(@_) }, $self->{name});
-
   $self->hook_event('endofmotd', \&join_channels);
   $self->hook_event('nomotd', \&join_channels);
 

@@ -12,17 +12,6 @@ sub init {
 
   $self->want_fork(0);
 
-#  $self->{perlbot}->add_handler('public', sub { $self->update(@_) }, $self->{name});
-#  $self->{perlbot}->add_handler('caction', sub {$self->update(@_) }, $self->{name});
-#  $self->{perlbot}->add_handler('join', sub {$self->update(@_) }, $self->{name});
-#  $self->{perlbot}->add_handler('part', sub {$self->update(@_) }, $self->{name});
-#  $self->{perlbot}->add_handler('mode', sub {$self->update(@_) }, $self->{name});
-#  $self->{perlbot}->add_handler('topic', sub {$self->update(@_) }, $self->{name});
-#  $self->{perlbot}->add_handler('nick', sub {$self->update(@_) }, $self->{name});
-#  $self->{perlbot}->add_handler('quit', sub {$self->update(@_) }, $self->{name});
-#  $self->{perlbot}->add_handler('kick', sub {$self->update(@_) }, $self->{name});
-#  $self->{perlbot}->add_handler('namreply', sub {$self->update(@_) }, $self->{name});
-
   $self->hook_event('public', \&update);
   $self->hook_event('caction', \&update);
   $self->hook_event('join', \&update);
