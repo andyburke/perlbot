@@ -1,0 +1,3 @@
+20000222 - LWP
+  fix object list widget 
+    -remove objects in one class doens't update the proper widgets

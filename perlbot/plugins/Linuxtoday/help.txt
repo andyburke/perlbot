@@ -1,0 +1,4 @@
+Gateway to linuxtoday.com\\syntax: ![linuxtoday|lt] [max]\\  Returns 5 headlines, or <max> if max is given.
+
+search
+syntax: ![linuxtoday|lt] search term1 [term2...] [: min][:max]\\  Searches for the specified terms and returns a maximum of 3 results, or <max> if max is given.

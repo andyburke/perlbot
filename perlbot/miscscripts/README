@@ -1,0 +1,76 @@
+Miscellaneous Scripts
+=====================
+
+This directory contains some random scripts we wrote that aren't
+actually part of perlbot.  For example, the first scripts we included
+here are to help you bring logfiles from an eggdrop bot over to the
+perlbot format.  There are also scripts to help you set up a web
+interface to search your logs.
+
+These scripts are by no means production-level.  They were just some
+useful things we cooked up that we decided to distribute, since at
+least one person out there will probably find them useful.  Feel free
+to modify them for your own purposes, and please send us any patches
+or new scripts that you feel would be useful to the perlbot community.
+You can send any patches or additions to perlbot@fdntech.com .
+
+
+
+perlbot-date-system.pl
+----------------------
+
+Renames eggdrop log files so they match the perlbot logfile filename
+scheme.  If you're replacing an eggdrop bot with a perlbot, you might
+want to convert all your old logs to the perlbot format so you can use
+our other tools like the CGI scripts that let you search perlbot logs
+from the web.
+
+To use, simply change directory to where your eggdrop logs are, and
+run this script *from that directory*.  Your old logfiles will be
+renamed.  It would be wise to make a backup of your old logs, just in
+case something does go wrong.  (Don't blame us if this script eats all
+your logfiles, DoS's Yahoo from your box, knocks up your C compiler,
+etc.  :)
+
+
+perlbot-from-eggdrop.pl
+-----------------------
+
+Converts the contents of eggdrop logfiles to the perlbot format
+(roughly).  We wrote this to work with our old eggdrop logfiles and
+the format they were in; Your Mileage May Vary.  Also, the resulting
+logfiles aren't *exactly* the same as the stuff perlbot creates, but
+it's pretty close.  Close enough to be useful with the log search CGI
+scripts.
+
+Use this the same way you'd use perlbot-date-system.pl.  Backup your
+eggdrop logs, then chgdir to the directory with the logs and run this
+script.  In conjunction with perlbot-date-system.pl, you would
+probably want to back up your eggdrop logs, run
+perlbot-date-system.pl, then run perlbot-from-eggdrop.pl.  That way
+you'll have both the filenames and contents converted.  Why didn't we
+put these into the same script to begin with?  Not enough foresight, I
+guess, and now we don't need them.  If you want to merge the two,
+please send us the finished product for future distribution with
+perlbot.
+
+
+irclogs/
+--------
+
+This directory contains the web-based log search scripts.  Simply copy
+the entire irclogs directory to your webserver document root, or wherever
+you would like to put it.  Then, edit index.pl, plog.pl, and search/index.pl
+and type in the path to your perlbot logs where indicated.
+
+You will need to make sure your webserver will execute the .pl files as
+CGI scripts even though they're not in your cgi-bin directory.  With Apache,
+you just need to add this line to your .conf file:
+
+  AddHandler cgi-script .pl
+
+Also, you can place a jpg named "logsearch.jpg" in the irclogs/ directory
+and it will be displayed at the top of the channel list and search form
+pages.  If you don't do this, those pages will have a broken image icon
+at the top due to the missing jpg.
+

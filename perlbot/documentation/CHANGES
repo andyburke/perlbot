@@ -1,0 +1,401 @@
+CHANGES:
+
+1.2.1 - documentation fixes and additions; logsearch CGIs
+- Added a readme to the miscscripts/ directory and cleaned up the comments
+  in the scripts there.
+- Brought the main documentation (manual.txt) up to date with version 1.2.0.
+  (we were so eager to release 1.2.0, we didn't bother to update the
+  documentation first :)
+- Included the CGI scripts we wrote to allow searching of logs from a web
+  interface.  See miscscripts/irclogs/
+- Subtopic list in '#help <plugin>' is now alphabetized
+- Many plugins have a help.txt (online help), but not all.
+
+1.2.0 -
+- Plugin unloading now works correctly - reloading a plugin will now cause
+  its code to be read in from disk again.  This makes plugin development
+  MUCH MUCH easier.  Just '/msg bot #plugin reload MyPlugin' when you want
+  to test your changes.  No need to restart the bot anymore.
+  Many thaks to Hanno Hecker (Vetinari) for the helpful hint.
+- gperlbotcfg (Luke Petre <petre@jhu.edu>) merged with the main bot
+  tree.  This is a GTK+ based perlbot configurator and is pretty neat
+  stuff, check it out.
+- doh, should have made sure we were in a channel before we go trying
+  to leave it and hence crashing the bot... my fault -andy (i'm
+  surprised we didn't see this earlier...)
+- #quit can now take an optional param: a quit message for the bot
+- SIGINT handler implemented.   If ctrl-c is pressed at the console, the
+  bot will quit cleanly, as if #quit were used.
+- SIGHUP handler implemented. kill -HUP <bot_pid> will now force a
+  reload of the config file... this is useful for two reasons: one, if
+  your hostmask isn't right, you wouldn't be able to force a reload
+  from irc, as you wouldn't be recognized as an owner.  Secondly, this
+  will help with future integration with gperlbotcfg.
+- added 2 second delay when the bot is quitting to allow it to disconnect
+  from the IRC server cleanly before the perl script exits.
+- fixed printing of fatal error message when there are no servers in the
+  config file (now it actually gets printed!)
+- two new plugins from Chris Thompson: Stock and Whois.  Both are very
+  usefull, but they aren't loaded by default because they depend on
+  Finance::YahooQuote and Net::Whois respectively. Check their associated
+  README files.
+- Misc MegaHal plugin changes...
+- Anyone out there interested in making sure perlbot runs on BeOS or any
+  other alt-os?
+- Moved some documentation to Documentation directory
+- other misc fixes... we'll call this stable.
+
+1.1.9 -
+- should pretty much run on mac and win32... all bets are off on the
+  majority of the plugins... fork is kind of a nice thing, you know?
+- included jeremy's plugin docs...
+- fixes to Define Plugin
+- channel keys now supported... ie:
+
+  chan {
+    name llama
+    key  they_are_near
+    ...
+  }
+
+  thanks to z00p for noticing it didn't work :>
+- updates to Slashdot and Freshmeat plugins...
+- Weather plugin updated...
+- #say and #msg added...
+
+   /msg <botnick> #say <channel> <text>
+
+   /msg <botnick> #msg <nick> <text>
+
+1.1.8 -
+- !! New Net::IRC came out. (0.62) It fixes a bug in schedule(), you
+  should upgrade, as new plugins are planned which require schedule to
+  work correctly.
+- fixes to Slashdot and Dictionary plugins
+- security fixes to math, perldoc, etc...
+- logging changes, important note to developers: logging calls are now
+  different, it simply takes a string which is inserted in the logs
+  with a timestamp.
+- topic/mode/actions are all now logged correctly...
+- nickchange/quit messages are now logged correctly
+- multiple, semicolon seperated #commands can be given to the bot now,
+  ie:
+
+   /msg <botnick> #nick timmykins; #join billykins; #logging billykins on
+- Added bot.unload config option to prevent loading of plugins on
+  startup.  ex: (note: plugin name is case sensitive!)
+
+  bot {
+    ...
+    noload SpelCheck
+    noload Math
+    ...
+  }
+
+- New commands to allow dynamic loading/unloading of plugins !!while
+  the bot is running!! (note: plugin_name is case sensitive!)
+  -> #plugins (load|start) plugin_name
+  -> #plugins (unload|stop) plugin_name
+  -> #plugins (reload|restart) plugin_name
+  (If you unload a plugin and then load it back in, it won't actually
+  re-read the code from disk for some reason.  We're working on that!)
+- A plugin may now optionally implement a sub named 'unimport' that
+  will be called when the plugin is about to be unloaded.
+
+1.1.7 - redesigned help system
+- There is a file help.txt in the main directory.  Each plugin can also have
+  a help.txt in its own directory.  The format is:
+
+  default help line
+  topic1
+  help for topic1\\second line
+  topic2
+  help for topic2\\second\\third
+
+  Blank lines and lines with only whitespace are ignored.  Each topic's help
+  text MUST be on a single line!  If you would like multi-line responses, use
+  '\\' to separate the lines.  Each 'line' will be sent as a separate message.
+  Perhaps in a later version the parser will be improved to allow a more
+  natural format...
+- Message the bot '#help' to find out about the syntax.  I won't go into it
+  here.
+- Fixed up the Define plugin to remove redundant code and stuff.  Someone
+  really needs to do this to all the other included plugins...  If you want to
+  help with this, just take a look at the Define code and apply that structure
+  elsewhere.  Email us if you have questions.
+- More plugins added, including: Blue's News, Avault News, Avault
+  Demos, Dictionary, SpelCheck, Freshmeat...
+- Freshmeat and Slashdot plugins can now do searches...
+- misc other fixes...
+
+
+1.1.6 - some major changes
+- fixed a bug where if you made the bot #part a channel it was
+  configured for, and then rejoin it, he would forget everything he
+  once knew about it... so that is fixed
+- Added a bunch of plugins, thanks mainly to some infobot code...
+  Many thanks to Kevin Lenzo for the ideas and for the threading
+  inspiration...
+- Some of the plugins are now threaded... ie: if you do a:
+    !traceroute some.host.com
+  It will continue to function as it normally would, even if the
+  traceroute is taking up a lot of time...
+- New Plugins:
+    - Math
+      - uses bc to do its calculations
+      - example:
+
+<ender__> !math 2^32
+<perldev> 4294967296
+<ender__> !math 10/3
+<perldev> 3.33333333333333333333
+
+    - Perldoc
+      - accesses perldoc (oddly enough)
+      - example:
+
+<ender__> !perldoc my
+<perldev>     my EXPR A `my()' declares the listed variables to be local
+<perldev>             (lexically) to the enclosing block, file, or `eval()'.
+<perldev>             If more than one value is listed, the list must be
+<perldev>             placed in parentheses. See the section on "Private
+<perldev>             Variables via my()" in the perlsub manpage for details.
+
+    - Slashdot
+      - uses the get_slashdot_news script by David Dellanave
+        <ddn@hps.com> as its basis
+      - example:
+
+<ender__> !slashdot
+<perldev> Slashdot last updated on: August 24 13:51:18
+<perldev>                     Wearable PCs /   CmdrTaco / 14:51:18
+<perldev>  Wacky port of BSD to Dreamcast  /      Hemos / 14:24:08
+<perldev>  Belluzo post-SGI joining Micros /      Hemos / 14:17:10
+
+    - Traceroute
+      - based on the infobot version
+      - example:
+
+<ender__> !traceroute brisby.fdntech.com
+<perldev>  1  mirage (10.0.0.1)  0.568 ms  0.45 ms  0.437 ms
+<perldev>  2  24.95.208.1 (24.95.208.1)  29.838 ms  10.064 ms  19.626 ms
+<perldev>  3  mthope-rtr-a-mcr2.nyroc.rr.com (24.93.0.145)  20.117 ms  14.153
+           ms  13.394 ms
+<perldev>  4  24.93.0.9 (24.93.0.9)  13.266 ms  12.16 ms  12.882 ms
+<perldev>  5  spp-gsr.twcny.rr.com (24.92.224.5)  19.832 ms  16.53 ms  14.368
+...
+
+    - Weather
+      - based on erm, someone's script... it's in the header
+      - example:
+
+<ender__> !weather rochester,ny
+<perldev> Rochester, NY / Sunrise: 6:25 am EDT / Sunset: 7:59 pm EDT
+<perldev> Rochester, NY / Temp: 79 / Wind: from the SE at 13 mph
+<perldev> Rochester, NY / Humidity: 64% / Barometer: 30.00 inches
+
+    - PriceWatch
+      - Based loosly on the weather script
+      - example:
+
+<ender__> !pricewatch intel box 600 cpu
+<perldev> $  653 / Intel / boxed piii 600mhz cpu 512k cache 100mhz fsb, p3,
+          pentium iii / * order online and use promo code: 772P, qty 1/order *
+          intel  performance enhancements, part bx80525u600512e
+<ender__> !pw half-life
+<perldev> $   37 / Sierra OnLine / Half Life  (Retail) / Big Game
+
+
+
+1.1.5 - major reorg
+- Added #plugins command to get a list of installed plugins.
+--NOTE: The rest of the changes will only be of interest to developers or
+  people who have been following the code.
+- Useful variables and subs that would ideally be globals, such as %users,
+  %channels, host_to_user, etc., are now in Perlbot.pm, which exports them all
+  by default.  This means that now you don't need main:: on the front of
+  the affected variables and subs; just 'use Perlbot'.  See the top of
+  Perlbot.pm for more details.
+- Moved all the core handlers and the parser for the main config file into
+  PerlbotCore.pm.  It acts like a plugin and is handled by the plugin system
+  (with a little 'encouragement' since it's not in the plugins dir :).
+- perlbot.pl is now just the skeleton code necessary for creating the
+  Net::IRC::Connection object, loading plugins, handling events from Net::IRC,
+  and calling the handlers that the plugins register.
+- Finally moved what used to be $main::logdir into Log.pm.  It's now
+  $Log::basedir.  Why didn't we do this sooner?  Oh yeah.  We're lazy.
+- Changed $version and $authors to $VERSION and $AUTHORS to reflect the fact
+  that they're treated as constants.  Also, $AUTHORS now has our email
+  addresses instead of just 'plastik, ender'.
+
+1.1.4 - 
+- fixed some of the orginal bot code to add users, etc in order... (we are
+  dumb sometimes...)
+  -> fixed it even better with a fix from Christian Mogensen
+- some plugin work, some cleanups...
+- we're going to move our default stuff into a seperate file which is
+  treated just like a plugin... this should be ready for 1.1.5, and we're
+  thinking of doing a "feature freeze" for now... so look for 2.0 soon...
+
+1.1.3 -
+- misc UserInfo fixes
+- servers now roll the right way for real instead of just pretend like
+  they used to
+- now plugins can call parse_config and pass the name of a config file, and
+  parse_config will return a hash ref with all the data from the config file,
+  nicely packaged.  See the comments above the code for parse_config for a
+  more detailed explanation.
+- standard bot behavior unchanged
+- Beginnings of the Protection and UserInfo plugins, patches welcome...
+
+1.1.2 - hostmask behavior change
+- Hostmasks now need to follow the user!ident@host format instead of the
+  ident@host that was used in prior versions.
+- Hostmasks are now also case INsensitive.  (They weren't before)  This
+  includes the part of RFC1459 that says that {}| are the lowercase versions
+  of []\ due to IRC's Scandanavian origins.  (Trust me... Read the RFC if you
+  don't believe me.  :)  This involved a little hack, see the code if you're
+  interested.  So the nicks [bob] {bob} {bob] and [bob} are all equivalent,
+  as they should be.
+
+1.1.0 - plugins!
+- Added a plugin architecture.  I'll write some docs on it later.  In a
+  nutshell: plugins can hook any event, and multiple plugins can hook the same
+  event.  Each plugin is loaded as a perl module, but that module could use
+  other modules, make system() calls, etc.  Whatever you can dream up.  :)
+- Built-in handlers now use the plugin infrastructure.  Instead of calling
+  $conn->add_handler(...) to add one just call add_handler(...) .
+- You can now specify multiple nicks for the bot... ie: In the bot { }
+  area of the config file, specifying multiple nick values will store
+  them in order of preference:
+       bot {
+	   nick		timmy
+	   nick		billy
+	   nick		samuelkins
+	   ...
+       }
+  would cause the bot to cycle to billy if timmy were in use, and to
+  samuelkins if timmy and billy were in use.  If only one nick is
+  specified, "_" is appended until we find a free nick.  Likewise, if
+  all the preferred nicks are in use, "_" is appended to the first
+  nick until a free one is found.  This should be changed to allow
+  "_" to be a user-specified character. And now it is... "addchar"
+
+1.0.1 -
+- minor log filenaming change...
+
+1.0.0 -
+- basically just a tested 0.1.9
+
+0.1.9 -
+- decision to move bridging to an entirely seperate bot made
+- miscellaneous fixes
+- stability seems good
+
+0.1.8 -
+- opping works again
+- rolls servers on disconnect or lack of initial connect
+- rolls nicks if his is in use
+- replied to pings, versions
+- logs actions
+- logging is now toggleable on channels... this means when he
+  gets a #join command, he won't start logging the channel he
+  joins unless told otherwise... we feel this is generally a
+  Good Thing.  In addition, you can have him manage a channel and
+  not log...
+- notify_users only notifies owners now (still needs to be
+  configgable)
+- other misc fixes...
+
+0.1.7 -
+- patched in the new config parser, broke recognizing of owners/ops
+- the new config parsing code is in
+- unfortunately I broke something when rewriting the %config_parser subs,
+  and now it won't op me or recognize me as a user/owner.  I think it might
+  not be storing the users' hostmasks in the User objects correctly.  too late
+  to search for the bug tonight.  shouldn't be hard to find, anyway.
+
+0.1.6 - 
+- finally split each class into its own file, cleanups
+- each class is in its own file, <Classname>.pm
+- you must have '.' in your perl's @INC or else this won't work.  Type this
+  in your shell:
+    perl -e 'print scalar(grep(/^\./,@INC))."\n";'
+  If it prints a 1, you're all set.  If it prints a 0, you need to fix this.
+  (How?)
+- added User->notes which returns the number of notes.  changed places that
+  used to call User->add_note just to get the number of notes to use ->notes
+  insteasd.  (cleaner and more understandable)
+- cleaned some misc. stuff up
+- made $logdir a global (not a lexical like it used to be) so that Log.pm
+  can see it.  this value should really be a package/class variable in Log.pm.
+
+0.1.5 -
+- notes work correctly (debating functionality of readnote and rmnote)
+- redirection working
+- notify_users works but needs to be configgable
+- the bot will try to update the current nick of all its users ASAP
+- notes notification sorta works
+- beginnings of more user info are there
+- channel joining now done the Right Way
+- #nick command added
+- many miscellaneous stability and bug fixes
+
+0.1.4 - more cleanup, more fixes, more functionality, oh my
+- notes work for the most part... reading them happens backwards... ?
+- users now have a list of hostmasks
+- help is sorta there...
+- logfile cleanups/fixes
+- CHANGES and TODO file made
+- preliminary redirection working
+
+0.1.3 - general cleanup, some new stuff and fixes
+- Now the config parser silently skips blank lines.  yum.
+- The logdir directive works
+   - Specifies the base log dir, under which the channel dirs go:
+      +--logdir
+        +--chan1
+        | `--yyyy.mm.dd
+        `--chan2
+          `--yyyy.mm.dd
+   - Can be relative or absolute. (absolute paths not yet tested)
+- Directories for logs (and logdir itself) are created as needed
+- Log dirs for channels now have the '#' on them, since channels
+  *can* start with a '&' too.  Now that I think about it, maybe
+  the right thing would be to have naked #-less dirs unless it
+  actually is a & channel.  & would be bad as a char in a filename,
+  so we should figure out what to do with it... (low priority)
+- A biggie: Moved Log objects *inside* their respective Chan
+  objects.  Seemed like the Right Thing to do.  Now, call
+  $my_chan->log_write($nick, $text) to log something.  Also,
+  Log::open automatically calls update_date and closes the previous
+  file if it there was one open.  The logic to roll the logfile
+  on a date change should really be in Log::write, which it
+  currently is not.  Also, the 0.1.2 roll test was broken; it just
+  checked to see if the day of the month had changed.  It checks
+  all 3 date components now, but it should still be moved to
+  inside Log::write.
+- Notes are saved correctly, but they're always marked as coming
+  from perlbot.  This stems from the way I (plas) tried to save
+  some coding time with the way I pass params to the handlers.  We
+  need to figure out a better way to do that passing.
+
+0.1.2 - some decent, useful functionality
+- good things:
+   - it joins AND logs multiple channels IF
+     you have your logs/ dir set up right.
+     ie: you need to have a dir for each
+     channel made, and I will not try to 
+     predict what would happen if you don't.
+   - it auto-ops people
+   - it understands the join, part and reload
+     commands. It MIGHT understand the load
+     command, but no promises...
+- bad things:
+   - it THINKS it understands the note command,
+     but it's delusional.
+   - it's getting messy... :<
+
+0.1.1 - it joined channels or something...
+
+0.1.0 - erm, plas got it to come to irc...

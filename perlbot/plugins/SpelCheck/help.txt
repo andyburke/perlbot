@@ -1,0 +1,1 @@
+Checks spelling with ispell.\\syntax: !spell <some text to be checked>\\  Returns one line for each misspelled word: the word itself, and any suggestions that ispell has.  Also lets you know if all the words checked out OK.

@@ -1,0 +1,1 @@
+wrapper to guile.\\syntax: !gl <scheme command>\\  eg) !gl (define won (lambda (x) (* 1200 x)))\\      !gl (won 199)

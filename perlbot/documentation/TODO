@@ -1,0 +1,52 @@
+TODO:
+- make command character (character that prefaces commands sent to
+  the bot in msgs or in public) a configurable option instead of
+  hard-coded.  possibly also add some functionality to handler
+  code to allow easily hooking a command via msg or public, with
+  the command character stuff taken care of by the bot code.
+- per-channel option to auto-rejoin when kicked
+- write help files for all the plugins that are included in the base
+  distribution.
+- the bot's own words are not logged.  they should be.  right now the
+  only bot action that shows up in a bot's own logs is when it joins
+  a channel.  public and action, and I guess part should get logged too.
+- sprinkle more debugging output stuff around, particularly in the
+  class modules (User.pm, Chan.pm, etc.) since there's not much
+  there right now.  if a user uncovers a problem in there, the
+  debugging output won't pinpoint it.
+- implement user-defined formats for things like logfile names and
+  logfile entries.  could use % codes, like %y.%m.%d for
+  year.mon.day .
+- Allow configuration of which events justify notifying the owners.
+  Also, possibly allow owners to specify which types of notifications
+  they do and don't want to get.
+- make the User package more robust...
+  - users should have more info that other users with the
+    appropriate flags should be able to access, ie:
+    real name, last seen, last unidle, email addy, daytime phone,
+    home phone, real address, etc... anything one can think of that
+    would be useful
+    -- these have been added, but we really need an entirely new
+       user config file and format...
+  - this info should be able to be set by each individual user with
+    as much or as little info as desired... this means we need to
+    both parse and save out a seperate user config file
+- rewrite the define plugin to behave just like an infobot... or better yet,
+  port infobot to a perlbot plugin... major props to anyone who does this
+- logsearch plugin, phil fibiger (pnf1@cornell.edu) is working on this, but
+  if you're interested in helping, drop him a line
+
+THOUGHTS:
+
+- currently, users need to say '#help core ...' for help on the core stuff
+  like part/join/note etc. (i.e. the stuff in PerlbotCore)  is this OK?
+  perhaps PerlbotCore could become something else, like Base.  Also, it would
+  be ideal to move all perlbot modules, plugins, etc. into a Perlbot::
+  namespace.  I'm not sure if there's any required mapping between filenames
+  and package names, so this might not be possible without a lot of directory
+  rearranging and other hacking.
+
+- we should make several classes that represent redirections.  one for
+  channels, one for users, etc.  each channel would have a list of these
+  objects, and to redir something it would just pass a user and a string
+  to redir_obj->redir .

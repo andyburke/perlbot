@@ -1,0 +1,40 @@
+This is a pretty simple one, two commands.
+
+!whois somedomain.com 
+
+will return 
+
+<bot> somedomain.com is taken by data dynamics
+<bot> Since: 10-Oct-1999
+
+and
+
+!whoare somedomain.com
+
+will return
+
+<bot> somedomain.com is taken by data dynamics
+<bot> Since: 10-Oct-1999
+<bot> somedomain.net is taken by 10Best.com, LLC
+<bot> Since: 25-Oct-1999
+<bot> somedomain.org is available.
+
+(This last one came about from me being lazy)
+
+This module requires a recent version of Net::Whois, available from your
+friendly neighborhood CPAN mirror.
+
+You'll want to keep the Net::Whois module updated regularly, since the
+moving target that is Internic whois response formats has broken older
+versions.
+
+**** UPDATE ****
+Strange how prophetic those words were when I typed them. Network Solutions'
+switch to a recursive whois format made the version of Net::Whois I was
+running obsolete. I am now using Net::Whois v1.9 and can verify that it works
+just fine
+
+--Skyhook
+ct@x4.net
+
+

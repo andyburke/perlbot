@@ -1,0 +1,58 @@
+###############################
+# chan objects
+###############################
+
+chan {
+	key		
+	name		#fdn
+	flag		+t
+	logging		no
+	limit		0
+	op		plastik
+	op		ender
+}
+
+###############################
+# bot objects
+###############################
+
+bot {
+	logdir		./logs
+	noload		MegaHal
+	noload		Stock
+	noload		Whois
+	noload		Guile
+	nickappend		_
+	nick		perlbot
+	plugindir		./plugins
+	ircname		imabot
+}
+
+
+###############################
+# user objects
+###############################
+
+user {
+	name		plastik
+	hostmask		*!*jmuhlich@chimera.acm.jhu.edu
+    hostmask        *!jmuhlich@127.0.0.1
+	flag		w
+}
+
+user {
+	name		ender
+	hostmask		*!*ender@landcow.pas.rochester.edu
+	hostmask		*!*ender@d185fc1ab.rochester.rr.com
+}
+
+
+###############################
+# server objects
+###############################
+
+server {
+	name		fdntech
+	addr		irc.fdntech.com
+}
+

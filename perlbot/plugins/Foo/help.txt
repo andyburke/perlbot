@@ -1,0 +1,1 @@
+Makes the bot say 'Bar!@#' when someone says 'foo' (case insensitive) in public or in a msg.

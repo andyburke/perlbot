@@ -1,0 +1,55 @@
+This is the basic perlbot functionality.\\Note that some commands can only be given by owners.\\All of these commands are only recognized in a msg to the bot (not in a public channel).
+
+quit
+#quit\\Causes the bot to leave IRC and shut down; you can't contact the bot anymore unless the bot admin runs perlbot.pl again.\\(owners only)
+
+join
+#join <channel>\\Causes the bot to join <channel>.\\(owners only)
+
+part
+#part <channel>\\Causes the bot to part <channel>.\\(owners only)
+
+cycle
+#cycle <channel>\\Causes the bot to part then immediately rejoin <channel>.\\(owners only)
+
+listchans
+#listchans\\Returns the bot's current channels (where it is).\\(owners only)
+
+logging
+#logging <channel> (yes|no)\\Enables (yes) or disables (no) logging for <channel>.\\Anything other than "yes" will be treated as "no".\\(owners only)
+
+say
+#say <channel> <text>\\Causes the bot to say <text> to <channel>.\\(owners only)
+
+msg
+#msg <nick> <text>\\Causes the bot to msg <nick> with <text>.\\(owners only)
+
+reload
+#reload\\Causes the bot to reload its default config file.\\(owners only)
+
+load
+#load <config_file>\\Causes the bot to load <config_file>.\\(owners only)
+
+nick
+#nick <new_nick>\\Causes the bot to try to change its nick to <new_nick>.\\(owners only)
+
+server
+#server <server_addr>[:<port>]\\Causes the bot to connect to the specified IRC server.\\Also adds the server to the bot's current list of servers.\\(owners only)
+
+redir
+#redir <src_chan> <dest>\\Adds a redirect.\\Anything said in channel <src_chan> will be said by the bot to <dest>.\\<dest> can be either a channel OR an irc nick.\\(owners only)
+
+delredir
+#delredir <src_chan> <dest>\\Deletes a redirect.\\Specify the same 2 parameters that were used to create the redirect.\\(owners only)
+
+note
+#note <name> <note text>\\Leave a note for <name>.\\<name> is the bot's INTERNAL name for a user, not necessarily their irc nickname (ask the bot admin if you're confused).
+
+listnotes
+#listnotes\\Get a listing of all notes waiting for you.
+
+readnote
+#readnote [<num>]\\By itself, shows you the oldest note waiting for you (and deletes it).\\With <num>, shows the note with that number.
+
+plugins
+#plugins [(start|load|stop|unload|restart|reload) <plugin>]\\By itself, returns a list of currently loaded plugins.\\(the following subcommands are for owners only)\\start/load - load and enable <plugin>\\stop/unload - unload and disable <plugin>\\restart/reload - unload then load <plugin>
