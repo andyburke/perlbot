@@ -183,7 +183,7 @@ sub delay {
   my $self = shift;
   my $text = shift;
 
-  return int(length($text) / 12);
+  return int(length($text) / 7);
 }
 
 sub babel {
