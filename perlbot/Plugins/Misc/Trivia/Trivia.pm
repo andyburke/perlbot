@@ -614,6 +614,10 @@ sub score {
   my $self = shift;
   my $name = shift;
 
+  if(!$self->{totalanswered}{$name}) {
+    return 0;
+  }
+
   return sprintf("%0.1f", 100 * ($self->{correctlyanswered}{$name} / $self->{totalanswered}{$name}));
 }
 
