@@ -23,6 +23,7 @@ sub new {
     addressed_hooks => [],
     admin_hooks => {},
     advanced_hooks => {},
+    event_hooks => {},
     lastcontact => '',
     lastnick => '',
     lasthost => '',
@@ -160,6 +161,15 @@ sub hook_admin {
   my $call = shift;
 
   $self->{admin_hooks}{$hook} = $call;
+}
+
+sub hook_event {
+  my $self = shift;
+  my $event = shift;
+  my $call = shift;
+
+  push(@{$self->{event_hooks}{$event}}, $call);
+  $self->{perlbot}->add_handler($event, sub {$self->_process(@_)}, $self->{name});
 }
 
 sub advanced_hook {
@@ -306,6 +316,17 @@ sub _process { # _process to stay out of people's way
       }
       $self->_dispatch($self->{advanced_hooks}{$advanced_hook}, $user, $event, $texttocallwith);
     }
+  }
+
+
+  foreach my $event_hook (@{$self->{event_hooks}{$event->type()}}) {
+    if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
+      $self->{lastcontact} = $event->nick();
+    } else {
+      $self->{lastcontact} = $event->{to}[0];
+    }
+
+    $self->_dispatch($event_hook, $event);
   }
 }
 
