@@ -14,6 +14,8 @@ sub init {
 
   $self->want_fork(0);
   $self->want_msg(0);
+
+  $self->{pid} = $$;
   
   $self->{state} = 'idle';
   $self->{question} = -1;
@@ -45,7 +47,7 @@ sub init {
 
   $self->hook('trivia', \&starttrivia);
   $self->hook('stoptrivia', \&stoptrivia);
-  $self->hook_regular_expression('.*', \&answer);
+  $self->hook(\&answer);
 
 }
 
@@ -92,6 +94,8 @@ sub answer {
 
   my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
 
+  print "text: <$text>  /  answer: <$answer>\n";
+
   if(lc($text) eq lc($answer)) {
     my $timediff = sprintf("%0.2f", time() - $self->{askedtime});
     $self->{answered} = 1;
@@ -102,11 +106,11 @@ sub answer {
       $self->{usersfastest}{$nick} = $timediff;
       $self->{usersfastestoverall}{$nick} = $timediff;
     }
-
+    
 #    foreach my $tmpnick (keys(%{$self->{playersoverall}})) {
 #
 #    }
-
+    
     my $rank = '-1';
     $self->reply("The answer was: $answer");
     $self->reply("Winner: $nick  Time: $timediff (This Round: Fastest: $self->{usersfastest}{$nick} Wins: $self->{players}{$nick}) Overall: Fastest: $self->{usersfastestoverall}{$nick} Wins: $self->{playersoverall}{$nick} Rank: $rank");
@@ -114,17 +118,16 @@ sub answer {
       $self->{usersfastest}{$nick} = $timediff;
       $self->{usersfastestoverall}{$nick} = $timediff;
     }
-
+    
     $self->{curquestion}++;
-    $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
-
+    $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });    
   }
 }
 
 sub askquestion {
   my $self = shift;
 
-  if($self->{state} eq 'idle') {
+  if($self->{state} ne 'playing' and $self->{state} ne 'answered') {
     return;
   }
   
@@ -139,8 +142,8 @@ sub askquestion {
     $self->{answered} = 0;
     $self->reply("${curquestion}. [${category}] $question");
     $self->{askedtime} = time();
-    $self->perlbot->ircconn->schedule(10, sub { $self->hint("$curquestion") });
-    $self->perlbot->ircconn->schedule(30, sub { $self->notanswered("$curquestion") });
+    $self->perlbot->ircconn->schedule(10, sub { $self->hint(eval "$curquestion") });
+    $self->perlbot->ircconn->schedule(30, sub { $self->notanswered(eval "$curquestion") });
   } else {
     $self->reply("Game over.");
     $self->endofgame();
@@ -152,6 +155,8 @@ sub askquestion {
 sub hint {
   my $self = shift;
   my $question = shift;
+
+  print "in hint: self::curquestion = $self->{curquestion} / this question: $question\n";
 
   if($self->{state} ne 'asked' || $self->{curquestion} != $question) {
     return;
@@ -179,6 +184,8 @@ sub hint {
 sub notanswered {
   my $self = shift;
   my $question = shift;
+
+  print "in notanswered: self::curquestion = $self->{curquestion} / this question: $question\n";
 
   if($self->{state} ne 'asked' || $self->{curquestion} != $question) {
     return;
@@ -215,7 +222,25 @@ sub endofgame {
   $self->reply("Trivia Winner for this round is: $winner with $winnerscore wins and a fastest time of $fastest!");
 }
 
+sub check_pid {
+  my $self = shift;
+
+  if($self->{pid} != $$) {
+    return 0;
+  }
+
+  return 1;
+}
+
 1;
+
+
+
+
+
+
+
+
 
 
 

@@ -11,7 +11,7 @@ use strict;
 
 use LWP::Simple;
 
-out $VERSION = '1.0.0';
+our $VERSION = '1.0.0';
 
 sub init {
   my $self = shift;
