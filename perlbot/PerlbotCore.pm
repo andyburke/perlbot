@@ -131,6 +131,10 @@ my %config_handlers =
      
      # grab the list of modules NOT to load
      if($_[0]->{noload}) { @noload = @{$_[0]->{noload}}; }
+
+     # get crash log filename
+     $crashlog = $_[0]->{crashlog}[0];
+     $crashlog ||= './crash.log';
    }
    );
 

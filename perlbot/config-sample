@@ -26,6 +26,7 @@ bot {
 	nickappend	_
 	nick		perlbot
 	plugindir	./plugins
+	crashlog	./crash.log
 	ircname		imabot
 }
 

@@ -5,6 +5,7 @@
 # Simple IRC bot for maintaining channels, passing notes,
 # eventually network bridging (hopefully... [nope, that's scratched now :] )
 
+use Carp;
 use Net::IRC;
 use strict;
 
@@ -73,8 +74,11 @@ $pid = $$;
 
 $SIG{INT} = \&sigint_handler;
 $SIG{HUP} = \&sighup_handler;
+$SIG{__DIE__} = \&sigdie_handler;
 
 $irc->start;
+
+die "Net::IRC event loop exited unexpectedly!";
 
 exit(0);
 
@@ -117,5 +121,11 @@ sub sighup_handler {
   # this should have been the default behavoir all along, but we were bad
   # about handling signals... :<
   &PerlbotCore::parse_main_config;
+}
+
+sub sigdie_handler {
+  open CRASHLOG, ">>$crashlog" or warn "Could not open crashlog '$crashlog' for writing: $!";
+  print CRASHLOG "Died with: $_[0]\n\n", Carp::longmess(), "\n=====\n\n\n";
+  close CRASHLOG;
 }
 
