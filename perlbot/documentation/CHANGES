@@ -1,8 +1,29 @@
 CHANGES:
 
-1.2.3 - misc updates/fixes
+1.2.3 - crash log, new plugin, plugin fixes, misc core updates/fixes
+- Mike Edwards contributed the neat Internals plugin.  It allows bot owners
+  to debug things remotely by viewing internal perlbot variables.  Sometimes
+  this can be easier than using "perl -d" and mucking with breakpoints...
+- Mike Edwards made the Perldoc plugin safer.
 - Ian Higgs pointed out some problems with logging channels you've told
   the bot to join... fixed.
+- Added debug statement when rolling log file to the next day
+- Added debug statement on inability to write to logfile
+- Most fatal crashes should now log the error message and a stack trace
+  to a log file.  Also a new config option bot.crashlog allows specifying
+  the name of the log file.
+- Cleaned up on-join mode setting
+- Fixed the server-cycling logic - now it works  :)
+- Fixed some forking problems in a few plugins
+- Plugins no longer support the "unimport" mechanism.  Just use perl's
+  END instead.
+- Added a SysV-style init script to miscscripts/
+- Improved the matching logic in the Define plugin somewhat.  Now long
+  responses shouldn't trigger a match for no apparent reason.
+- Updated Freshmeat plugin to use FM's XML backend
+- Updated Host plugin to deal with CNAMEs and other such DNS details
+- PriceWatch plugin now works a lot better and the code is cleaner
+- Guile plugin now only prints stuff to the console if debugging is on
 
 1.2.2 - misc updates, stability fixes, plugin modifications
 - Fixed the flooding crashing the bot bug, stupid fork
