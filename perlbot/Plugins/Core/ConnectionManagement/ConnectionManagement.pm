@@ -73,7 +73,13 @@ sub cycle_nick {
   my $self = shift;
   my $event = shift;
 
-  $self->perlbot->nick($self->perlbot->curnick . $self->perlbot->config->value(bot => 'nickappend'));
+  my $nickappend = $self->perlbot->config->value(bot => 'nickappend');
+  $nickappend ||= '_';
+
+  $self->perlbot->nick($self->perlbot->curnick . $nickappend));
 }
 
 1;
+
+
+

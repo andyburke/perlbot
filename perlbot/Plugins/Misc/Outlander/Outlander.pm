@@ -30,7 +30,7 @@ sub init {
                        'I do not understand',
                        ];
 
-  $self->hook(\&random);
+  $self->hook(\&sodoit);
 
 }
 
@@ -39,15 +39,7 @@ sub megahal {
   return $self->{megahal};
 }
 
-sub addressed {
-  my $self = shift;
-  my $user = shift;
-  my $text = shift;
-  my $event = shift;
-
-}
-
-sub random {
+sub sodoit {
   my $self = shift;
   my $user = shift;
   my $text = shift;
@@ -155,4 +147,3 @@ sub babel {
   $curresult =~ s/\&nbsp\;//g; 
   return $curresult;
 }
-
