@@ -141,6 +141,18 @@ Table of Contents
           <bot nick="perlbot"
                logdir="../logs" />
 
+    defaultlogtype
+      - This sets the default type of logging for a channel to
+        use.  It normally defaults to 'Files', which are separate
+        log files per day.  Another example would be 'SingleFile'
+        which stores all your logs for a given channel in a file
+        named channelname.log.
+
+        Example:
+
+          <bot nick="perlbot"
+               defaultlogtype="SingleFile" />
+
     plugindir
       - This sets the directories in which the bot will look
 	for plugins. (You should almost definitely specify
@@ -414,17 +426,19 @@ Table of Contents
                    flags="-s+tn"
                    logging="yes" />
 
-    singlelogfile
-      - Tells the bot how to store logs.  If this is set to 'yes', then the
-	single file <logdir>/<channel>.log will be created.  If it is set to
-	'no', then <logdir>/<channel>/<date> files will be created, i.e. one
-        log file for each day.
+    logtype
+      - Tells the bot how to store logs.  Will use one of the modules
+        under Perlbot/Logs.  It defaults to the bot.defaultlogtype, or
+        if that it not set, 'Files'.  The 'Files' type of logging
+        will split your logs into a single file for each day.  Another
+        example would be 'SingleFile' which would store all your logs
+        in a single file named channelname.log.
 
         Example:
 
           <channel name="#perlbot"
                    logging="yes"
-                   singlelogfile="yes" />
+                   logtype="SingleFile" />
 
     op
       - This sets a user to be an op for the channel.  It expects
