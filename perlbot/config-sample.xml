@@ -57,7 +57,7 @@
     <ignore>*!*someannoyinguser@*.some.host.com</ignore>
   </bot>
   <webserver hostname="www.fdntech.com" port="9090" enabled="yes" />
-  <server address="irc.fdntech.com" port="6667" />
+  <server address="irc.fdntech.com" port="6667" ssl="0" />
   <server address="localhost" />
   <user name="someone" password="wD887HJnHHjKA">
     <hostmask>*!*someone@*.somewhere.com</hostmask>

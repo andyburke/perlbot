@@ -342,6 +342,14 @@ Table of Contents
 
           <server address="irc.fdntech.com" port="6667" password="secret" />
 
+    ssl
+      - This toggles the use of Net::IRC's SSL support for connecting to
+        secure servers.  (Note: Net::IRC 0.74+ required)
+
+        Example:
+
+          <server address="irc.fdntech.com" port="36901" ssl="1" />
+
   3.3  user
   ---------
 
