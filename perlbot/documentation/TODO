@@ -4,20 +4,17 @@ for 2.0:
 
 - make the bot quit gracefully and catch all the right signals
 - load/reload config files
-- let admins change user's passwords, hostmasks, etc. via irc
 - output buffering
 - add a robust help system, possibly using xml
 - port plugins
 - create a plugin that publishes our config via RPC::XML::Server
   so we can make a botnet
 - move Note.pm into the Notes plugin
+- clean up code, make -w clean, etc.
 - flock the config file when reading/writing
 - move config stuff into a Config object
 - add character-counting to max-output functionality in case of
   very long lines (1 line = 80 chars?)
-- !seen info for everyone, not just users (should probably search
-  on username first, then on irc nick if requested user does not
-  exist).  also store last spoken line and display with timestamp.
 - Invite plugin that handles channel invites.  Invites from admins
   are automatically honored.  Invites from anyone else are stored
   in a queue, and all admins are notified of the request.  An admin

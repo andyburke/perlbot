@@ -111,10 +111,6 @@ sub write {
     
     if(!$self->{file}->opened) { $self->open(); } 
 
-    if($DEBUG > 1) {
-      print "Logging at: real: $year.$mon.$mday / internal: " . $self->curyr . "." . $self->curmon . "." . $self->curday . "\n";
-    }
-
     # if the date has changed, roll the log file
     unless ($mday==$self->curday and $mon==$self->curmon and $year==$self->curyr) {
 	print "Rolling log file\n" if $DEBUG;
