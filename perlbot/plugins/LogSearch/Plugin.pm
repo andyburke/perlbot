@@ -8,10 +8,10 @@ package LogSearch::Plugin;
 use Perlbot;
 
 sub get_hooks {
-  return { public => \&on_public, msg => \&on_msg };
+  return { public => \&logsearch, msg => \&logsearch };
 }
 
-sub on_public {
+sub logsearch {
   my $conn = shift;
   my $event = shift;
   my $args = $event->{args}[0];
@@ -139,9 +139,6 @@ sub on_public {
     }
   }
 
-}
-
-sub on_msg {
 }
 
 1;

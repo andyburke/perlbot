@@ -27,6 +27,15 @@ bot {
 	ircname		imabot
 	commandprefix	#
 	pluginprefix	!
+
+        # other possible command/plugin prefixes:
+        #commandprefix  \\
+        #pluginprefix   \/
+        #
+        #commandprefix  .*?botname,\s+
+        #pluginprefix   (?:botname|idiotface)
+        #
+        # if this makes no sense, just don't define them
 }
 
 

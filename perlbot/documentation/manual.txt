@@ -159,20 +159,22 @@ Table of Contents
                   ircname would be a good idea on these nets.  The default
                   is "imabot".
 
-    - commandprefix- This is the character (or string) to prefix internal
-                  commands when speaking them to the bot in public or via
-		  msg.  The default is "#" to mimic "classic" behavior.
+    - commandprefix- This is a string to be used in a regular expression
+                  to prefix internal commands when speaking them to the bot
+                  in public or via msg.  The default is "#" to mimic
+                  "classic" behavior.
 
-    - pluginprefix- This is the character (or string) to prefix plugin
-		  commands when speaking them to the bot in public or via
-		  msg.  The default is "!" to mimic "classic" behavior.
-		  Feel free to set pluginprefix and commandprefix to the
-                  same thing if you like.  Also, you could set pluginprefix
-                  to something like "mybotname," which would allow you to
-                  say, for example, "mybotname, foo 123" instead of
-                  "!foo 123".  However, the prefix is the same in public
-                  and in messages, so this trick might make msg commands
-		  cumbersome.
+    - pluginprefix - This is a string to be used in a regular expression
+                  to prefix plugin commands when speaking them to the bot
+                  in public or via msg.  The default is "!" to mimic
+                  "classic" behavior.  Feel free to set pluginprefix and
+                  commandprefix to the same thing if you like.  Also, you
+                  could set pluginprefix to something like "mybotname,\s*"
+                  which would allow you to say for example:
+                    mybotname, foo 123
+                  However, the character is the same in public and in
+                  messages, so this trick might make msg commands
+                  cumbersome.
 
     - crashlogdir-This is the directory to which crash logs will be written.
                   When something goes wrong and the bot crashes unexpectedly,
