@@ -35,60 +35,55 @@ sub log {
   my $type = $event->type;
   my $nick = $event->nick;
 
+  my $channel = $event->{to}[0];
+  my $chan = $self->{perlbot}->get_channel($channel);
+
   if($type eq 'public') {
-    my $channel = $event->{to}[0];
     my $text = $event->{args}[0];
-    if($self->{perlbot}{channels}{$channel}) {
-      $self->{perlbot}{channels}{$channel}->log_write("<$nick> $text");
+    if ($chan)) {
+      $chan->log_write("<$nick> $text");
     }
   } elsif($type eq 'caction') {
-    my $channel = $event->{to}[0];
     my $text = $event->{args}[0];
-    if($self->{perlbot}{channels}{$channel}) {
-      $self->{perlbot}{channels}{$channel}->log_write("* $nick $text");
+    if ($chan) {
+      $chan->log_write("* $nick $text");
     }
   } elsif($type eq 'join') {
-    my $channel = $event->{to}[0];
-    if($self->{perlbot}{channels}{$channel}) {
-      $self->{perlbot}{channels}{$channel}->log_write("$nick (".$event->userhost.") joined $channel");
+    if ($chan) {
+      $chan->log_write("$nick (".$event->userhost.") joined $channel");
     }
   } elsif($type eq 'part') {
-    my $channel = $event->{to}[0];
-    if($self->{perlbot}{channels}{$channel}) {
-      $self->{perlbot}{channels}{$channel}->log_write("$nick (".$event->userhost.") left $channel");
+    if ($chan) {
+      $chan->log_write("$nick (".$event->userhost.") left $channel");
     }
   } elsif($type eq 'mode') {
-    my $channel = $event->{to}[0];
-    if($self->{perlbot}{channels}{$channel}) {
-      $self->{perlbot}{channels}{$channel}->log_write('[MODE] ' . $event->nick . ' set mode: ' . join(' ', @{$event->{args}}));
+    if ($chan) {
+      $chan->log_write('[MODE] ' . $event->nick . ' set mode: ' . join(' ', @{$event->{args}}));
     }
   } elsif($type eq 'topic') {
-    my $channel = $event->{to}[0];
     my $text = $event->{args}[0];
-    if($self->{perlbot}{channels}{$channel}) {
-      $self->{perlbot}{channels}{$channel}->log_write("[TOPIC] $nick: $text");
+    if ($chan) {
+      $chan->log_write("[TOPIC] $nick: $text");
     }
   } elsif($type eq 'nick') {
-    my $channel = $event->{to}[0];
     my $newnick = $event->{args}[0];
-    foreach my $chan (values(%{$self->{perlbot}{channels}})) {
-      if($chan->is_member($nick) || $chan->is_member($newnick)) {
+    foreach my $chan (values(%{$self->{perlbot}->channels})) {
+      if ($chan->is_member($nick) || $chan->is_member($newnick)) {
         $chan->log_write("[NICK] $nick changed nick to: $newnick");
       } 
     }
   } elsif($type eq 'quit') {
-    my $channel = $event->{to}[0];
     my $text = $event->{args}[0];
-    foreach my $chan (values(%{$self->{perlbot}{channels}})) {
-      if($chan->is_member($nick)) {
+    foreach my $chan (values(%{$self->{perlbot}->channels})) {
+      if ($chan->is_member($nick)) {
         $chan->log_write("[QUIT] $nick quit: $text");
         $chan->remove_member($nick);
       }
     }
   } elsif($type eq 'kick') {
-    my $channel = $event->{args}[0];
-    if($self->{perlbot}{channels}{$channel}) {
-      $self->{perlbot}{channels}{$channel}->log_write('[KICK] ' . $event->{to}[0] . ' was kicked by ' . $event->nick . ' (' . $event->{args}[1] . ')');
+    my $chan = $self->{perlbot}->get_channel($event->{args}[0]);
+    if ($chan) {
+      $chan->log_write('[KICK] ' . $event->{to}[0] . ' was kicked by ' . $event->nick . ' (' . $event->{args}[1] . ')');
     }
   }
 }
