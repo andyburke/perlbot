@@ -55,10 +55,16 @@ sub stats {
     $response .= "<br>Uptime: " . $self->perlbot->humanreadableuptime();
 
     $response .= "<p><b>Channels:</b>";
-    $response .= "<table width=100% border=1><tr><th width=20%>Name</th><th>Topic</th></tr>";
+    $response .= "<table width=100% border=1>";
 
     foreach my $channel (values %{$self->perlbot->channels}) {
+      $response .= "<tr><table width=100% border=1><th width=20%>Name</th><th>Topic</th></tr>";
       $response .= "<tr><td>" . $channel->name() . "</td><td>" . $self->{_topics}{$channel->name()} . "</td></tr>";
+      $response .= "<tr><th colspan=2>Members</th></tr><tr><td colspan=2><ul>";
+      foreach my $member (keys(%{$channel->{members}})) {
+        $response .= "<li>$member";
+      }
+      $response .= "</ul></td></tr></table></tr>";
     }
 
     $response .= "</table></body></html>";
@@ -75,7 +81,7 @@ sub stats {
                     activeplugins => scalar @{$self->perlbot->plugins}};
     
     foreach my $channel (values %{$self->perlbot->channels}) {
-      $chan_data = {name => $channel->name, topic => $self->{_topics}{$channel->name}};
+      $chan_data = {name => $channel->name, topic => $self->{_topics}{$channel->name}, member => [ keys(%{$channel->{members}}) ]};
       push @{$data->{channel}}, $chan_data;
     }
     
