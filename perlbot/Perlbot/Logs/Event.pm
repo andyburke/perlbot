@@ -145,6 +145,7 @@ sub as_string {
 sub as_string_formatted {
   my $self = shift;
   my $format = shift;
+  my $filters = shift;
 
   my $date = perlbot_date_string($self->time);
   my ($year, $mon, $day, $hour, $min, $sec) = $date =~ /(\d\d\d\d)\/(\d\d)\/(\d\d)-(\d\d)\:(\d\d)\:(\d\d)/;
@@ -155,6 +156,23 @@ sub as_string_formatted {
   my $target = $self->target || '';
   my $text = $self->text || '';
 
+  if(defined($filters)) {
+    ref($filters) eq 'ARRAY' or $filters = [$filters];
+    foreach my $f (@{$filters}) {
+      foreach my $field (\($date, $year, $mon, $day, $hour, $min, $sec, $channel, $type, $nick, $userhost, $target, $text)) {
+        $_ = $$field;
+        if(!ref($f)) { # a scalar
+          my $filter_func = "filter_$f";
+          $self->can($filter_func) or die "No such Event filter: $f!";
+          $self->$filter_func();
+        } elsif(ref($f) eq 'CODE') { # a coderef they've given us
+          &$f();
+        }
+        $$field = $_;
+      }
+    }
+  }
+  
   study $format;
 
   $format =~ s/%timestamp/$date/g;
@@ -174,6 +192,11 @@ sub as_string_formatted {
   return $format;
 }
 
+sub filter_html {
+  s/\&/\&amp\;/g;
+  s/</\&lt\;/g;
+  s/>/\&gt\;/g;
+}
 
 sub DESTROY {
 }
