@@ -461,14 +461,16 @@ sub triviastats {
 
   if($self->{totalanswered}{$nick}) {
 
-    my @percentageranks = $self->rankplayersbypercentage($self->getallplayers());
+    my @percentageranks = $self->rankplayersbypercentage($self->getqualifyingplayers());
     my $percentagerank = 1;
     foreach my $name (@percentageranks) {
+      print "$name :: $percentagerank\n";
       $self->{percentageranks}{$name} = $percentagerank;
       $percentagerank++;
     }
 
     $percentagerank = $self->{percentageranks}{$nick};
+    $percentagerank ||= 'n/a';
 
     my @winsranks = $self->rankplayersbywins($self->getallplayers());    
     my $winsrank = 1;
@@ -478,8 +480,9 @@ sub triviastats {
     }
 
     $winsrank = $self->{winsranks}{$nick};
+    $winsrank ||= 'n/a';
 
-    my @timeranks = $self->rankplayersbytime($self->getallplayers());
+    my @timeranks = $self->rankplayersbytime($self->getqualifyingplayers());
     my $timerank = 1;
     foreach my $name (@timeranks) {
       $self->{timeranks}{$name} = $timerank;
@@ -487,6 +490,7 @@ sub triviastats {
     }
 
     $timerank = $self->{timeranks}{$nick};
+    $timerank ||= 'n/a';
 
     my @wpranks = $self->rankplayersbywinstimespercentage($self->getallplayers());
     my $wprank = 1;
@@ -496,6 +500,7 @@ sub triviastats {
     }
 
     $wprank = $self->{winstimespercentageranks}{$nick};
+    $wprank ||= 'n/a';
 
     $self->reply("$nick: %R:$percentagerank  WR:$winsrank  TR:$timerank  W%R:$wprank  W:$self->{correctlyanswered}{$nick}  TA:$self->{totalanswered}{$nick}  S:" . $self->score($nick) . "%  FT: $self->{fastestoverall}{$nick}");
   }

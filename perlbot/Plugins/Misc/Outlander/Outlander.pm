@@ -62,10 +62,11 @@ sub sodoit {
       my $timediff = time() - $starttime;
 
       if($reply =~ /\&nbsp\;/ || length($reply) < 2) {
-        my $reply = $self->{confused}[int(rand(100))%@{$self->{confused}}];
-        sleep($self->delay($reply));
-        $self->reply($reply);
-        return;
+#        my $reply = $self->{confused}[int(rand(100))%@{$self->{confused}}];
+#        sleep($self->delay($reply));
+#        $self->reply($reply);
+#        return;
+        $self->sodoit($user, $text, $event);
       }
       
       if($timediff > $self->delay($reply)) {
@@ -90,10 +91,11 @@ sub sodoit {
     my $timediff = time() - $starttime;
     
     if($reply =~ /\&nbsp\;/ || length($reply) < 2) {
-      my $reply = $self->{confused}[int(rand(100))%@{$self->{confused}}];
-      sleep($self->delay($reply));
-      $self->reply($reply);
-      return;
+#      my $reply = $self->{confused}[int(rand(100))%@{$self->{confused}}];
+#      sleep($self->delay($reply));
+#      $self->reply($reply);
+#      return;
+      $self->sodoit($user, $text, $event);
     }
     
     if($timediff > $self->delay($reply)) {
