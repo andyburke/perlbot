@@ -39,13 +39,15 @@ sub google {
   $search->max_results(1);
 
   my $result = shift @{$search->response()};
+  
+  if(!$result) {
+    $self->reply("No matches found for: $text");
+    return;
+  }
+
   my $data = shift @{$result->resultElements()};
 
-  if(!$data) {
-    $self->reply("No matches found for: $text");
-  } else {
-    $self->reply("$text: " . $data->URL());
-  }
+  $self->reply("$text: " . $data->URL());
 }
 
 1;
