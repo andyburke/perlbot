@@ -22,8 +22,11 @@ sub dictionary {
   my $self = shift;
   my $user = shift;
   my $text = shift;
+  my $max;
 
   $text =~ tr/[A-Z]/[a-z]/;
+  ($text, $max) = split(' ', $text, 2);
+  $max ||= 2;
 
   my $url = "http://www.ibiblio.org/webster/cgi-bin/headword_search.pl?query=${text}&=Submit";
 
@@ -68,12 +71,18 @@ sub dictionary {
   $self->reply("Etymology: $ety");
   my $i = 1;
   foreach my $def (@defs) {
+    if($i > $max) { last; }
     $def =~ s/<.*?>//g;
     $self->reply("  $i: $def");
     $i++;
   }
 
+  if(@defs - ($i - 1) > 0) {
+    $self->reply('[[ ' . (@defs - ($i - 1)) . ' definitions not displayed ]]');
+  }
+
 }
 
 1;
+
 

@@ -139,6 +139,30 @@ sub useradmin {
 
     $self->reply("Password saved for user: $username");
     return;
+  } elsif($command eq 'addop') {
+    my $channel = $arguments;
+
+    if(!$channel || !$username) {
+      $self->reply('You must specify both a channel and a username!');
+      return;
+    }
+
+    if(!$self->{perlbot}->config(channel => $channel)) {
+      $self->reply("No such channel: $channel");
+      return;
+    }
+
+    if(!$self->{perlbot}->config(user => $username)) {
+      $self->reply("No such user: $username");
+      return;
+    }
+
+    push(@{$self->{perlbot}{config}{channel}{$channel}{op}}, $username);
+    $self->{perlbot}{channels}{Perlbot::Utils::normalize_channel($channel)}{ops}{$username} = 1;
+    $self->{perlbot}->write_config();
+
+    $self->reply("Added $username to the list of ops for $channel");
+    return;
   } else {
     $self->reply("Unknown command: $command");
     return;
