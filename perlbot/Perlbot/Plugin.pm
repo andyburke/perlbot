@@ -243,6 +243,12 @@ sub _process { # _process to stay out of people's way
   my $user  = shift;
   my $text  = shift;
 
+  # make sure we can play w/ this plugin in this channel...
+  if(($event->type() ne 'msg') &&
+      grep($self->{name}, @{$self->{perlbot}{config}{channel}{normalize_channel($event->{to}[0])}{ignoreplugin}})){
+    return;
+  }
+
   $text ||= '';
 
   $self->{lastnick} = $event->nick();
