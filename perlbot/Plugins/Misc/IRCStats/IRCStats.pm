@@ -25,7 +25,7 @@ sub init {
 
   if(!-f $self->{datafile}) {
     open(DATAFILE, '>' . $self->{datafile});
-    print DATAFILE XMLout(undef, rootname => 'channeldata');
+    print DATAFILE XMLout({}, rootname => 'channeldata');
     close DATAFILE;
   }
     
