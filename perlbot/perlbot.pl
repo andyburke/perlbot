@@ -15,6 +15,8 @@ use Network;
 use Perlbot;
 use PerlbotCore;
 
+$starttime = time();
+
 # from Perlbot.pm
 $debug = $ENV{PERLBOT_DEBUG};
 

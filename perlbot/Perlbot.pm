@@ -22,6 +22,7 @@ use vars qw(
             $ircname
             $currentnick
             $commandprefix $pluginprefix
+            $starttime
 	    @plugins @servers @nicks
 	    %handlers %users %channels
 	    );
@@ -39,6 +40,7 @@ require Exporter;
              $ircname
              $currentnick
              $commandprefix $pluginprefix
+             $starttime
 	     @plugins @servers @nicks
 	     %handlers %users %channels
 	     &parse_config &write_config

@@ -169,6 +169,26 @@ my %command_handlers =
      notify_users($conn, 'help', "$from requested HELP");
      get_help(@_);
    },
+   status => sub {
+     my $conn = shift;
+     my $from = shift;
+     my $userhost = shift;
+
+     my $uptime = time() - $starttime;
+     my $uptimedays = sprintf("%02d", $uptime / 86400);
+     $uptime = $uptime % 86400;
+     my $uptimehours = sprintf("%02d", $uptime / 3600);
+     $uptime = $uptime % 3600;
+     my $uptimeminutes = sprintf("%02d", $uptime / 60);
+     $uptime = $uptime % 60;
+     my $uptimeseconds = sprintf("%02d", $uptime);
+
+     $conn->privmsg($from, "Perlbot $VERSION / $AUTHORS");
+     $conn->privmsg($from, "Uptime: ${uptimedays}d:${uptimehours}h:${uptimeminutes}m:${uptimeseconds}s");
+     $conn->privmsg($from, "Channels active: " . keys(%channels));
+     $conn->privmsg($from, "Plugins active: " . @plugins);
+     $conn->privmsg($from, "Plugins loaded: " . join(' ', 'Core', @plugins[1..$#plugins]));
+   },
    nick => sub {
      my ($conn, $from, $userhost) = (shift, shift, shift);	
      my $newnick = shift;
