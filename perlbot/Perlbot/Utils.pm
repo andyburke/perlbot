@@ -20,7 +20,7 @@ require Exporter;
              &normalize_channel &strip_channel
              &validate_hostmask &hostmask_to_regexp
              &exec_command
-             &debug
+             &debug &set_debug
           );
 
 my $DEBUG;
@@ -52,6 +52,16 @@ sub debug {
       return;
     }
   }
+}
+
+sub set_debug {
+  my $level = shift;
+
+  if(defined($level)) {
+    $DEBUG = $level;
+  }
+
+  return $DEBUG;
 }
 
 sub read_generic_config {

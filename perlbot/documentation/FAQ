@@ -25,13 +25,8 @@ How do I make this damn thing run?
 I don't want to edit this configuration by hand!
 ================================================
 
-   From the perlbot directory, run:
-
-     perl gperlbotcfg/gperlbotcfg.pl
-
-   The graphical GPerlbotConfig utility will let you edit your bot's
-   configuration without having to know the config file format.
-
+   Until there are good XML editors supporting XML Schemas, you're kind of
+   out of luck, sorry.
 
 Can I configure Perlbot right from IRC?
 =======================================

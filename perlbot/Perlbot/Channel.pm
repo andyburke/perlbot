@@ -9,9 +9,6 @@ sub new {
   my ($name, $config) = @_;
   my $rolllogfile = 1;
 
-  use Data::Dumper;
-  print Dumper($config);
-
   if(lc($config->value(channel => $name => 'rolllogfile')) eq 'no') {
     $rolllogfile = 0;
   }

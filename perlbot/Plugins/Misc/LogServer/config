@@ -1,3 +1,3 @@
 <config>
-  <server port="9000" hostname="www.fdntech.com" />
+  <server hostname="www.fdntech.com" port="9000" />
 </config>
