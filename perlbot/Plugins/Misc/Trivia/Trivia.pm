@@ -522,7 +522,7 @@ sub triviastats {
     $percentagerank = $self->{percentageranks}{$nick};
     $percentagerank ||= 'n/a';
 
-    my @winsranks = $self->rankplayersbywins($self->getallplayers());    
+    my @winsranks = $self->rankplayersbywins($self->getqualifyingplayers());
     my $winsrank = 1;
     foreach my $name (@winsranks) {
       $self->{winsranks}{$name} = $winsrank;
@@ -542,7 +542,7 @@ sub triviastats {
     $timerank = $self->{timeranks}{$nick};
     $timerank ||= 'n/a';
 
-    my @perfranks = $self->rankplayersbyperformance($self->getallplayers());
+    my @perfranks = $self->rankplayersbyperformance($self->getqualifyingplayers());
     my $perfrank = 1;
     foreach my $name (@perfranks) {
       $self->{performanceranks}{$name} = $perfrank;
