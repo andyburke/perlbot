@@ -75,7 +75,7 @@ sub parse_rawevent() {
 
   } elsif ($eventclass eq 'Net::IRC::Event') { # a Net::IRC event
     $self->time = time();
-    $self->type = $event->type;
+    $self->type = lc($event->type);
     $self->nick = $event->nick;
     $self->channel = $channel;
     $self->text = $event->{args}[0];
@@ -103,6 +103,7 @@ sub parse_rawevent() {
     foreach my $key (keys(%{$event})) {
       $self->$key = $event->{$key};
     }
+    $self->type = lc($self->type);
   }
 }
 
@@ -110,7 +111,7 @@ sub as_string {
   my $self = shift;
   my $date = perlbot_date_string($self->time);
   my $channel = $self->channel;
-  my $type = uc($self->type);
+  my $type = $self->type;
   my $nick = $self->nick;
   my $userhost = $self->userhost;
   my $target = $self->target;
@@ -150,7 +151,7 @@ sub as_string_formatted {
   my $date = perlbot_date_string($self->time);
   my ($year, $mon, $day, $hour, $min, $sec) = $date =~ /(\d\d\d\d)\/(\d\d)\/(\d\d)-(\d\d)\:(\d\d)\:(\d\d)/;
   my $channel = $self->channel || '';
-  my $type = uc($self->type) || '';
+  my $type = $self->type || '';
   my $nick = $self->nick || '';
   my $userhost = $self->userhost || '';
   my $target = $self->target || '';
@@ -196,6 +197,10 @@ sub filter_html {
   s/\&/\&amp\;/g;
   s/</\&lt\;/g;
   s/>/\&gt\;/g;
+}
+
+sub filter_sql {
+  s/\'/\\\'/g;
 }
 
 sub DESTROY {
