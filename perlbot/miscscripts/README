@@ -74,12 +74,23 @@ and it will be displayed at the top of the channel list and search form
 pages.  If you don't do this, those pages will have a broken image icon
 at the top due to the missing jpg.
 
-perlbot.iniscript
+perlbot.initscript
 -----------------
 
-This is an init script that is described in the manual.txt file.  You can
-put it in /etc/rc.d/init.d and then
-ln -s /etc/rc.d/init.d/perlbot.initscript /etc/rc.d/init.d/botname
-chkconfig --add /etc/rc.d/init.d/botname
-to make the bot start at boot.  It can also be used to start and stop the bot.
+This is a SysV-style init script that is described in the manual.txt file.
+You can put it in /etc/rc.d/init.d (or /etc/init.d for some systems) and
+then:
+
+  ln -s /etc/rc.d/init.d/perlbot.initscript /etc/rc.d/init.d/botname
+
+For each bot you run (botname).
+
+To make the bot start at boot, make the appropriate symlinks in
+/etc/rc.d/rc?.d as with any other SysV init script.  If you run RedHat or a
+RedHat-derived Linux distro, you can make the symlinks automatically with:
+
+  chkconfig --add /etc/rc.d/init.d/botname
+
+The script (botname) can also be used to start and stop the bot manually
+with the "start" and "stop" parameters.
 

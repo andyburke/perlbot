@@ -58,14 +58,15 @@ Table of Contents
 
   However, some work has been done to allow you to run multiple perlbots
   from a machine if you have root access.  If you create a 'perlbot' user
-  whose home directory is '/home/perlbot', you can add new bots under
-  that directory, for instance: '/home/perlbot/logbot' would contain a
-  perlbot tree.  You can then copy the file 'perlbot.initscript' to
-  /etc/rc.d/init.d/logbot and run
-  'chkconfig --add /etc/rc.d/init.d/logbot' to have the logbot start
-  at boot.  You can also use this script to stop/start the bot.  This is
-  currently experimental, and you probably shouldn't play with it unless
-  you know what you're doing.  (it's also a pretty poor hack :)
+  whose home directory is '/home/perlbot', you can add new bots under that
+  directory, for instance: '/home/perlbot/logbot' would contain a perlbot
+  tree.  You can then copy the file 'perlbot.initscript' to
+  /etc/rc.d/init.d/logbot and run 'chkconfig --add logbot' (for RedHat-based
+  Linux distros only; make the symlinks by hand otherwise) to have the logbot
+  start at boot.  You can also use this script to stop/start the bot
+  manually by passing it the parameter 'start' or 'stop'.  This is currently
+  experimental, and you probably shouldn't play with it unless you know what
+  you're doing.  (it's also a pretty poor hack :)
 
 3.0 Settings
 ============
@@ -118,7 +119,7 @@ Table of Contents
     IRC nick and directories for logfiles and plugins.  There must be only
     ONE bot object in your config file!
 
-    - nick      - specify a nick that the bot will try to use. you can
+    - nick      - Specify a nick that the bot will try to use. you can
 		  specify any number of these, and they will be tried
 		  in the order that they're listed in the config file.
 		  For example:
@@ -142,12 +143,12 @@ Table of Contents
                   (if you are running perlbot under MacOS, you must read
                   section 7.2)
 
-    - plugindir - this sets the directory in which the bot will look
+    - plugindir - This sets the directory in which the bot will look
 		  for plugins. it is set to "./plugins" by default (if you
                   are running perlbot under Win32 or MacOS, you must read
                   section 7.1/7.2)
 
-    - nickappend- this specifies the character to append to the end of
+    - nickappend- This specifies the character to append to the end of
 	          the bot's nick when it cannot obtain any of the nicks
                   given in the "nick" fields. the default is "_" (the
                   underscore character).
@@ -158,6 +159,14 @@ Table of Contents
                   ircname would be a good idea on these nets.  The default
                   is "imabot".
 
+    - crashlog  - This is the filename of a file to which crash logs will
+                  be written.  When something goes wrong and the bot
+                  crashes unexpectedly, a perl stack trace will be dumped
+                  to this file, along with the error message from the crash.
+                  If your bot crashes unexpectedly, email your crash.log to
+                  perlbot@fdntech.com (see section 5.0).  The default is
+                  "./crash.log".
+
   3.2  server
     Each server object represents an IRC server that you want your perlbot
     to use.  You should specify several servers, so that if your bot loses
@@ -165,14 +174,14 @@ Table of Contents
     must have at least one server object or perlbot will print an error and
     refuse to start.
 
-    - name      - this is an internal value used by the bot. in other words
+    - name      - This is an internal value used by the bot. in other words
 	          the owner/user need only worry that it is unique among
                   all the servers that are listed.
 
-    - addr      - this sets the address of the server, it can be an IP
+    - addr      - This sets the address of the server, it can be an IP
                   address or a domain name. (1.2.3.4 or irc.foo.com)
 
-    - port      - this sets the port that the bot will try to connect to
+    - port      - This sets the port that the bot will try to connect to
 	          the server on.  The default is 6667.
 
   3.3  user
@@ -211,7 +220,7 @@ Table of Contents
                   computer's IP address changes).
 
   3.4  chan
-    - name      - the name of the channel.  If the leading # or & character
+    - name      - The name of the channel.  If the leading # or & character
                   is omitted, perlbot will assume # .
 
 	            chan {
@@ -297,7 +306,8 @@ commands.txt in its subdirectory as well.
 
     ./perlbot.pl > pb_log.txt
 
-  Now make the problem occur again, and then email pb_log.txt to
+  Now make the problem occur again, and then email pb_log.txt and
+  crash_log.txt (see "crashlog" under section 3.1 above) to
   perlbot@fdntech.com .
 
 
