@@ -22,11 +22,22 @@ How do I make this damn thing run?
    project page.
 
 
+I want the Google and SpelCheck plugins to work!
+================================================
+
+   The Google and SpelCheck plugins both use the Google web APIs. To make
+   them work, you'll need to install the Net::Google perl module and go
+   to http://www.google.com/apis to get an API key.  You should then
+   edit the Google and SpelCheck config.xml files and enter the
+   key you obtained in them.
+
+
 I don't want to edit this configuration by hand!
 ================================================
 
    Until there are good XML editors supporting XML Schemas, you're kind of
    out of luck, sorry.
+
 
 Can I configure Perlbot right from IRC?
 =======================================
@@ -47,11 +58,11 @@ Why won't my perlbot connect?
    page.
 
 
-Why does it keep saying "You are not an owner" to me?
+Why does it keep saying "You are not an admin" to me?
 =====================================================
 
-   Make sure you've given your user object the owner flag in the config
-   file.  Also check to make sure your hostmask is set correctly.
+   Make sure you've made yourself admin in the config file.
+   Also check to make sure your hostmask is set correctly.
 
 
 Why does my hostmask not work?
@@ -105,5 +116,6 @@ I'm not on IRC from my usual place, will the bot still know me?
 
    You should use the auth command to identify yourself with the bot.  Ask
    the bot for help on auth for more information.
+
 
 

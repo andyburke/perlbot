@@ -44,17 +44,14 @@ Table of Contents
   - Plugins may have their own requirements, and we trust plugin authors
     to put that in their documentation.
   - Optional, but recommended:
-      LWP::Simple
-      Geo::Weather
-      RPC::XML
-      RPC::XML::Server
-      RPC::XML::Client
-      WWW::Babelfish
-      HTTP::Daemon
-      HTML::CalendarMonth
-      HTML::TableExtract
-      String::Approx
-      Gtk
+      LWP::Simple (Many web plugins use this module)
+      Geo::Weather (For the Weather plugin)
+      WWW::Babelfish (For the Babelfish plugin)
+      HTTP::Daemon (Used by the integrated webserver)
+      HTML::CalendarMonth (Used by the LogServer plugin)
+      HTML::TableExtract (Used by some web plugins)
+      String::Approx (Used by the Trivia plugin)
+      Net::Google (For the Google and SpelCheck plugins)
 
 
 2.0 Installation
@@ -449,6 +446,25 @@ Table of Contents
           <channel name="#perlbot"
                    limit="100" />
 
+  3.5 webserver
+  -------------
+
+    host
+      - This sets the hostname to bind the integrated webserver to. It
+        defaults to binding to all interfaces.
+
+        Example:
+
+          <webserver host="www.fdntech.com" />
+
+    port
+      - This is the port the integrated webserver will bind to. It
+        defaults to 9090.
+
+        Example:
+
+          <webserver host="www.fdntech.com" port="9000" />
+
 4.0 Using It
 ============
 
@@ -525,15 +541,3 @@ Table of Contents
   ------------------------------------------
 
     Let us know if you have experience with getting 2.x to work.
-
-
-
-
-
-
-
-
-
-
-
-
