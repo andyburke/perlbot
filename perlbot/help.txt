@@ -60,6 +60,9 @@ addhost <hostmask>\\Adds <hostmask> to the list of valid hostmasks for an authen
 delhost
 delhost <hostmask>\\Removes <hostmask> from the list of valid hostmasks for an authenticated user.\\This permanently removes the hostmask from the config file.\\See also: addhost
 
+hostmasks
+hostmasks\\Lists all your current hostmasks
+
 password
 password <newpassword>\\Sets the user's password to <newpassword>\\Saves this value permanently to the config file.\\See also: auth
 

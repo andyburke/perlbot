@@ -35,39 +35,8 @@ sub new {
 	
 	};
 
-    foreach (@_) {
-	# Substitutions to take a standard IRC hostmask and convert it to
-	#   a regexp.  I thought this was pretty clever...  :)
-
-	# escape periods becuse they shouldn't be treated as wildcards
-	s/\./\\./g;
-
-	# * in a hostmask means "any string of chars" which becomes .* in a regexp
-	s/\*/.*/g;
-
-	# {}| are really the lowercase equivalents of []\  (Don't ask me... read RFC1459)
-	# The result of this is that { is equivalent to [ in a nick, etc.
-	# I couldn't do a direct substitution for each of these.  There would
-	#   be problems with the inserted ] and \ chars (used to define the
-	#   character classes on the right side of the s///) being picked up
-	#   by the second and third s/// expressions.  The solution was to
-	#   substitute a character that would never be found in a real hostmask
-	#   in a first pass, and convert those characters to the correct
-	#   regexp in a second pass.
-	# First pass: convert each instance of a char (upper or lower) to some
-	#   'impossible' character.  (ascii 01, 02, and 03)
-	s/[{[](?=.*!)/\01/g;
-	s/[}\]](?=.*!)/\02/g;
-	s/[|\\](?=.*!)/\03/g;
-	# Second pass: convert each impossible char to the appropriate regexp
-	s/\01/[{[]/g;
-	s/\02/[}\\]]/g;
-	s/\03/[|\\\\]/g;
-
-	push @{$self->{hostmasks}}, $_;
-    }
-
     bless $self, $class;
+    $self->hostmasks(@_);
     return $self;
 }
 
@@ -85,7 +54,37 @@ sub curnick {
 
 sub hostmasks {
     my $self = shift;
-    push(@{$self->{hostmasks}}, shift) if @_;
+    foreach (@_) {
+        # Substitutions to take a standard IRC hostmask and convert it to
+        #   a regexp.  I thought this was pretty clever...  :)
+
+        # escape periods becuse they shouldn't be treated as wildcards
+        s/\./\\./g;
+
+        # * in a hostmask means "any string of chars" which becomes .* in a regexp
+        s/\*/.*/g;
+
+        # {}| are really the lowercase equivalents of []\  (Don't ask me... read RFC1459) 
+        # The result of this is that { is equivalent to [ in a nick, etc.
+        # I couldn't do a direct substitution for each of these.  There would
+        #   be problems with the inserted ] and \ chars (used to define the
+        #   character classes on the right side of the s///) being picked up
+        #   by the second and third s/// expressions.  The solution was to
+        #   substitute a character that would never be found in a real hostmask
+        #   in a first pass, and convert those characters to the correct
+        #   regexp in a second pass.
+        # First pass: convert each instance of a char (upper or lower) to some
+        #   'impossible' character.  (ascii 01, 02, and 03)
+        s/[{[](?=.*!)/\01/g;
+        s/[}\]](?=.*!)/\02/g;
+        s/[|\\](?=.*!)/\03/g;
+        # Second pass: convert each impossible char to the appropriate regexp
+        s/\01/[{[]/g;
+        s/\02/[}\\]]/g;
+        s/\03/[|\\\\]/g;
+
+        push @{$self->{hostmasks}}, $_;
+    }
     return $self->{hostmasks};
 }
 

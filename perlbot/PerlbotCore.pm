@@ -484,6 +484,50 @@ my %command_handlers =
 
      $conn->privmsg($from, "Password successfully changed");
    },
+   hostmasks => sub {
+     my ($conn, $from, $userhost) = (shift, shift, shift);
+     my $user = host_to_user($userhost);
+     my $username;
+
+     if(!$user) {
+       $conn->privmsg($from, "Not a known user, try auth first!");
+       return;
+     }
+
+     foreach my $tempname (keys(%users)) {
+       if($user == $users{$tempname}) {
+         $username = $tempname;
+         last;
+       }
+     }
+
+     if(!$username) {
+       $conn->privmsg($from, "error in hostmasks: !username, tell your bot admin");
+       return;
+     }
+
+     # FIXME:  This will break if someone has #loaded and is working from
+     # a different config, basically if we #load a config, we should
+     # probably reset $CONFIG
+     my $tmpconfig = parse_config($CONFIG);
+     my $userfromconfig;
+     foreach my $tempuser (@{$tmpconfig->{'user'}}) {
+       if($tempuser->{'name'}[0] eq $username) {
+         $userfromconfig = $tempuser;
+         last;
+       }
+     }
+
+     if(!$userfromconfig) {
+       $conn->privmsg($from, "error in hostmasks: !userfromconfig, tell your bot admin");
+       return;
+     }
+
+     foreach my $hostmask (@{$userfromconfig->{'hostmask'}}) {
+       $conn->privmsg($from, $hostmask);
+     }
+     
+   },
    addhost => sub {
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $hostname = shift;
@@ -529,10 +573,78 @@ my %command_handlers =
        return;
      }
 
+     my $unmodifiedhostname = $hostname;
      push(@{$usertomodify->{'hostmask'}}, $hostname);
      write_config($CONFIG, $tmpconfig);
+     $user->hostmasks($hostname);
      
-     $conn->privmsg($from, "Added $hostname to your list of hostmasks");
+     $conn->privmsg($from, "Added $unmodifiedhostname to your list of hostmasks");
+   },
+   delhost => sub {
+     my ($conn, $from, $userhost) = (shift, shift, shift);
+     my $hostname = shift;
+     my $user = host_to_user($userhost);
+     my $username;
+
+     if(!$hostname) {
+       $conn->privmsg($from, "Must specify a hostname!");
+       return;
+     }
+
+     if(!$user) {
+       $conn->privmsg($from, "Not a known user, try auth first!");
+       return;
+     }
+
+     foreach my $tempname (keys(%users)) {
+       if($user == $users{$tempname}) {
+         $username = $tempname;
+         last;
+       }
+     }
+
+     if(!$username) {
+       $conn->privmsg($from, "error in delhost: !username, tell your bot admin");
+       return;
+     }
+
+     # FIXME:  This will break if someone has #loaded and is working from
+     # a different config, basically if we #load a config, we should
+     # probably reset $CONFIG
+     my $tmpconfig = parse_config($CONFIG);
+     my $usertomodify;
+     foreach my $tempuser (@{$tmpconfig->{'user'}}) {
+       if($tempuser->{'name'}[0] eq $username) {
+         $usertomodify = $tempuser;
+         last;
+       }
+     }
+
+     if(!$usertomodify) {
+       $conn->privmsg($from, "error in delhost: !usertomodify, tell your bot admin");
+       return;
+     }
+
+     my $whichhost = 0;
+     foreach my $hostmask (@{$usertomodify->{'hostmask'}}) {
+       if($hostname eq $hostmask) {
+         last;
+       }
+       $whichhost++;
+     }
+
+     if($whichhost > @{$usertomodify->{'hostmask'}}) {
+       $conn->privmsg($from, "$hostname not in your list of hostmasks!");
+       return;
+     }
+
+     splice(@{$usertomodify->{'hostmask'}}, $whichhost, 1);
+     write_config($CONFIG, $tmpconfig);
+
+     splice(@{$user->{hostmasks}}, $whichhost, 1);
+
+     $conn->privmsg($from, "Removed $hostname from your list of hostmasks");
+
    },
    plugins => sub {
      my ($conn, $from, $userhost) = (shift, shift, shift);
