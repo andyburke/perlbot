@@ -38,7 +38,7 @@ sub logs {
   my ($chan, $year, $month, $day) = @args;
   my @searchwords;
 
-  if($year =~ /search/) {
+  if(defined($year) && $year =~ /search/) {
     $year =~ s/^search//i;
     $year =~ s/\?//;
     $year =~ s/words=//;
