@@ -29,7 +29,7 @@ sub pricewatch {
 
   my @words = split(' ', $text);
     
-  my $url = 'http://queen.pricewatch.com/search/search.idq?qc=';
+  my $url = 'http://castle.pricewatch.com/search/search.idq?qc=';
   $url .= join('+AND+', @words);
   $url .= "+AND+%40totalcost%3E0";
 
@@ -42,28 +42,31 @@ sub pricewatch {
   $html =~ s/&reg\;//g;
   $html =~ s/&amp\;/&/g;
 
-  my ($price, $brand, $product, $description);
+  my ($price, $dealer, $product, $description);
   my ($te, $row);
 
-  $te = new HTML::TableExtract( headers => ['Brand',
+  $te = new HTML::TableExtract( headers => ['Dealer/Phone/State',
                                             'Product',
                                             'Description',
                                             'MaxTotalCost'] );
   $te->parse($html);
   $row = ($te->rows)[0];
 
-  ($brand) = $$row[0] =~ /(.*?)\W/;
+  ($dealer) = $$row[0];
+  $dealer =~ s/\n/ /g;
+  $dealer =~ s/\s+/ /g;
+
   $product = $$row[1];
   $description = $$row[2];
 
   ($price) = $$row[3] =~ /(\$.*?\d+)/;
   $price =~ s/\s+//g;
 
-  if ($brand && $product && $price) {
-    $brand =~ s/\n//g;
+  if ($dealer && $product && $price) {
+    $dealer =~ s/\n//g;
     $product =~ s/\n//g;
     $price =~ s/\n//g;
-    $self->reply("$price / $brand / $product / $description");
+    $self->reply("$price / $dealer / $product / $description");
   } else {
     $self->reply_error("No pricewatch matches found for: $text");
   }
