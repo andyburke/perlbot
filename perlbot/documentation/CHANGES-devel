@@ -1,5 +1,22 @@
 CHANGES:
 
+1.9.5 - code cleanups/reductions, feedback agent
+- We now use fields/AUTOLOAD in many of our modules to reduce bloat
+- Beginnings of the Feedback agent are in place
+- Added notice, kick and mode subs to Perlbot.pm to abstract some more
+- Miscellaneous tracking added to the Channel object, like who's opped
+- Logs.pm -> LogFile.pm
+- Better debug() output
+- Fixed a couple of bugs with auto-opping
+Plugins:
+- PluginControl: reloadallplugins works now
+- UserUpdater: better nick tracking
+- Alarm: new, lets users set reminders to be sent to them
+- Cal: now uses Cal::Simple so it's cross-platform
+- LogServer: misc tweaks
+- Pricewatch: now reports MaxTotalCost (cost + shipping)
+- Trivia: misc fixes
+
 1.9.4 - showstopper forking bug in webserver fixed, misc fixes, additions
 - Added the Perlbot::schedule method to abstract some more IRC-specific stuff
 - DTD updates, MLView (http://www.freesoftware.fsf.org/mlview/) can now
