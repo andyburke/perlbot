@@ -1,0 +1,117 @@
+Perlbot Frequently Asked Questions  //  http://perlbot.sourceforge.net
+Authors: Andrew Burke, Jeremy Muhlich
+         <burke@pas.rochester.edu / jmuhlich@acm.jhu.edu>
+----------------------------------------------------------------------
+
+What is Perlbot?
+================
+
+   Perlbot is an IRC bot written in Perl. It depends on Net::IRC and its goals
+   are simplicity, a small footprint, and modularity. It's meant as a more
+   easily configured but less robust alternative to bots like eggdrop. It's
+   also noticeably faster by the authors' tests. The base bot allows
+   auto-opping, notes, multiple channels, channel redirection, etc., but much,
+   much more is possible through the use of plugins. Many plugins are included,
+   and it should be easy for anyone with some knowledge of Perl to write her
+   own.
+
+
+How do I make this damn thing run?
+==================================
+
+   Please, please, please read and understand the manual.  If you still don't
+   have your bot working after looking over the manual and following the
+   suggestions therein, email the authors or post to the sourceforge.net
+   project page.
+
+
+I don't want to edit this configuration by hand!
+================================================
+
+   From the perlbot directory, run:
+
+     perl gperlbotcfg/gperlbotcfg.pl
+
+   The graphical GPerlbotConfig utility will let you edit your bot's
+   configuration without having to know the config file format.
+
+
+Can I configure Perlbot right from IRC?
+=======================================
+
+   Not yet, but users can maintain their own hostmasks, greatly reducing
+   the workload of the bot admin.  Further configuration from IRC may be
+   possible in the future.
+
+
+Why won't my perlbot connect?
+=============================
+
+   Make sure you've specified valid servers in your config.  Check them
+   with another irc client to make sure they're up.  If your bot is still
+   not connecting, set PERLBOT_DEBUG to 1 in your shell before running
+   the bot and look for errors.  If you're still not connecting and don't
+   know what to do, email the authors or post to the sourceforge.net project
+   page.
+
+
+Why does it keep saying "You are not an owner" to me?
+=====================================================
+
+   Make sure you've given your user object the owner flag in the config
+   file.  Also check to make sure your hostmask is set correctly.
+
+
+Why does my hostmask not work?
+==============================
+
+   Perlbot requires well-formed hostmasks in the format:
+
+     nick!user@host
+
+   It also requires relatively "secure" hostmasks.  Your user and host
+   fields MUST contain some fixed text:
+
+      *!*@*                  <---- NOT allowed
+      *!*@*.someplace.com    <---- NOT allowed
+      *!me@*                 <---- NOT allowed
+      *!*me@*.someplace.com  <---- allowed
+
+
+Do I need to restart when I change the configuration or add/upgrade a plugin?
+=============================================================================
+
+   No!  You can cause the bot to reload its configuration from IRC by sending
+   the reload command as an owner.  From your shell you can send it a HUP
+   signal by doing:  killall -HUP perlbot.pl  This will also cause the bot
+   to reread its configuration.
+
+   Plugins can be loaded, unloaded and reloaded dynamically.  Ask the bot
+   for help on the plugins command.
+
+
+Where can I get more plugins?
+=============================
+
+   There currently is no repository for plugins.  However, the best place
+   to check would be http://perlbot.sourceforge.net followed by a Google
+   search.
+
+
+Howcome plugin X isn't working for me?
+======================================
+
+   It's possible that plugins will not load without warning if they have a
+   problem.  If a plugin appears not to be working set PERLBOT_DEBUG equal
+   to 1 in your shell before running the bot.  You'll see each plugin load
+   when the bot starts up and any error messages from plugins which could
+   not be loaded.
+
+
+I'm not on IRC from my usual place, will the bot still know me?
+===============================================================
+
+   You should use the auth command to identify yourself with the bot.  Ask
+   the bot for help on auth for more information.
+
+
