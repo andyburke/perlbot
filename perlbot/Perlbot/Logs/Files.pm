@@ -250,19 +250,39 @@ sub search {
   my @result;
   my $resultcount = 0;
 
+  if($initialdate && $finaldate && $boolean
+     && !$terms && !$nick && !$type) {
+    my $channel = Perlbot::Utils::strip_channel($self->channel);
+
+    my $curdate = $initialdate;
+    do {
+      my (undef, undef, undef, $d, $m, $y) = localtime($curdate);
+      $d = sprintf("%02d", $d);
+      $m = sprintf("%02d", $m + 1);
+      $y += 1900;
+      
+      if(-f File::Spec->catfile($self->directory, $channel, "$y.$m.$d")) {
+        $resultcount = 1;
+        return $resultcount;
+      }
+      $curdate += 86400; # add a day
+    } while ($curdate < $finaldate);
+  }
+  
   my $files = $self->get_filelist($initialdate, $finaldate);
 
  FILE: foreach my $filename (@$files) {
+
+    # we do a little pre-processing to speed up this search
+    #
+    # we eat the file, and throw away all the lines that don't
+    # contain our search terms, if we have any
 
     if (! CORE::open(FILE, $filename)) {
       debug("failed to open '$filename' for searching: $!");
       next FILE;
     }
 
-    # we do a little pre-processing to speed up this search
-    #
-    # we eat the file, and throw away all the lines that don't
-    # contain our search terms, if we have any
     my @lines = <FILE>;
 
     if(defined($terms)) {
