@@ -1,16 +1,17 @@
 package Perlbot::Plugin::Notes;
 
-use Perlbot;
-use Perlbot::User;
 use Perlbot::Plugin;
-
 @ISA = qw(Perlbot::Plugin);
+
+use DB_File;
 
 sub init {
   my $self = shift;
 
   $self->want_public(0);
   $self->want_fork(0);
+
+  tie %{$self->{notes}},  'DB_File', File::Spec->catfile($self->{directory}, 'notesdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
   $self->hook('note', \&note);
   $self->hook('listnotes', \&listnotes);
@@ -29,12 +30,16 @@ sub note {
      return;
   }
 
-  if(exists($self->{perlbot}->{users}->{$recipient})) {
-    $self->{perlbot}->{users}->{$recipient}->add_note($sender, $note);
-    $self->reply("note added for $recipient");
-  } else {
-    $self->reply("I don't know the user '$recipient'");
-  }
+  foreach my $tmpuser (keys(%{$self->{perlbot}{users}})) {
+    if($recipient eq $tmpuser || $recipient eq $self->{perlbot}{users}{$tmpuser}{curnick}) {
+      $self->{notes}{$tmpuser} .= time() . ":::${sender}:::${note}::::";
+      $self->reply("Note stored for $recipient");
+      return;
+    }
+  }      
+  
+  $self->reply_error("I don't know the user '$recipient'");
+
 }
 
 sub listnotes {
@@ -42,9 +47,20 @@ sub listnotes {
   my $user = shift;
 
   if($user) {
-    $self->reply($user->listnotes());
+    my @notes = split('::::', $self->{notes}{$user->{name}});
+    if(!@notes) {
+      $self->reply_error('No notes stored for you!');
+      return;
+    }
+
+    my $notenum = 1;
+    foreach my $note (@notes) {
+      my ($time, $sender, $notetext) = split(':::', $note);
+      $self->reply(" $notenum : [" . localtime($time) . "] from $sender");
+      $notenum++;
+    }
   } else {
-    $self->reply('You are not a known user!');
+    $self->reply_error('You are not a known user!');
   }
 }
 
@@ -54,10 +70,43 @@ sub readnote {
   my $text = shift;
 
   if($user) {
-    $self->reply($user->readnote($text));
+    my @notes = split('::::', $self->{notes}{$user->{name}});
+
+    if($text) {
+      my $notenum = $text;
+      my $realnotenum = $text - 1;
+
+      if(!$notes[$realnotenum]) {
+        $self->reply_error('No such note!');
+        return;
+      }
+
+      my ($time, $sender, $notetext) = split(':::', $notes[$realnotenum]);
+      $self->reply(" $notenum : [" . localtime($time) . "] from $sender");
+      $self->reply("  $notetext");
+      splice(@notes, $realnotenum, 1);
+      $self->{notes}{$user->{name}} = join('::::', @notes);
+      return;
+    } else {
+      my $note = shift @notes;
+
+      if(!$note) {
+        $self->reply_error('You have no notes!');
+        return;
+      }
+
+      my ($time, $sender, $notetext) = split(':::', $note);
+      $self->reply(" 1 : [" . localtime($time) . "] from $sender");
+      $self->reply("  $notetext");
+      $self->{notes}{$user->{name}} = join('::::', @notes);
+      return;
+    } 
   } else {
     $self->reply('You are not a known user!');
   }
 }
 
 1;
+
+
+

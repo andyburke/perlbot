@@ -17,10 +17,7 @@ sub new {
 	curchans   => [],
 	hostmasks  => [],
         admin      => 0,
-	flags      => $flags,
 	lastnick   => undef,
-	notes      => [],
-	notified   => 0,
 
 	realname   => '',
 	workphone  => '',
@@ -28,9 +25,6 @@ sub new {
 	email      => '',
 	location   => '',
 	mailaddr   => '',
-
-	lastseen   => 'never',
-	signoffmsg => '',
 
 	password   => $password,
 	allowed    => {}
@@ -125,18 +119,6 @@ sub is_admin {
   return $self->admin();
 }
 
-sub flags {
-    my $self = shift;
-    $self->{flags} = shift if @_;
-    return $self->{flags};
-}
-
-sub notified {
-    my $self = shift;
-    $self->{notified} = shift if @_;
-    return $self->{notified};
-}
-
 sub password {
     my $self = shift;
     $self->{password} = shift if @_;
@@ -156,88 +138,4 @@ sub update_channels {
   }
 }
     
-
-sub dump {
-    my $self = shift;
-    print <<END_DUMP;
-User:
-  name     : $self->{name}
-  nick     : $self->{nick}
-  hostmasks: @{$self->{hostmasks}}
-  flags    : $self->{flags}
-END_DUMP
-}
-
-sub listnotes {
-    my $self = shift;
-    my $notestring = '';
-    my $notenum = 1;
-
-    if(@{$self->{notes}} == 0) {
-      $notestring = 'No current notes.';
-    } else {
-      foreach(@{$self->{notes}}) {
-        $notestring .= "$notenum) $_->{from} - $_->{date}\n";
-        $notenum++;
-      }
-    }
-    return $notestring;
-}
-
-sub readnote {
-    my $self = shift;
-    my ($notenum) = (shift =~ /(\d+)/);
-    my $note;
-    my $notetext = '';
-
-    if(defined($notenum)) { $notenum--; } #change it to be a real index into the array
-
-    if(@{$self->{notes}} == 0) {
-        $self->{notified} = 0;
-        $notetext = 'No more notes.';
-    } else {
-      if(defined($notenum)) {
-        if($notenum >= 0 && @{$self->{notes}}[$notenum]) {
-            ($note) = splice(@{$self->{notes}}, $notenum, 1);
-            $notetext = "$note->{from} - $note->{date}:\n  $note->{text}";
-        } else {
-            $notenum++;
-            $notetext = "No such note: $notenum";
-        }
-      } else {
-        # notes should be a queue and not a stack, so use shift instead of pop
-        $note = shift(@{$self->{notes}});
-
-        if($note) {
-          $notetext = "$note->{from} - $note->{date}:\n  $note->{text}";
-        }
-      }
-    }
-    
-    return $notetext;
-}
-
-sub add_note {
-    my $self = shift;
-    my ($from, $text) = (shift, shift);
-    my $note;
-
-    if($from && $text) {
-        $self->{notified} = 0;
-        print "= saving note to $self->{name} from $from: $text\n" if ($DEBUG);
-        $note = new Note($from, $text);
-        push @{$self->{notes}}, $note;
-    }
-    
-    # return the current number of stored notes
-    return scalar(@{$self->{notes}});
-}
-
-sub notes {
-    my $self = shift;
-
-    # return the current number of stored notes
-    return scalar(@{$self->{notes}});
-}
-
 1;

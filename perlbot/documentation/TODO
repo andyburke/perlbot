@@ -8,6 +8,7 @@ for 2.0:
 - port plugins
 - create a plugin that publishes our config via RPC::XML::Server
   so we can make a botnet
+  -  This needs more thought, let's push it back to post 2.0
 - move Note.pm into the Notes plugin
 - clean up code, make -w clean, etc.
 - flock the config file when reading/writing

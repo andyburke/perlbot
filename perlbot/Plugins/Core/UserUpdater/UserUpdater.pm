@@ -33,7 +33,7 @@ sub update {
   my $self = shift;
   my $event = shift; 
 
-  my $userhost = $event->nick.'!'.$event->userhost;
+  my $userhost = $event->from;
   my $type = $event->type;
   my $nick = $event->nick;
   my $channel = normalize_channel($event->{to}[0]);
@@ -91,19 +91,11 @@ sub update {
   }
 
   if($user) {
-    $user->{curnick} = $nick;
-    $user->{lastseen} = time();
-
-    if(!$user->{notified} && $user->notes >= 1) {
-      my $numnotes = $user->notes;
-      my $noteword = ($numnotes == 1) ? 'note' : 'notes';
-      $self->{perlbot}->msg($nick, "$numnotes $noteword stored for you.");
-      $user->{notified} = 1;
-    }
+    $user->curnick($nick);
   }
+
   return $user;
 
 }
 
 1;
-

@@ -29,7 +29,7 @@ sub auth {
 
     if(!$username || !$password || $password eq "''") {
 	#FIXME: make this return the help shit
-	$self->reply('usage: auth <username> <password>');
+	$self->reply_error('usage: auth <username> <password>');
 	return;
     }
 
@@ -156,6 +156,7 @@ sub delhostmask {
 }
 
 1;
+
 
 
 

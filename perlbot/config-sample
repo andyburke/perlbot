@@ -1,37 +1,36 @@
 <config>
-  <channel name="#perlbot">
-    <flags>+t-ns</flags>
-    <logging>yes</logging>
+  <channel name="#perlbot"
+           flags="+t-ns"
+           logging="yes"
+           limit="0">
     <op>someone</op>
     <op>otherperson</op>
     <ignoreplugin>SomePlugin</ignoreplugin>
-    <limit>0</limit>
   </channel>
-  <bot>
+  <bot nick="perlbot"
+       nickappend="-"
+       ircname="imabot"
+       logdir="./logs"
+       crashlogdir="./"
+       commandprefix="!">
     <plugindir>./core</plugindir>
     <plugindir>./plugins</plugindir>
-    <nick>uncfgpb</nick>
-    <crashlogdir>.</crashlogdir>
-    <logdir>./logs</logdir>
     <noload>MegaHal</noload>
     <noload>Guile</noload>
     <noload>Babelfish</noload>
     <noload>Test</noload>
-    <commandprefix>!</commandprefix>
-    <nickappend>_</nickappend>
-    <ircname>imabot</ircname>
     <admin>someone</admin>
     <ignore>*!*someannoyinguser@*.some.host.com</ignore>
   </bot>
-  <server address="irc.fdntech.com" />
+  <server address="irc.fdntech.com" port="6667" />
   <server address="localhost" />
-  <user name="someone">
+  <user name="someone" password="wD887HJnHHjKA">
     <hostmask>*!*someone@*.somewhere.com</hostmask>
-    <password>wD887HJnHHjKA</password>
   </user>
-  <user name="otherperson">
+  <user name="otherperson" password="4./tyldWElAKk">
     <hostmask>*!*other@*.person.edu</hostmask>
-    <password>4./tyldWElAKk</password>
+    <hostmask>*!*other@*.somewhereelse.com</hostmask>
+    <hostmask>somenick!somelogin@someplace.com</hostmask>
   </user>
 </config>
 
