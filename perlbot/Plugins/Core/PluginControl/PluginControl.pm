@@ -25,6 +25,7 @@ sub plugins {
   my $text = shift;
 
   if (!$text) { # no command specified
+    $self->reply_error('You must specify a command!');
     return;
   }
 
