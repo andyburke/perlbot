@@ -21,6 +21,7 @@ sub new {
     directory => $directory,
     config => undef,
     helpitems => {},
+    infoitems => {},
     commandprefix_hooks => {},
     addressed_command_hooks => {},
     regular_expression_hooks => {},
@@ -34,11 +35,6 @@ sub new {
     lastnick => '',
     lasthost => '',
     behaviors => {}, # must initialize via want_* calls below!
-    author => '',
-    contact => '',
-    url => '',
-    version => '',
-
   };
 
   bless $self, $class;
@@ -56,8 +52,9 @@ sub new {
   # try to read their help file
 
   $self->{config} = new Perlbot::Config(File::Spec->catfile($self->{directory}, 'config'));
-  $self->{helpitems} = $self->read_help();
-
+  $self->{helpitems} = $self->_read_help();
+  $self->{infoitems} = $self->_read_info();
+  
   return $self;
 }
 
@@ -85,28 +82,39 @@ sub directory {
 }
 
 sub author {
-  my ($self, $author) = @_;
-  return $self->property('author', $author);
+  my $self = shift;
+  if(defined($self->infoitems)) {
+    return $self->infoitems->{'author'}[0];
+  }
 }
 
 sub contact {
-  my ($self, $contact) = @_;
-  return $self->property('contact', $contact);
+  my $self = shift;
+  if(defined($self->infoitems)) {
+    return $self->infoitems->{'contact'}[0];
+  }
 }
 
 sub url {
-  my ($self, $url) = @_;
-  return $self->property('url', $url);
+  my $self = shift;
+  if(defined($self->infoitems)) {
+    return $self->infoitems->{'url'}[0];
+  }
 }
 
 sub version {
-  my ($self, $version) = @_;
-  return $self->property('version', $version);
+  my $self = shift;
+  return eval '$Perlbot::Plugin::'.$self->{name}.'::VERSION';
 }
 
 sub helpitems {
   my ($self, $helpitems) = @_;
   return $self->property('helpitems', $helpitems);
+}
+
+sub infoitems {
+  my ($self, $infoitems) = @_;
+  return $self->property('infoitems', $infoitems);
 }
 
 # params:
@@ -692,10 +700,18 @@ sub config {
 }
 
 
-sub read_help {
+sub _read_help {
   my $self = shift;
   my $filename = shift;
   $filename ||= 'help.xml';
+
+  return read_generic_config(File::Spec->catfile($self->{directory}, $filename));
+}
+
+sub _read_info {
+  my $self = shift;
+  my $filename = shift;
+  $filename ||= 'info.xml';
 
   return read_generic_config(File::Spec->catfile($self->{directory}, $filename));
 }
