@@ -6,10 +6,6 @@ for 2.0:
 - make the bot quit gracefully and catch all the right signals
 - output buffering
 - port plugins
-- create a plugin that publishes our config via RPC::XML::Server
-  so we can make a botnet
-  -  This needs more thought, let's push it back to post 2.0
-- move Note.pm into the Notes plugin
 - clean up code, make -w clean, etc.
 - flock the config file when reading/writing
 - write create() and delete() methods for Config?
@@ -19,7 +15,6 @@ for 2.0:
 - add character-counting to max-output functionality in case of
   very long lines (1 line = 80 chars?)
 - check that values in Weather plugin are numeric before multiplying
-- Notes are broken?
 - Invite plugin that handles channel invites.  Invites from admins
   are automatically honored.  Invites from anyone else are stored
   in a queue, and all admins are notified of the request.  An admin
@@ -38,6 +33,9 @@ for 2.0:
 
 when we can:
 
+- create a plugin that publishes our config via RPC::XML::Server
+  so we can make a botnet
+  -  This needs more thought, let's push it back to post 2.0
 - per-channel option to auto-rejoin when kicked
 - write help files for all the plugins that are included in the base
   distribution.

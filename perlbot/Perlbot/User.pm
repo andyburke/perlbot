@@ -1,6 +1,5 @@
 package Perlbot::User;
 
-use Perlbot::Note;
 use strict;
 use Perlbot::Utils;
 
