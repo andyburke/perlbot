@@ -13,13 +13,10 @@ use strict;
 use Perlbot::Utils;
 use Perlbot::User;
 
+our $VERSION = '1.0.0';
+
 sub init {
   my $self = shift;
-
-  $self->author('Andrew Burke');
-  $self->contact('burke@bitflood.org');
-  $self->version('1.0.0');
-  $self->url('http://perlbot.sourceforge.net');
 
   $self->want_fork(0);
   $self->want_reply_via_msg(1);
