@@ -7,6 +7,8 @@ CHANGES:
   flexible authorization system.
 - Config and config-sample are now config.xml and config-sample.xml
 - Sigterm now handled gracefully (basically the same as sigint)
+- Fixed logic in logging code so closed logfiles are never re-closed, which
+  was causing some warning messages before.
 - Improved debug messages
 - You may now have a single logfile per channel if you like, configurable
   via the "singlelogfile" attribute of channel objects.  The old behavior of
@@ -17,6 +19,8 @@ CHANGES:
 - Per-plugin info.xml added, with author, contact and url fields.  This
   information is returned as part of the top-level help text for each
   plugin.
+- Plugins will now try to open a config-sample.xml in their directory if a
+  config.xml is not found.  The config-sample.xml will be opened read-only.
 - Plugin unload/load now works (!unloadplugin and !loadplugin)
 - Trivia plugin added - runs trivia games and keeps many statistics
 - URLEater plugin added - keeps a list of the last URLs said in the channel.
@@ -35,6 +39,7 @@ CHANGES:
   before the botname.
 - hook() with just a single coderef parameter will now hook on every line
 - All hooks now additionally get the irc event as the last argument
+- Config objects can now be read-only to prevent saving out to the file
 
 1.9.1 - fixes and cleanups
 - DTD fixed in the sample config
