@@ -305,7 +305,7 @@ sub triviatop {
   my @ranks = $self->rankplayersbypercentage();
   my $rank = 1;
   foreach my $name (@ranks) {
-    push(@response, "$rank -- " . sprintf("%12s", $name) . " (Score: " . $self->score($name) . ")");
+    push(@response, "$rank -- " . sprintf("%10s", $name) . " (Score: " . $self->score($name) . "%)");
     $rank++;
     if($rank >= $num + 1) { last; }
   }
@@ -314,7 +314,7 @@ sub triviatop {
   $rank = 1;
   foreach my $name (@ranks) {
     if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . "   $rank -- " . sprintf("%12s", $name) . " (Wins: " . $self->{correctlyanswered}{$name} . ")";
+      $response[$rank - 1] = $response[$rank - 1] . "   $rank -- " . sprintf("%10s", $name) . " (Wins: " . $self->{correctlyanswered}{$name} . ")";
       $rank++;
       if($rank >= $num + 1) { last; }
     }
