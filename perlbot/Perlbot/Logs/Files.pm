@@ -213,15 +213,15 @@ sub get_filelist {
   my @files;
   my $channel = Perlbot::Utils::strip_channel($self->channel);
 
+  my $initialdate_string = Perlbot::Utils::perlbot_date_filename($initialdate) if defined($initialdate);
+  my $finaldate_string = Perlbot::Utils::perlbot_date_filename($finaldate) if defined($finaldate);
+
   if (! opendir(DIR, File::Spec->catfile($self->directory, $channel))) {
     return [];
   }
 
   while (my $file = readdir(DIR)) {
     $file =~ /\d\d\d\d\.\d\d\.\d\d/ or next;
-
-    my $initialdate_string = Perlbot::Utils::perlbot_date_filename($initialdate) if defined($initialdate);
-    my $finaldate_string = Perlbot::Utils::perlbot_date_filename($finaldate) if defined($finaldate);
 
     if ((!defined($initialdate_string) or $file ge $initialdate_string)
         and (!defined($finaldate_string) or $file le $finaldate_string)) {
@@ -291,11 +291,11 @@ sub search {
       }
       last FILE if defined($maxresults) and $resultcount >= $maxresults;
     }
-
+    
     CORE::close FILE;
- }
+  }
 
- return wantarray() ? @result : $resultcount;
+  return wantarray() ? @result : $resultcount;
 }
 
 sub initial_entry_time {
