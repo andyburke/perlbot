@@ -1,0 +1,5 @@
+<help>
+  <overview>Keeps a history of urls said into channels.</overview>
+  <command name="urls">Gets the list of recent urls.</command>
+  <usage name="urls">urls [max]</usage>
+</help>
