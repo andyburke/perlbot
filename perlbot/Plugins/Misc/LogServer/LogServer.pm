@@ -34,7 +34,17 @@ sub logs {
   my @args = @_;
   my $logdir = $self->{logdir};
 
-  my $response = '<html><head><title>Perlbot Logs</title><meta name="ROBOTS" content="NOINDEX, NOFOLLOW, NOARCHIVE" /></head><body><center><h1>Perlbot Logs</h1></center><hr>';
+  my $response = '<html><head><title>Perlbot Logs</title>';
+ 
+  if(defined($self->config->value('allowsearchengines'))
+     && lc($self->config->value('allowsearchengines')) eq 'yes') {
+     # don't bother adding the meta tag to disallow archiving
+  } else {
+    $response .= '<meta name="ROBOTS" content="NOINDEX, NOFOLLOW, NOARCHIVE" />';
+  }
+
+  $response .= '</head><body><center><h1>Perlbot Logs</h1></center><hr>';
+
   my ($chan, $year, $month, $day) = @args;
   my @searchwords;
 
