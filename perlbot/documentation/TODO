@@ -13,6 +13,9 @@ for 2.0:
 - clean up code, make -w clean, etc.
 - flock the config file when reading/writing
 - move config stuff into a Config object
+- move all code that touches Net::IRC stuff into Perlbot.pm and write
+  accessor methods (for example, ConnectionManagement currently bangs
+  on $perlbot->{ircconn})
 - add character-counting to max-output functionality in case of
   very long lines (1 line = 80 chars?)
 - Invite plugin that handles channel invites.  Invites from admins
