@@ -2,24 +2,16 @@ TODO:
 
 for 2.0 (i.e. ASAP):
 
-- Plugin::property probably won't set the value if the value evaluates as false
-  ('', 0, undef...).
-  - I think this is fixed, but it needs more rigorous testing -- andy
 - Write a script to generate a list of plugins and their help.xml overview
   sections, and include the output of the script in documentation/ and on the
   webpage.
 - clean up code, make -w clean, etc.
 - User and Chan objects should know how to build a skeleton version of
   themselves in the config if their entry doesn't already exist
-- join/part should use dummy config objects
-
 
 for 2.2:
 
 - output buffering
-- move all code that touches Net::IRC stuff into Perlbot.pm and write
-  accessor methods (for example, ConnectionManagement currently bangs on
-  $perlbot->{ircconn})
 - add character-counting to max-output functionality in case of very long
   lines (1 line = 80 chars?)
 - see if anyone else has written something like our Config.  if so, look
