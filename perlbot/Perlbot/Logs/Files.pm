@@ -284,7 +284,7 @@ sub search {
       }
 
       if ($add_to_result) {
-        push(@result, $line);
+        push(@result, $line) if wantarray();
         $resultcount++;
         last FILE if $boolean;
       }
@@ -294,11 +294,7 @@ sub search {
     CORE::close FILE;
  }
 
-  if(wantarray()) {
-    return @result;
-  } else {
-    return $resultcount;
-  }
+ return wantarray() ? @result : $resultcount;
 }
 
 sub initial_entry_time {
