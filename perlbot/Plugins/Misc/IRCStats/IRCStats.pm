@@ -175,9 +175,10 @@ sub import_from_logs {
 
   my $logdir = $self->perlbot->config->value(bot => 'logdir');
 
-  foreach my $key (keys(%{$self->{channels}})) {
+  foreach my $chan (keys(%{$self->{channels}})) {
     for(my $i=0; $i < 24; $i++) {
-      $self->{channels}{$key}{'hour' . $i} = 0;
+      my $hour = sprintf("%02d", $i);
+      $self->{channels}{$chan}{'hour' . $i} = 0;
     }
   }
 
