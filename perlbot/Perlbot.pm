@@ -412,9 +412,11 @@ sub process_queue {
   # be called again in a bit.  otherwise, just set the empty_queue flag.
   my $params = shift(@{$self->{msg_queue}});
   if ($params) {
+    print "process_queue: sending head of queue: $params->[0] / $params->[1]\n" if $DEBUG >= 3;
     $self->{ircconn}->privmsg(@$params);
-    $self->{ircconn}->schedule(1, \&process_queue, $self);
+    print "==>", $self->{ircconn}->schedule(1, \&process_queue, $self), "\n";
   } else {
+    print "process_queue: queue now empty\n" if $DEBUG >= 3;
     $self->{empty_queue} = 1;
   }
 }
@@ -427,11 +429,16 @@ sub msg {
 
   # push msg on the queue, and process the queue if it was previously empty
   # (then flag the queue as non-empty)
-  push(@{$self->{msg_queue}}, [$target, $text]);
-  if ($self->{empty_queue}) {
-    $self->process_queue;
-    $self->{empty_queue} = 0;
-  }
+#  push(@{$self->{msg_queue}}, [$target, $text]);
+#  print "msg: queueing $target / $text\n" if $DEBUG >= 3;
+#  if ($self->{empty_queue}) {
+#    print "  queue was empty, processing\n" if $DEBUG >= 3;
+#    $self->process_queue;
+#    $self->{empty_queue} = 0;
+#  }
+
+  $self->{ircconn}->privmsg($target, $text);
+
 }
 
 sub join {
