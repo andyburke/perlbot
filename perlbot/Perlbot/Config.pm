@@ -65,7 +65,7 @@ sub save {
 # TODO: make sure that when a non-existent entity is queried, no
 #       hash or array entries spring into existence!
 
-sub get : lvalue {
+sub value : lvalue {
   my ($self, @keys) = @_;
   my ($current, $key, $type, $ref);
 

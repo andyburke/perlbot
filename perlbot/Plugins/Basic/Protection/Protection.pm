@@ -19,7 +19,7 @@ sub modechange {
   my $modestring = $event->{args}[0];
 
   my $deopper = $event->nick();
-  my $mintime = $self->config->get('mintimebetweendeops');
+  my $mintime = $self->config->value('mintimebetweendeops');
 
   if ($deopper eq $self->{perlbot}{curnick}) { return; }
 

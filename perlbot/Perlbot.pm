@@ -51,9 +51,9 @@ sub start {
   $self->process_config;
 
   # config file must at the very least define a bot section and a server
-  $self->config->get('bot')
+  $self->config->value('bot')
       or die "No bot section in config file '$self->{configfile}'\n";
-  $self->config->get('server')
+  $self->config->value('server')
       or die "No servers specified in config file '$self->{configfile}'\n";
   
   # here we loop over our defined servers attempting to connect.  we pause
@@ -61,7 +61,7 @@ sub start {
   my $i = 0;
   while (!$self->connect($i)) {
     $i++;
-    if ($i >= @{$self->config->get('server')}) {
+    if ($i >= @{$self->config->value('server')}) {
       print "connect: server list exhausted; sleeping and trying again\n" if $DEBUG;
       $i = 0;
       sleep 5;
@@ -135,15 +135,15 @@ sub process_config {
   #       if this user is an admin
   #         set his/her admin flag
 
-  if ($self->config->get('user')) {
-    foreach my $user (keys(%{$self->config->get('user')})) {
+  if ($self->config->value('user')) {
+    foreach my $user (keys(%{$self->config->value('user')})) {
       print "process_config: loading user '$user'\n" if $DEBUG;
       $self->{users}{$user} =
           new Perlbot::User($user,
-                            $self->config->get(user => $user => 'flags'),
-                            $self->config->get(user => $user => 'password'),
-                            @{$self->config->get(user => $user => 'hostmask')});
-      foreach my $admin ($self->config->get(bot => 'admin')) {
+                            $self->config->value(user => $user => 'flags'),
+                            $self->config->value(user => $user => 'password'),
+                            @{$self->config->value(user => $user => 'hostmask')});
+      foreach my $admin ($self->config->value(bot => 'admin')) {
         if($admin eq $user) {
           print "process_config: $admin  is an admin\n" if $DEBUG;
           $self->{users}{$user}->admin(1);
@@ -159,17 +159,17 @@ sub process_config {
   #       add them as an op if they exist as a user
   #     put the channel into the bot object
   
-  if ($self->config->get('channel')) {  
-    foreach my $channel (keys(%{$self->config->get('channel')})) {
+  if ($self->config->value('channel')) {  
+    foreach my $channel (keys(%{$self->config->value('channel')})) {
       print "process_config: loading channel '$channel'\n" if $DEBUG;
       my $chan =
           new Perlbot::Chan(name    => normalize_channel($channel),
-                            flags   => $self->config->get(channel => $channel => 'flags'),
-                            key     => $self->config->get(channel => $channel => 'key'),
-                            logging => $self->config->get(channel => $channel => 'logging'),
-                            logdir  => $self->config->get(bot => 'logdir'));
+                            flags   => $self->config->value(channel => $channel => 'flags'),
+                            key     => $self->config->value(channel => $channel => 'key'),
+                            logging => $self->config->value(channel => $channel => 'logging'),
+                            logdir  => $self->config->value(bot => 'logdir'));
       
-      foreach my $op ($self->config->get(channel => $channel => 'op')) {
+      foreach my $op ($self->config->value(channel => $channel => 'op')) {
         $op or next;
         $chan->add_op($op) if (exists($self->{users}{$op}));
       }
@@ -209,12 +209,12 @@ sub connect {
   #   set all our variables
   #   set our ircconn object to the new one
 
-  if ($self->config->get(server => $index)) {
-    $server   = $self->config->get(server => $index => 'address'); # or die ("Server $i has no address specified\n");
-    $port     = $self->config->get(server => $index => 'port');
-    $password = $self->config->get(server => $index => 'password');
-    $nick     = $self->config->get(bot => 'nick');
-    $ircname  = $self->config->get(bot => 'ircname');
+  if ($self->config->value(server => $index)) {
+    $server   = $self->config->value(server => $index => 'address'); # or die ("Server $i has no address specified\n");
+    $port     = $self->config->value(server => $index => 'port');
+    $password = $self->config->value(server => $index => 'password');
+    $nick     = $self->config->value(bot => 'nick');
+    $ircname  = $self->config->value(bot => 'ircname');
 
     $port ||= 6667;
     $password ||= '';
@@ -245,7 +245,7 @@ sub connect {
 
     $self->{curnick} = $nick;
 
-    foreach my $hostmask ($self->config->get(bot => 'ignore')) {
+    foreach my $hostmask ($self->config->value(bot => 'ignore')) {
       $self->{ircconn}->ignore('all', $hostmask);
     }
 
@@ -268,7 +268,7 @@ sub load_all_plugins {
 
   my @plugins;
   my @plugins_found = $self->find_plugins;
-  my @noload = $self->config->get(bot => 'noload');
+  my @noload = $self->config->value(bot => 'noload');
 
   # foreach plugin
   #   if it's listed in @noload
@@ -314,7 +314,7 @@ sub find_plugins {
   #     close the dir
   #   return our found plugins
   
-  foreach my $plugindir ($self->config->get(bot => 'plugindir')) {
+  foreach my $plugindir ($self->config->value(bot => 'plugindir')) {
     opendir(PDH, $plugindir);
     foreach my $plugin (readdir(PDH)) {
       # ignore '.' and '..' silently

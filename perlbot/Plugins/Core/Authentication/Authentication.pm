@@ -63,7 +63,7 @@ sub password {
   }
 
   $newpassword = crypt($newpassword, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
-  $self->{perlbot}->config->get(user => $user->{name} => 'password') = $newpassword;
+  $self->{perlbot}->config->value(user => $user->{name} => 'password') = $newpassword;
   $self->{perlbot}->config->write;
   $user->password($newpassword);
 
@@ -79,7 +79,7 @@ sub hostmasks {
     return;
   }
 
-  foreach my $hostmask ($self->{perlbot}->config->get(user => $user->name => 'hostmask')) {
+  foreach my $hostmask ($self->{perlbot}->config->value(user => $user->name => 'hostmask')) {
     $self->reply($hostmask);
   }
 
@@ -102,7 +102,7 @@ sub addhostmask {
 
   if (!validate_hostmask($hostmask)) {
     $self->reply_error("Invalid hostmask: $hostmask");
-  } elsif (!$self->{perlbot}->config->get(user => $user->{name})) {
+  } elsif (!$self->{perlbot}->config->value(user => $user->{name})) {
     $self->reply_error("Your user object doesn't exist, that is bad... contact your bot admin");
   } else {
     push(@{$self->{perlbot}->config->(user => $user->{name} => 'hostmask')}, $hostmask);
@@ -129,19 +129,19 @@ sub delhostmask {
   }
 
   my $whichhost = 0;
-  foreach my $confighostmask ($self->{perlbot}->config->get(user => $user->{name} => 'hostmask')) {
+  foreach my $confighostmask ($self->{perlbot}->config->value(user => $user->{name} => 'hostmask')) {
     if ($confighostmask eq $hostmask) {
       last;
     }
     $whichhost++;
   }
 
-  if ($whichhost > @{$self->{perlbot}->config->get(user => $user->{name} => 'hostmask')}) {
+  if ($whichhost > @{$self->{perlbot}->config->value(user => $user->{name} => 'hostmask')}) {
     $self->reply("$hostmask not in your list of hostmasks!");
     return;
   }
 
-  splice($self->{perlbot}->config->get(user => $user->{name} => 'hostmask'), $whichhost, 1);
+  splice($self->{perlbot}->config->value(user => $user->{name} => 'hostmask'), $whichhost, 1);
   $self->{perlbot}->config->write;
   $self->reply("Permanently removed $hostmask from your list of hostmasks.");
 
