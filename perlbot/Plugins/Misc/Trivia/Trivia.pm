@@ -59,6 +59,7 @@ sub init {
   $self->hook('stoptrivia', \&stoptrivia);
   $self->hook('triviatop', \&triviatop);
   $self->hook('triviastats', \&triviastats);
+  $self->hook('triviahelp', \&triviahelp);
   $self->hook('playing', \&playing);
   $self->hook(\&answer);
 
@@ -258,21 +259,26 @@ sub endofgame {
   my $winner;
   my $winnerscore = -1;
 
-  foreach my $nick (keys(%{$self->{players}})) {
-    if($self->{players}{$nick} > $winnerscore) {
+  foreach my $nick (keys(%{$self->{score}})) {
+    if($self->{score}{$nick} > $winnerscore) {
       $winner = $nick;
-      $winnerscore = $self->{players}{$nick};
+      $winnerscore = $self->{score}{$nick};
     }
-    $self->{players}{$nick} = 0; # reset wins
+    $self->{score}{$nick} = 0; # reset wins
   }
 
   if($winnerscore == -1) {
     return;
   }
 
-  my $fastest = $self->{usersfastest}{$winner};
+  my $fastest = $self->{fastest}{$winner};
 
   $self->reply("Trivia Winner for this round is: $winner with $winnerscore wins and a fastest time of $fastest!");
+
+  foreach my $nick (keys(%{$self->{playing}})) {
+    delete $self->{playing}{$nick};
+  }
+
 }
 
 sub triviatop {
@@ -319,6 +325,16 @@ sub triviastats {
 
     $self->reply("$nick: Rank: $self->{ranks}{$nick} Wins: $self->{correctlyanswered}{$nick} Answered: $self->{totalanswered}{$nick} Score: " . sprintf("%0.1f%", 100 * ($self->{correctlyanswered}{$nick}/$self->{totalanswered}{$nick})) . " Fastest: $self->{fastestoverall}{$nick}");
   }
+}
+
+sub triviahelp {
+  my $self = shift;
+
+  $self->reply("You must register to play in each round of trivia.");
+  $self->reply("During a round you've registered for, your attempts at answering are recorded.");
+  $self->reply("Your overall score is: correctly answered / total answered");
+  $self->reply("Once you have submitted an answer to a question, additional submissions do not count as attempts");
+  $self->reply("Once a question has been answered correctly, no submissions are counted.");
 }
 
 sub playing {
