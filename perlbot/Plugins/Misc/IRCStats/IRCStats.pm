@@ -1,3 +1,10 @@
+# IRCStats
+#
+# by Andrew Burke (burke@bitflood.org)
+#
+# This was largely influenced by onis (http://verplant.org/onis/)
+# and there's even a tiny bit of Florian Forster's code in here.
+
 package Perlbot::Plugin::IRCStats;
 
 use Perlbot::Plugin;
@@ -36,6 +43,8 @@ sub init {
 sub ircstats {
   my $self = shift;
   my @args = @_;
+
+  $self->{channels} = XMLin($self->{datafile});
 
   if(!scalar @args) {
     my $response = "<html><head><title>IRC Stats</title></head>";
@@ -131,9 +140,9 @@ sub public {
 
   $self->{channels}{$chan}{'hour' . $hour}++;
 
-  open(DATAFILE, '>' . $self->{datafile});
-  print DATAFILE XMLout($self->{channels}, rootname => 'channeldata');
-  close DATAFILE;
+#  open(DATAFILE, '>' . $self->{datafile});
+#  print DATAFILE XMLout($self->{channels}, rootname => 'channeldata');
+#  close DATAFILE;
 }
 
 sub action {
@@ -147,9 +156,9 @@ sub action {
 
   $self->{channels}{$chan}{'hour' . $hour}++;
 
-  open(DATAFILE, '>' . $self->{datafile});
-  print DATAFILE XMLout($self->{channels}, rootname => 'channeldata');
-  close DATAFILE;
+#  open(DATAFILE, '>' . $self->{datafile});
+#  print DATAFILE XMLout($self->{channels}, rootname => 'channeldata');
+#  close DATAFILE;
 
 }
 
@@ -197,6 +206,14 @@ sub import_from_logs {
 
   $self->reply("Stats updated!");
 
+}
+
+sub shutdown {
+  my $self = shift;
+
+  open(DATAFILE, '>' . $self->{datafile});
+  print DATAFILE XMLout($self->{channels}, rootname => 'channeldata');
+  close DATAFILE;
 }
 
 1;
