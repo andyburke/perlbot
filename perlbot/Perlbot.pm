@@ -211,7 +211,7 @@ sub host_to_user {
 
   foreach (values(%users)) {
     foreach my $testmask (@{$_->{hostmasks}}) {
-      return $_ if ($realmask =~ /$testmask/i);
+      return $_ if ($realmask =~ /^$testmask$/i);
     }
   }
   return undef;
