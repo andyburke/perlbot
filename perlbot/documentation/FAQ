@@ -22,6 +22,28 @@ How do I make this damn thing run?
    project page.
 
 
+Why won't my perlbot connect?
+=============================
+
+   Make sure you've specified valid servers in your config.  Check them
+   with another irc client to make sure they're up.  If your bot is still
+   not connecting, set PERLBOT_DEBUG to 1 in your shell before running
+   the bot and look for errors.  If you're still not connecting and don't
+   know what to do, email the authors or post to the sourceforge.net project
+   page.
+
+
+It won't connect and I'm sure my server configuration is right!
+===============================================================
+
+   Try adding the localaddr parameter to the bot element of your config
+   file.  Like this:  <bot nick="botname" localaddr="192.168.2.100">
+   The value of localaddr should be your computer's public IP address.
+   Apparently perl has some problems figuring out your network setup
+   in some cases, for example if you are using a DSL/Cable Modem router
+   or have multiple network devices in your computer.
+
+
 I want the Google and SpelCheck plugins to work!
 ================================================
 
@@ -45,17 +67,6 @@ Can I configure Perlbot right from IRC?
 
    User management can be done from IRC, which is what we have found to
    be the most common configuration task.
-
-
-Why won't my perlbot connect?
-=============================
-
-   Make sure you've specified valid servers in your config.  Check them
-   with another irc client to make sure they're up.  If your bot is still
-   not connecting, set PERLBOT_DEBUG to 1 in your shell before running
-   the bot and look for errors.  If you're still not connecting and don't
-   know what to do, email the authors or post to the sourceforge.net project
-   page.
 
 
 Why does it keep saying "You are not an admin" to me?
@@ -87,7 +98,10 @@ Do I need to restart when I change the configuration or add/upgrade a plugin?
    No!  You can cause the bot to reload its configuration from IRC by sending
    the reload command as an owner.  From your shell you can send it a HUP
    signal by doing:  killall -HUP perlbot.pl  This will also cause the bot
-   to reread its configuration.
+   to reread its configuration.  Watch out though, the bot will save its 
+   configuration back out to disk occasionally, so you might run into some
+   problems if it saves while you are hand-editing or just afterwards.  Be
+   careful for now if you want to edit the config while the bot is running.
 
    Plugins can be loaded, unloaded and reloaded dynamically.  Ask the bot
    for help on the PluginControl plugin.
