@@ -53,6 +53,7 @@ Table of Contents
       String::Approx (Used by the Trivia plugin)
       Net::Google (For the Google and SpelCheck plugins)
       Calendar::Simple (For the Cal plugin)
+      Algorithm::MarkovChain (For the Outlander plugin)
 
 2.0 Installation
 ================
