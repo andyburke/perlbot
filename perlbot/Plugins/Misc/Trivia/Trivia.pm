@@ -409,6 +409,10 @@ sub endofgame {
     delete $self->{playing}{$nick};
   }
 
+  foreach my $nick (keys(%{$self->{fastest}})) {
+    delete $self->{fastest}{$nick};
+  }
+
   foreach my $nick (keys(%{$self->{answeredthisround}})) {
     delete $self->{answeredthisround}{$nick};
   }
