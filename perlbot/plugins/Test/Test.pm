@@ -1,7 +1,7 @@
 package Perlbot::Plugin::Test;
 
-use Plugin;
-@ISA = qw(Plugin);
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
 
 sub init {
   my $self = shift;

@@ -5,11 +5,11 @@
 
 package Perlbot::Plugin::UserAdmin;
 
-use Plugin;
-@ISA = qw(Plugin);
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
 
 use Perlbot::Utils;
-use User;
+use Perlbot::User;
 
 sub init {
   my $self = shift;
@@ -40,7 +40,7 @@ sub useradmin {
 
   if($command eq 'add') {
     $self->{perlbot}{config}{user}{$username} = {};
-    $self->{perlbot}{users}{$username} = new User($username);
+    $self->{perlbot}{users}{$username} = new Perlbot::User($username);
     $self->{perlbot}->write_config();
     $self->reply("Added user: $username");
     return;

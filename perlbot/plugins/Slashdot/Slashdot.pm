@@ -4,10 +4,9 @@
 
 package Perlbot::Plugin::Slashdot;
 
-use Plugin;
-@ISA = qw(Plugin);
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
 
-use Perlbot;
 use LWP::Simple;
 use XML::Simple;
 

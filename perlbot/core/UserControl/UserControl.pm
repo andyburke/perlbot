@@ -2,10 +2,10 @@ package Perlbot::Plugin::UserControl;
 
 use Perlbot;
 use Perlbot::Utils;
-use Chan;
-use Plugin;
+use Perlbot::Chan;
+use Perlbot::Plugin;
 
-@ISA = qw(Plugin);
+@ISA = qw(Perlbot::Plugin);
 
 sub init {
   my $self = shift;

@@ -4,12 +4,11 @@
 
 package Perlbot::Plugin::Weather;
 
-use Plugin;
-@ISA = qw(Plugin);
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
 
 use strict;
 
-use Perlbot;
 use Geo::Weather;
 
 sub init {

@@ -4,12 +4,10 @@
 
 package Perlbot::Plugin::PriceWatch;
 
-use Plugin;
-@ISA = qw(Plugin);
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
 
 use strict;
-
-use Perlbot;
 
 use LWP::Simple;
 use HTML::TableExtract;

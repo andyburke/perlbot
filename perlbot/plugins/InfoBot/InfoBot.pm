@@ -7,8 +7,10 @@
 
 package Perlbot::Plugin::InfoBot;
 
-use Plugin;
-@ISA = qw(Plugin);
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
+
+use File::Spec;
 
 sub init {
   my $self = shift;
@@ -29,7 +31,7 @@ sub read_config {
 
 sub load_dbs {
   my $self = shift;
-  my $dbdir = $self->{directory} . $DIRSEP . 'factpacks/';
+  my $dbdir = File::Spec->catfile($self->{directory}, 'factpacks');
 
   opendir(DBDIR, $dbdir);
   my @dbfiles = readdir(DBDIR);
@@ -37,7 +39,7 @@ sub load_dbs {
 
   foreach my $dbfile (@dbfiles) {
     if($dbfile eq '.' or $dbfile eq '..') { next; }
-    $self->load_db($dbdir . $dbfile);
+    $self->load_db(File::Spec->catfile($dbdir, $dbfile));
   }
 
 }
@@ -84,7 +86,8 @@ sub addressed {
   my $user = shift;
   my $text = shift;
 
-  my $def = $self->lookup($text);
+  my $term = $self->termify($text);
+  my $def = $self->lookup($term);
 
   if($def) {
     $def =~ s/^<reply>.*?,\s+//;
@@ -98,7 +101,8 @@ sub normal {
   my $user = shift;
   my $text = shift;
 
-  my $def = $self->lookup($text);
+  my $term = $self->termify($text);
+  my $def = $self->lookup($term);
 
   if($def) {
     if($def =~ /^<reply>/) {
@@ -111,7 +115,7 @@ sub normal {
 }
 
 
-sub lookup {
+sub termify {
   my $self = shift;
   my $text = shift;
 
@@ -167,13 +171,30 @@ sub lookup {
   $term =~ s/^\s*(.*?)\s*$/$1/;
 
   $term = lc($term);
+
   if($term =~ /(?:what|where|who) is/ || $term =~ /\?$/) {
     $term =~ s/.*?is\s+(.*?)$/$1/;
     $term =~ s/\?//g;
 
-    print "term: $term\n";
-    
-    my $def = $self->{facts}{$term};
-    return $def;
+    return $term;
   }
+
+  return undef;
 }
+
+sub lookup {
+  my $self = shift;
+  my $term = shift;
+
+  return $self->{facts}{$term};
+}
+
+
+
+
+
+
+
+
+
+

@@ -11,10 +11,9 @@
 
 package Perlbot::Plugin::SpelCheck;
 
-use Plugin;
-@ISA = qw(Plugin);
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
 
-use Perlbot;
 use POSIX;
 use strict;
 

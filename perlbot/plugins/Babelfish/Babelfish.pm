@@ -1,7 +1,7 @@
 package Perlbot::Plugin::Babelfish;
 
-use Plugin;
-@ISA = qw(Plugin);
+use Perlbot::Plugin;
+@ISA = qw(Perlbot::Plugin);
 
 use WWW::Babelfish;
 
