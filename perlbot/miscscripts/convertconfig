@@ -1,0 +1,75 @@
+#!/usr/bin/perl
+
+use XML::Simple;
+
+my $config = parse_config($ARGV[0]);
+my $xml = XMLout($config, rootname => 'config');
+
+$xml =~ s/chan/channel/ig;
+$xml =~ s|<flag>.*?</flag>||gs;
+$xml =~ s|<crashlog>.*?</crashlog>||gs;
+$xml =~ s|<uinfo>.*?</uinfo>||gs;
+$xml =~ s|(<server>.*?)<name>.*?</name>(.*?</server>)|$1$2|gs;
+$xml =~ s|<testing>.*?</testing>||gs;
+$xml =~ s|<pluginprefix>.*?</pluginprefix>||gs;
+
+print $xml;
+
+sub parse_config {
+  my $fname = shift;
+  my $line = 1;
+  my ($var, $rest);
+  my $state = 0;
+  my $class;
+  my $err = 0;
+  my $text;
+  my $fields;
+  my $bighash = {};
+
+  open(CONFIG, "<$fname");
+  foreach (<CONFIG>) {
+    # remove leading and trailing whitespace (note: .*? is a non-greedy .*)
+    s/^\s*(.*?)\s*$/$1/;
+    # skip comments and blank lines
+    unless (/^(?:\#.*)?$/) {
+      $text = $_;
+      if ($state == 0) {
+        # get "class"
+        if (($class) = /^(\w*)\s*\{\s*$/) {
+          print "begin class $class\n" if $debug;
+          if (!exists($bighash->{$class})) {
+            $bighash->{$class} = [];
+          }
+          $fields = {};
+          push @{$bighash->{$class}}, $fields;
+          $state = 1;
+        } else { $err = 1; last; }
+      } else {
+        if (/^\}$/) {
+          print "end class $class\n" if $debug;
+          # unlink $fields from the hash ref we were using, just in case...?
+          $fields = undef;
+          $state = 0;
+        } elsif (($var, $rest) = /^(\w*)\s*(.*)$/) {
+          print "  $var: $rest\n" if $debug;
+          if (!exists($fields->{$var})) {
+            # if it's a new var, create a new array ref
+            $fields->{$var} = [$rest];
+          } else {
+            # if we've seen this var before, just push the val
+            push(@{$fields->{$var}}, $rest);
+          }
+        } else { $err = 1; last; }
+      }
+    }
+    $line++;
+  }
+  close(CONFIG);
+
+  if ($err) {
+    return "syntax error in $fname at line $line: $text";
+  } else {
+    return $bighash;
+  }
+
+}
