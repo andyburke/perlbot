@@ -29,6 +29,7 @@ sub init {
   # remember we get a 'topic' even on channel joins, so nothing extra is
   # needed to capture the initial topic. (note it's a 'server' type event)
   $self->hook_event('topic', \&set_topic);
+  $self->hook_event('topicinfo', \&set_topic_info);
   # ('topicinfo' tells us *who* set the topic, should anyone want to grab that too)
 
   $self->hook_web('stats', \&stats, 'Bot Stats');
@@ -57,8 +58,9 @@ sub stats {
     $response .= "<p><b>Channels:</b>";
 
     foreach my $channel (values %{$self->perlbot->channels}) {
-      $response .= "<p><table width=100% border=1><th width=20%>Name</th><th>Topic</th></tr>";
-      $response .= "<tr><td>" . $channel->name() . "</td><td>" . $self->{_topics}{$channel->name()} . "</td></tr>";
+      my ($topic, $topicsetter) = @{$self->{_topics}{$channel->name()}};
+      $response .= "<p><table width=100% border=1><th width=20%>Name</th><th>Topic (set by $topicsetter)</th></tr>";
+      $response .= "<tr><td>" . $channel->name() . "</td><td>$topic</td></tr>";
       $response .= "<tr><th colspan=2>Members (" . scalar keys(%{$channel->{members}}) . ")</th></tr><tr><td colspan=2><ul>";
       foreach my $member (sort(keys(%{$channel->{members}}))) {
         $response .= "<li>$member";
@@ -89,7 +91,7 @@ sub stats {
                     activeplugins => scalar @{$self->perlbot->plugins}};
     
     foreach my $channel (values %{$self->perlbot->channels}) {
-      $chan_data = {name => $channel->name, topic => $self->{_topics}{$channel->name}, member => [ keys(%{$channel->{members}}) ], logging => $channel->logging, limit => $channel->limit, flags => $channel->flags};
+      $chan_data = {name => $channel->name, topic => $self->{_topics}{$channel->name}[0], topicsetter => $self->{_topics}{$channel->name}[1], member => [ keys(%{$channel->{members}}) ], logging => $channel->logging, limit => $channel->limit, flags => $channel->flags};
       push @{$data->{channel}}, $chan_data;
     }
     
@@ -110,19 +112,38 @@ sub set_topic {
   my ($event) = @_;
 
   my @args = $event->args;
-  my ($channel, $topic);
+  my ($channel, $topic, $nick) = (undef, undef, undef);
   if ($event->format eq 'server') {
     $channel = $args[1];
     $topic = $args[2];
   } elsif ($event->format eq 'topic') {
     $channel = $event->to->[0];
     $topic = $args[0];
+    $nick = $event->nick;
   } else {
     debug("StatsServer: unexpected event format");
   }
   $topic =~ s/ $//; # strip trailing space
-  $self->{_topics}{$channel} = $topic;
+  $self->{_topics}{$channel} = [$topic, $nick];
 }
+
+sub set_topic_info {
+  my $self = shift;
+  my $event = shift;
+
+  if($event->format ne 'server') {
+    return;
+  }
+
+  my @args = $event->args;
+  my $channel = $args[1];
+  my ($topic, $nick) = @{$self->{_topics}{$channel}};
+
+  $nick = $args[2];
+
+  $self->{_topics}{$channel} = [$topic, $nick];
+}
+
 
 1;
 
