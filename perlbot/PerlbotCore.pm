@@ -824,9 +824,8 @@ sub on_ctcp_action {
   my ($self, $event) = @_;
   my $nick = $event->nick;
   my $chan = ($event->to)[0];
-  shift @{$event->{args}};
   my $text = join(' ', @{$event->{args}});
-  
+
   update_user($self, $event->nick, $event->userhost);
   if(exists($channels{to_channel($chan)})) {
     $channels{to_channel($chan)}->log_write("$nick $text");
