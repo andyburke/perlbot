@@ -10,6 +10,11 @@ use XML::Simple;
 sub init {
   my $self = shift;
 
+  $self->author('Andrew Burke');
+  $self->contact('burke@bitflood.org');
+  $self->version('1.0.0');
+  $self->url('http://perlbot.sourceforge.net');
+
   $self->{cfg} = read_generic_config('config');
 
   my $srv = RPC::XML::Server->new(port => 10000);

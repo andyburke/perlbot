@@ -10,6 +10,11 @@ use Perlbot::Utils;
 sub init {
   my $self = shift;
 
+  $self->author('Andrew Burke');
+  $self->contact('burke@bitflood.org');
+  $self->version('1.0.0');
+  $self->url('http://perlbot.sourceforge.net');
+
   $self->want_public(0);
   $self->want_fork(0);
 

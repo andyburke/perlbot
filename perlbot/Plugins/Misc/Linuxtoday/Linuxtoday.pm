@@ -21,6 +21,11 @@ use URI::Escape;
 sub init {
   my $self = shift;
 
+  $self->author('Joh, Yong-Li');
+  $self->contact('tolkien@nownuri.net');
+  $self->version('1.0.0');
+  $self->url('http://perlbot.sourceforge.net');
+
   $self->hook('linuxtoday', \&lt);
   $self->hook('lt', \&lt);
 }

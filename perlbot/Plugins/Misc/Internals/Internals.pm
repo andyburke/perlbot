@@ -18,6 +18,10 @@ use Data::Dumper;
 sub init {
   my $self = shift;
 
+  $self->author('Mike Edwards');
+  $self->version('1.0.0');
+  $self->url('http://perlbot.sourceforge.net');
+
   $self->want_reply_via_msg(1);
   $self->want_fork(0);
 

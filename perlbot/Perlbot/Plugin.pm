@@ -31,6 +31,11 @@ sub new {
     lastnick => '',
     lasthost => '',
     behaviors => {}, # must initialize via want_* calls below!
+    author => '',
+    contact => '',
+    url => '',
+    version => '',
+
   };
 
   bless $self, $class;
@@ -74,6 +79,31 @@ sub perlbot {
 sub directory {
   my ($self, $directory) = @_;
   return $self->property('directory', $directory);
+}
+
+sub author {
+  my ($self, $author) = @_;
+  return $self->property('author', $author);
+}
+
+sub contact {
+  my ($self, $contact) = @_;
+  return $self->property('contact', $contact);
+}
+
+sub url {
+  my ($self, $url) = @_;
+  return $self->property('url', $url);
+}
+
+sub version {
+  my ($self, $version) = @_;
+  return $self->property('version', $version);
+}
+
+sub helpitems {
+  my ($self, $helpitems) = @_;
+  return $self->property('helpitems', $helpitems);
 }
 
 # params:
@@ -336,7 +366,13 @@ sub _help {
   # return our (possibly empty) result
 
   if($command eq $self->{name}) {
-    if($self->{helpitems}{overview}[0]) {
+    if($self->helpitems->{overview}[0]) {
+      my $infostring = $self->name;
+      if($self->version) { $infostring .= " v" . $self->version; }
+      if($self->author) { $infostring .= " by " . $self->author; }
+      if($self->contact) { $infostring .= " <" . $self->contact . ">"; }
+      if($self->url) { $infostring .= ", " . $self->url; }
+      push(@result, $infostring);
       push(@result, @{$self->{helpitems}{overview}});
       if(keys(%{$self->{helpitems}{command}})) {
         push(@result, 'Available commands:');

@@ -1,11 +1,3 @@
-# Andrew Burke <burke@pas.rochester.edu>
-#
-# This plugin does math using bc.  Prolly needs to be on
-# a unix system...
-#
-# originally ported/mangled from:
-# infobot copyright (C) kevin lenzo 1997-98
-
 package Perlbot::Plugin::Math;
 
 use Perlbot::Plugin;
@@ -18,6 +10,11 @@ use Safe;
 
 sub init {
   my $self = shift;
+
+  $self->author('Andrew Burke');
+  $self->contact('burke@bitflood.org');
+  $self->version('1.0.0');
+  $self->url('http://perlbot.sourceforge.net');
 
   $self->hook('math', \&math);
 }
