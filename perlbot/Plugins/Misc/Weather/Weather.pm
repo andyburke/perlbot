@@ -52,13 +52,8 @@ sub weather {
     my @reply;
 
     push(@reply, "Location: $city, $state $zip");
-    push(@reply, "  Currently: $conditions  Temp:  ${tempf}F (${tempc}C)  Heat Index: ${heatindexf}F (${heatindexc}C)");
-    push(@reply, "  Dewpoint: ${dewpointf}F (${dewpointc}C)  Humidity: ${humidity}%  Barometer: ${barometer}in (${barometerm}cm)");
-    if($visibility =~ /\d+/) {
-      push(@reply, "  Wind: $wind (${windm}Kph)  Visibility: ${visibility}Mi (${visibilitym}Km)");
-    } else {
-      push(@reply, "  Wind: $wind (${windm}Kph)  Visibility: $visibility");
-    }
+    push(@reply, "  Currently: $conditions  Wind: $wind (${windm}Kph)");
+    push(@reply, "  Temp: ${tempf}F(${tempc}C) Heat Index: ${heatindexf}F(${heatindexc}C) Dewpoint: ${dewpointf}F(${dewpointc}C) Humidity: ${humidity}%");
 
     $self->reply(@reply);
   }
