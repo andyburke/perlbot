@@ -1,4 +1,4 @@
-package Perlbot::Logs::FlatFile;
+package Perlbot::Logs::SingleFile;
 
 # This module implements single-file logs, reusing much of the code from
 # the standard multi-file logger, Logs::Files.
@@ -62,6 +62,6 @@ sub get_filelist {
   return [$self->filename];  # it never changes
 }
 
-
+# note that initial/final_entry_time() are just inherited
 
 1;
