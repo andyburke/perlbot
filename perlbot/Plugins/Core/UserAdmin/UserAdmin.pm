@@ -53,7 +53,7 @@ sub useradmin {
       return;
     }
     # hash lookup must be performed "outside" of ->value call for delete to work
-    delete $self->{perlbot}->config->value(user)->{$username};
+    delete $self->{perlbot}->config->value('user')->{$username};
     $self->{perlbot}->config->write;
     $self->reply("Removed user: $username");
 
@@ -62,7 +62,7 @@ sub useradmin {
       $self->reply("$username is not a known user!");
       return;
     }
-    foreach my $hostmask ($self->{perlbot}->config->value(user => $username => 'hostmask')) {
+    foreach my $hostmask (@{$self->{perlbot}->config->value(user => $username => 'hostmask')}) {
       $self->reply($hostmask);
     }
 
@@ -79,7 +79,8 @@ sub useradmin {
     if (!validate_hostmask($hostmask)) {
       $self->reply("Invalid hostmask: $hostmask");
     } else {
-      push($self->{perlbot}->config->value(user => $username => 'hostmask'), $hostmask);
+      push(@{$self->{perlbot}->config->value(user => $username => 'hostmask')},
+           $hostmask);
       $self->{perlbot}->config->write;
       $self->{perlbot}{users}{$username}->hostmasks($hostmask);
       $self->reply("Permanently added $hostmask to ${username}'s list of hostmasks.");
@@ -96,17 +97,18 @@ sub useradmin {
       return;
     }
     my $whichhost = 0;
-    foreach my $confighostmask ($self->{perlbot}->config->(user => $username => 'hostmask')) {
+    foreach my $confighostmask (@{$self->{perlbot}->config->value(user => $username => 'hostmask')}) {
       if ($confighostmask eq $hostmask) {
         last;
       }
       $whichhost++;
     }
-    if ($whichhost >= @{$self->{perlbot}->config(user => $username => 'hostmask')}) {
+    if ($whichhost >= @{$self->{perlbot}->config->value(user => $username => 'hostmask')}) {
       $self->reply("$hostmask is not in ${username}'s list of hostmasks!");
       return;
     }
-    splice($self->{perlbot}->config->value(user => $username => 'hostmask'), $whichhost, 1);
+    splice(@{$self->{perlbot}->config->value(user => $username => 'hostmask')},
+           $whichhost, 1);
     $self->{perlbot}->config->write;
     $self->reply("Permanently removed $hostmask from ${username}'s list of hostmasks.");
 
@@ -140,11 +142,13 @@ sub useradmin {
       $self->reply_error("No such user: $username");
       return;
     }
-    if (grep { $_ eq $username } $self->{perlbot}->config->value(channel => $channel => 'op')) {
+    if (grep { $_ eq $username }
+        @{$self->{perlbot}->config->value(channel => $channel => 'op')}) {
       $self->reply_error("$username is already an op for $channel!");
       return;
     }
-    push($self->{perlbot}->config->value(channel => $channel => 'op'), $username);
+    push(@{$self->{perlbot}->config->value(channel => $channel => 'op')},
+         $username);
     $self->{perlbot}{channels}{$channel}{ops}{$username} = 1;
     $self->{perlbot}->config->write;
     $self->reply("Added $username to the list of ops for $channel");

@@ -79,7 +79,7 @@ sub hostmasks {
     return;
   }
 
-  foreach my $hostmask ($self->{perlbot}->config->value(user => $user->name => 'hostmask')) {
+  foreach my $hostmask (@{$self->{perlbot}->config->value(user => $user->name => 'hostmask')}) {
     $self->reply($hostmask);
   }
 
@@ -105,7 +105,7 @@ sub addhostmask {
   } elsif (!$self->{perlbot}->config->value(user => $user->{name})) {
     $self->reply_error("Your user object doesn't exist, that is bad... contact your bot admin");
   } else {
-    push(@{$self->{perlbot}->config->(user => $user->{name} => 'hostmask')}, $hostmask);
+    push(@{$self->{perlbot}->config->value(user => $user->{name} => 'hostmask')}, $hostmask);
     $self->{perlbot}->config->write;
     $user->hostmasks($hostmask);
     $self->reply("Permanently added $hostmask to your list of hostmasks.");
@@ -129,7 +129,7 @@ sub delhostmask {
   }
 
   my $whichhost = 0;
-  foreach my $confighostmask ($self->{perlbot}->config->value(user => $user->{name} => 'hostmask')) {
+  foreach my $confighostmask (@{$self->{perlbot}->config->value(user => $user->{name} => 'hostmask')}) {
     if ($confighostmask eq $hostmask) {
       last;
     }
@@ -141,7 +141,8 @@ sub delhostmask {
     return;
   }
 
-  splice($self->{perlbot}->config->value(user => $user->{name} => 'hostmask'), $whichhost, 1);
+  splice(@{$self->{perlbot}->config->value(user => $user->{name} => 'hostmask')},
+         $whichhost, 1);
   $self->{perlbot}->config->write;
   $self->reply("Permanently removed $hostmask from your list of hostmasks.");
 

@@ -54,17 +54,17 @@ sub reconnect {
     print "---End dump...\n";
   }
 
-  while($i < $self->{perlbot}->config('server')
-        && $self->{perlbot}->config('server' => $i => 'address') ne $old_server) {
-    print "looking at server: " . $self->{perlbot}->config('server' => $i => 'address') . "\n";
+  while ($i < @{$self->{perlbot}->config->value('server')}
+         && $self->{perlbot}->config->value('server' => $i => 'address') ne $old_server) {
+    print "looking at server: " . $self->{perlbot}->config->value('server' => $i => 'address') . "\n" if $DEBUG;
     $i++;
   }
 
   $i++; #look at the server AFTER the old one
 
-  while(!$self->{perlbot}->connect($i)) {
+  while (!$self->{perlbot}->connect($i)) {
     $i++;
-    $i = $i % $self->{perlbot}->config('server');
+    $i = $i % @{$self->{perlbot}->config->value('server')};
   }
 }
 
@@ -72,7 +72,7 @@ sub cycle_nick {
   my $self = shift;
   my $event = shift;
 
-  $self->{perlbot}->nick($self->{perlbot}->{curnick} . $self->{perlbot}->config(bot => 'nickappend'));
+  $self->{perlbot}->nick($self->{perlbot}->{curnick} . $self->{perlbot}->config->value(bot => 'nickappend'));
 }
 
 1;

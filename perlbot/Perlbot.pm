@@ -143,7 +143,7 @@ sub process_config {
                             $self->config->value(user => $user => 'flags'),
                             $self->config->value(user => $user => 'password'),
                             @{$self->config->value(user => $user => 'hostmask')});
-      foreach my $admin ($self->config->value(bot => 'admin')) {
+      foreach my $admin (@{$self->config->value(bot => 'admin')}) {
         if($admin eq $user) {
           print "process_config: $admin  is an admin\n" if $DEBUG;
           $self->{users}{$user}->admin(1);
@@ -169,7 +169,7 @@ sub process_config {
                             logging => $self->config->value(channel => $channel => 'logging'),
                             logdir  => $self->config->value(bot => 'logdir'));
       
-      foreach my $op ($self->config->value(channel => $channel => 'op')) {
+      foreach my $op (@{$self->config->value(channel => $channel => 'op')}) {
         $op or next;
         $chan->add_op($op) if (exists($self->{users}{$op}));
       }
@@ -202,7 +202,7 @@ sub connect {
 
   # if we already have a connection, back up our handlers
   if ($self->{ircconn}) { # had a connection
-    $handlers = $self->{ircconn}{_handler};
+    $self->{handlers_backup} = $self->{ircconn}{_handler};
   }
 
   # if the server we've been given exists
@@ -241,12 +241,17 @@ sub connect {
   if ($self->{ircconn} && $self->{ircconn}->connected()) {
     print "connect: connected to server: $server\n" if $DEBUG;
 
-    if($handlers) { $self->{ircconn}{_handler} = $handlers; }
+    if ($self->{handlers_backup}) {
+      $self->{ircconn}{_handler} = $self->{handlers_backup};
+      delete $self->{handlers_backup};
+    }
 
     $self->{curnick} = $nick;
 
-    foreach my $hostmask ($self->config->value(bot => 'ignore')) {
-      $self->{ircconn}->ignore('all', $hostmask);
+    if ($self->config->value(bot => 'ignore')) {
+      foreach my $hostmask (@{$self->config->value(bot => 'ignore')}) {
+        $self->{ircconn}->ignore('all', $hostmask);
+      }
     }
 
     return $self->{ircconn};
@@ -268,7 +273,7 @@ sub load_all_plugins {
 
   my @plugins;
   my @plugins_found = $self->find_plugins;
-  my @noload = $self->config->value(bot => 'noload');
+  my @noload = @{$self->config->value(bot => 'noload')};
 
   # foreach plugin
   #   if it's listed in @noload
@@ -314,7 +319,7 @@ sub find_plugins {
   #     close the dir
   #   return our found plugins
   
-  foreach my $plugindir ($self->config->value(bot => 'plugindir')) {
+  foreach my $plugindir (@{$self->config->value(bot => 'plugindir')}) {
     opendir(PDH, $plugindir);
     foreach my $plugin (readdir(PDH)) {
       # ignore '.' and '..' silently

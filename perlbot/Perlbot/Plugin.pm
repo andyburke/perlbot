@@ -331,12 +331,14 @@ sub _process { # _process to stay out of people's way
   my $user  = shift;
   my $text  = shift;
 
-  # if the type of event isn't a message and the current plugin is listed in
-  # this channel's ignoreplugins list, return without doing anything
+  # if the type of event isn't a message and this channel has an ignoreplugins
+  # list, and the current plugin is listed in that list, return without doing
+  # anything
   my $chan_name = normalize_channel($event->{to}[0]);
   if ($event->type ne 'msg' and
+      $self->{perlbot}->config->value(channel => $chan_name => 'ignoreplugin') and
       grep {$_ eq $self->{name}}
-           $self->{perlbot}->config->value(channel => $chan_name => 'ignoreplugin')) {
+           @{$self->{perlbot}->config->value(channel => $chan_name => 'ignoreplugin')}) {
     return;
   }
 

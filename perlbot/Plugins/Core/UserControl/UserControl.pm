@@ -51,14 +51,14 @@ sub join {
   $channel = normalize_channel($channel);
   my $config = $self->{perlbot}->config;
 
-  if ($self->{perlbot}->config->value(channel => $channel) {
+  if ($self->{perlbot}->config->value(channel => $channel)) {
 
     my $chan = new Perlbot::Chan(name    => $channel,
                                  flags   => $config->value(channel => $channel => 'flags'),
-                                 key     => $config->value(channel => $channel => 'key'},
-                                 logging => $config->value(channel => $channel => 'logging'},
+                                 key     => $config->value(channel => $channel => 'key'),
+                                 logging => $config->value(channel => $channel => 'logging'),
                                  logdir  => $config->value(bot => 'logdir'));
-    foreach my $op ($config->value(channel => $channel => 'op')) {
+    foreach my $op (@{$config->value(channel => $channel => 'op')}) {
       $chan->add_op($op) if exists $self->{perlbot}{users}{$op};
     }
 
