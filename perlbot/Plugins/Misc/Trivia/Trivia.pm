@@ -139,7 +139,7 @@ sub answer {
     $self->{state} = 'answered';
     $self->{score}{$nick}++;
     $self->{correctlyanswered}{$nick}++;
-    if(!exists($self->{fastest}{$nick})) {
+    if(!defined($self->{fastest}{$nick})) {
       $self->{fastest}{$nick} = $timediff;
       $self->{fastestoverall}{$nick} = $timediff;
     }
@@ -156,7 +156,8 @@ sub answer {
     $rank = $self->{ranks}{$nick};
 
     $self->reply("The answer was: $answer");
-    $self->reply("Winner: $nick  Time: $timediff (This Round: Fastest: $self->{fastest}{$nick} Wins: $self->{score}{$nick}) Overall: Fastest: $self->{fastestoverall}{$nick} Wins: $self->{correctlyanswered}{$nick} Rank: $rank");
+    $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} R:$rank");
+    $self->reply("        This round: FT:$self->{fastest}{$nick} S:" . sprintf("%0.1f", 100 * ($self->{score}{$nick} / $self->{curquestion})) . "% W:$self->{score}{$nick}");
 
     if($timediff < $self->{fastest}{$nick}) {
       $self->{fastest}{$nick} = $timediff;
@@ -385,6 +386,13 @@ sub getqualifyingplayers {
   }
 
   return @players;
+}
+
+sub score {
+  my $self = shift;
+  my $name = shift;
+
+  return sprintf("%0.1f", 100 * ($self->{correctlyanswered}{$name} / $self->{totalanswered}{$name}));
 }
 
 1;
