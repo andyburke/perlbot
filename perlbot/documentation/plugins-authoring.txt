@@ -208,10 +208,18 @@ directory.  It should have the following format:
 
 <help>
   <overview>An overview of the function of your plugin.</overview>
-  <command name="something">What the command 'something' does.<br/>Usage</command>
-  <command nome="someotherthing">What 'someotherthing' does.<br/>Usage<br/>More</command>
+  <command name="something">What the command 'something' does.</command>
+  <usage name="something">something [some arguments]</usage>
+  <command name="someotherthing">What 'someotherthing' does.<br/>More</command>
+  <usage name="someotherthing">someotherthing [some other arguments]</usage>
 </help>
 
 If you define this file, Perlbot will automatically give users acess to your
 help.
+
+<command> tags can contain <br/> tags which will be interpreted as a 'line break'
+by perlbot and sent as a new line in irc.
+
+*** <usage> tags CANNOT contain <br/> tags!  They will also have the admin's
+commandprefix PREPENDED to them atomatically.  Be aware.
 

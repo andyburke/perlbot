@@ -11,8 +11,7 @@ will always be someone who feels that a given set of features is too much
 or too little for their purposes.  This is why we decided to keep the core
 perlbot functionality limited to a small set of things that nearly
 *everyone* will want in a bot, and added a 'plugin' feature to accommodate
-all the extras.  (See perlbot.txt for a description of what a stock
-perlbot with no plugins can do.)
+all the extras.
 
 A plugin is a small package which adds some small bit of functionality to
 your perlbot.  It is meant to easily 'plug in' to an existing perlbot
@@ -35,13 +34,17 @@ plugin could do:
 -----------------------------
 
 All plugins reside in a subdirectory under your perlbot directory (we'll
-refer to the perlbot directory as "perlbot/" here) called "plugins".  You
+refer to the perlbot directory as "perlbot/" here) called "Plugins".  You
 can change this location if you want, by changing the bot.plugindir
 option in the main perlbot configuration file, but we'll always refer to
-it as "plugins" here.  Each plugin resides completely in its own directory
-under "perlbot/plugins", and the directory is simply the name of the
-plugin.  So if you had a plugin called "Foo", it would reside in the
-directory "perlbot/plugins/Foo".
+it as "Plugins" here.  Under this directory, plugins are classified by
+type.  "Core" plugins are the core bot functionality, you probably should
+leave these alone.  "Basic" plugins are some basic services expected from
+IRC bots.  "Misc" contains miscellaneous plugins.  Other directories may
+contain other types of plugins. Each plugin resides completely in its own
+directory under "perlbot/Plugins/(something)/PluginName", and the directory
+is simply the name of the plugin.  So if you had a plugin called "Foo",
+it would reside in the directory "perlbot/Plugins/Misc/Foo", for example.
 
 
 
@@ -66,8 +69,8 @@ To prevent perlbot from automatically loading a plugin when it starts, add a
 line to the 'bot' section of your config file with the word 'noload' followed
 by the name of the plugin that you wish to disable.  For example, if you want
 to prevent the "Foo" plugin from being loaded, you would add the line
-"noload Foo".  The plugin will not be immediately unloaded from your perlbot,
-but it will not be loaded at the next startup.
+"<noload>Foo</noload>".  The plugin will not be immediately unloaded from your
+perlbot, but it will not be loaded at the next startup.
 
 
 5) Dynamically loading a plugin
@@ -85,4 +88,3 @@ In addition, you can msg the bot "#plugins unload PluginName" (or "stop") to
 dynamically reload a plugin, and "#plugins reload Pluginname" (or "restart")
 to reload the plugin.  Reload is generally useful to plugin developers.  (See
 plugins-authoring.txt if you're interested.)
-

@@ -380,10 +380,15 @@ sub _help {
       }
     }
   } elsif($self->{helpitems}{command}{$command}) {
-    if(ref($self->{helpitems}{command}{$command}{content}) eq 'ARRAY') {
-      push(@result, @{$self->{helpitems}{command}{$command}{content}});
-    } else {
-      push(@result, $self->{helpitems}{command}{$command}{content});
+    if($self->{helpitems}{command}{$command}{content}) {
+      if(ref($self->{helpitems}{command}{$command}{content}) eq 'ARRAY') {
+        push(@result, @{$self->{helpitems}{command}{$command}{content}});
+      } else {
+        push(@result, $self->{helpitems}{command}{$command}{content});
+      }
+    }
+    if($self->{helpitems}{usage}{$command}{content}) {
+      push(@result, "Usage: " . $self->perlbot->config->value(bot => 'commandprefix') . $self->{helpitems}{usage}{$command}{content});
     }
   }
 
