@@ -165,23 +165,23 @@ my %config_handlers =
 my %command_handlers = 
   (
    help => sub {
-     my ($priv_conn, $from) = @_;
-     notify_users($priv_conn, 'help', "$from requested HELP");
+     my ($conn, $from) = @_;
+     notify_users($conn, 'help', "$from requested HELP");
      get_help(@_);
    },
    nick => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);	
+     my ($conn, $from, $userhost) = (shift, shift, shift);	
      my $newnick = shift;
      if($newnick) {
-       notify_users($priv_conn, 'nick', "$from requested NICK change to $newnick");
+       notify_users($conn, 'nick', "$from requested NICK change to $newnick");
        if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
-	 $priv_conn->nick($newnick);
+	 $conn->nick($newnick);
          $currentnick = $newnick;
        } else {
-	 $priv_conn->privmsg($from, "You are not an owner.");
+	 $conn->privmsg($from, "You are not an owner.");
        }
      } else {
-       $priv_conn->privmsg($from, "Not enough arguments to #nick.");
+       $conn->privmsg($from, "Not enough arguments to #nick.");
      }
    },
    quit => sub {
@@ -195,101 +195,101 @@ my %command_handlers =
      }
    },
    join => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my $chan = shift;
-     notify_users($priv_conn, 'join', "$from requested JOIN $chan");
+     notify_users($conn, 'join', "$from requested JOIN $chan");
      if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
        my $conf = parse_config($CONFIG);
        foreach my $chan_hash (@{$conf->{chan}}) {
 	 if ($chan eq $chan_hash->{name}->[0]) {
 	   &{$config_handlers{chan}}($chan_hash);
-	   $channels{to_channel($chan)}->join($priv_conn);
+	   $channels{to_channel($chan)}->join($conn);
 	   return;
 	 }
        }
        $channels{to_channel($chan)} = new Chan(to_channel($chan));
-       $channels{to_channel($chan)}->join($priv_conn);
+       $channels{to_channel($chan)}->join($conn);
      } else {
-       $priv_conn->privmsg($from, "You are not an owner.");
+       $conn->privmsg($from, "You are not an owner.");
      }
    },
    part => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my $chan = to_channel($_[0]);
-     notify_users($priv_conn, 'part', "$from requested PART $chan");
+     notify_users($conn, 'part', "$from requested PART $chan");
      if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
        if($channels{$chan}) {
-	 $channels{$chan}->part($priv_conn);
+	 $channels{$chan}->part($conn);
 	 delete $channels{$chan};
 
        } else {
-	 $priv_conn->privmsg($from, "I am not currently in $chan");
+	 $conn->privmsg($from, "I am not currently in $chan");
        }
      } else {
-       $priv_conn->privmsg($from, "You are not an owner.");
+       $conn->privmsg($from, "You are not an owner.");
      }		 
    },
    cycle => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my $chan = to_channel($_[0]);
-     notify_users($priv_conn, 'part', "$from requested CYCLE $chan");
+     notify_users($conn, 'part', "$from requested CYCLE $chan");
      if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
        if($channels{$chan}) {
-	 $channels{$chan}->part($priv_conn);
+	 $channels{$chan}->part($conn);
 	 delete $channels{$chan};
 
 	 my $conf = parse_config($CONFIG);
 	 foreach my $chan_hash (@{$conf->{chan}}) {
 	   if ($chan eq $chan_hash->{name}->[0]) {
 	     &{$config_handlers{chan}}($chan_hash);
-	     $channels{to_channel($chan)}->join($priv_conn);
+	     $channels{to_channel($chan)}->join($conn);
 	     return;
 	   }
 	 }
 	 $channels{to_channel($chan)} = new Chan(to_channel($chan));
-	 $channels{to_channel($chan)}->join($priv_conn);
+	 $channels{to_channel($chan)}->join($conn);
        } else {
-	 $priv_conn->privmsg($from, "I am not currently in $chan");
+	 $conn->privmsg($from, "I am not currently in $chan");
        }
      } else {
-       $priv_conn->privmsg($from, "You are not an owner.");
+       $conn->privmsg($from, "You are not an owner.");
      }		 
    },
    listchans => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my $channel_list;
-     notify_users($priv_conn, 'part', "$from requested LISTCHANS");
+     notify_users($conn, 'part', "$from requested LISTCHANS");
      foreach my $chan (keys(%channels)) {
        $chan =~ s/\#//g;
        $channel_list .= "$chan ";
      }
-     $priv_conn->privmsg($from, "channels: $channel_list");
+     $conn->privmsg($from, "channels: $channel_list");
    },
    say => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my $chan = to_channel(shift);
-     notify_users($priv_conn, 'say', "$from requested SAY on $chan : \"" . join(' ', @_) . '"');
+     notify_users($conn, 'say', "$from requested SAY on $chan : \"" . join(' ', @_) . '"');
      if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
-       $priv_conn->privmsg($chan, join(' ', @_));
+       $conn->privmsg($chan, join(' ', @_));
      } else {
-       $priv_conn->privmsg($from, "You are not an owner.");
+       $conn->privmsg($from, "You are not an owner.");
      }
    },
    msg => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my $to = shift;
-     notify_users($priv_conn, 'msg', "$from requested MSG to $to : \"" . join(' ', @_) . "\"");
+     notify_users($conn, 'msg', "$from requested MSG to $to : \"" . join(' ', @_) . "\"");
      if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
-       $priv_conn->privmsg($to, join(' ', @_));
+       $conn->privmsg($to, join(' ', @_));
      } else {
-       $priv_conn->privmsg($from, "You are not an owner.");
+       $conn->privmsg($from, "You are not an owner.");
      }
    },
    logging => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my $chan = to_channel(shift);
      my $logging = shift;
-     notify_users($priv_conn, 'logging', "$from requested $chan LOGGING $logging");
+     notify_users($conn, 'logging', "$from requested $chan LOGGING $logging");
      if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
        if ($channels{$chan}) {
          if($logging eq 'yes' or $logging eq 'no') {
@@ -303,75 +303,75 @@ my %command_handlers =
          }
          # ugly, ugly hacks make the world go 'round
        } else {
-         $priv_conn->privmsg($from, "Not in channel $chan.");
+         $conn->privmsg($from, "Not in channel $chan.");
        }
      } else {
-       $priv_conn->privmsg($from, "You are not an owner.");
+       $conn->privmsg($from, "You are not an owner.");
      }		 
    },
    server => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my ($addr, $user_port) = (shift, shift);
      my $port;
      $port = $user_port or $user_port = 6667;  # default to 6667
-     notify_users($priv_conn, 'server', "$from requested SERVER $addr:$user_port");
+     notify_users($conn, 'server', "$from requested SERVER $addr:$user_port");
      if (host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
        if ($addr) {
          push @servers, [$addr, $port];
-         $priv_conn->server("$addr:$port");
-         $priv_conn->connect();
+         $conn->server("$addr:$port");
+         $conn->connect();
        } else {
-         $priv_conn->privmsg($from, "You must specify a server address.");
+         $conn->privmsg($from, "You must specify a server address.");
        }
      } else {
-       $priv_conn->privmsg($from, "You are not an owner.");
+       $conn->privmsg($from, "You are not an owner.");
      }		 
    },
    reload => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
-     notify_users($priv_conn, 'reload', "$from requested RELOAD");
+     my ($conn, $from, $userhost) = (shift, shift, shift);
+     notify_users($conn, 'reload', "$from requested RELOAD");
      if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {	     
        &parse_main_config;
      } else {
-       $priv_conn->privmsg($from, "You are not an owner.");
+       $conn->privmsg($from, "You are not an owner.");
      }
    },
    load => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my $newconf = shift;
      if ($newconf) {
        if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {	     
-	 notify_users($priv_conn, 'load', "$from requested LOAD $newconf");
+	 notify_users($conn, 'load', "$from requested LOAD $newconf");
 	 parse_config($newconf);
        } else {
-	 $priv_conn->privmsg($from, "You are not an owner.");
+	 $conn->privmsg($from, "You are not an owner.");
        }
      } else {
-       $priv_conn->privmsg($from, "Not enough arguments to #load.");
+       $conn->privmsg($from, "Not enough arguments to #load.");
      }
    },
    redir => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      if(@_ < 2) {
-       $priv_conn->privmsg($from, "not enough arguments to #redir");
+       $conn->privmsg($from, "not enough arguments to #redir");
 	 } else {
-	   notify_users($priv_conn, 'redir', "$from requested REDIR $_[0] $_[1]");
+	   notify_users($conn, 'redir', "$from requested REDIR $_[0] $_[1]");
 	   if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
 	     my $source = shift;
 	     if(exists($channels{to_channel($source)})) {
 	       $channels{to_channel($source)}->add_redir($_[0]);
-	       $priv_conn->privmsg($from, "added $_[0] to " . $source . "'s list of redirects");
+	       $conn->privmsg($from, "added $_[0] to " . $source . "'s list of redirects");
 	     }
 	   } else {
-	     $priv_conn->privmsg($from, "You are not an owner.");
+	     $conn->privmsg($from, "You are not an owner.");
 	   }
 	 }
    },
    delredir => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
-     notify_users($priv_conn, 'delredir', "$from requested DELREDIR");
+     my ($conn, $from, $userhost) = (shift, shift, shift);
+     notify_users($conn, 'delredir', "$from requested DELREDIR");
      if(@_ < 2) {
-       $priv_conn->privmsg($from, "not enough arguments to #delredir"); 
+       $conn->privmsg($from, "not enough arguments to #delredir"); 
 	 } else {
 	   if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {	     
 	     my $source = shift;
@@ -379,57 +379,85 @@ my %command_handlers =
 	       $channels{to_channel($source)}->del_redir(@_);
 	     }
 	   } else {
-	     $priv_conn->privmsg($from, "You are not an owner.");
+	     $conn->privmsg($from, "You are not an owner.");
 	   }
 	 }
    },
    note => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      if (@_ < 2) {
-       $priv_conn->privmsg($from, "#note: not enough params!");
+       $conn->privmsg($from, "#note: not enough params!");
        return;
      }
      my $to = shift;
      print "from $from, to $to: @_\n" if $debug;
      if (exists($users{$to})) {
        $users{$to}->add_note($from, join(' ', @_));
-       $priv_conn->privmsg($from, "note added for $to\n");
+       $conn->privmsg($from, "note added for $to\n");
      } else {
-       $priv_conn->privmsg($from, "#note: I don't know the user '$to'");
+       $conn->privmsg($from, "#note: I don't know the user '$to'");
      }
    },
    listnotes => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my @temp_text;
      if (host_to_user($userhost)) {
-       host_to_user($userhost)->listnotes($priv_conn);
+       host_to_user($userhost)->listnotes($conn);
      }
    },
    readnote => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      if (host_to_user($userhost)) {
-       host_to_user($userhost)->readnote($priv_conn, @_);
+       host_to_user($userhost)->readnote($conn, @_);
+     }
+   },
+   op => sub {
+     my ($conn, $from, $userhost) = (shift, shift, shift);
+     my $channel = to_channel(shift);
+     my $user = host_to_user($userhost);
+     my $username = username($user);
+
+     if(!$channel) {
+       $conn->privmsg($from, "usage: ${commandprefix}op <channel>");
+       return;
+     }
+
+     if(!$user) {
+       $conn->privmsg($from, "You are not a known user, perhaps you need to ${commandprefix}auth?");
+       return;
+     }
+
+     if(!$channels{$channel}) {
+       $conn->privmsg($from, "No such channel: $channel");
+       return;
+     }
+
+     if(!exists($channels{$channel}->ops->{$username})) {
+       $conn->privmsg($from, "You are not a valid op for channel $channel");
+       return;
+     } else {
+        $conn->mode($channel, "+o", $from);
      }
    },
    auth => sub {
-     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my ($conn, $from, $userhost) = (shift, shift, shift);
      my $username = shift;
      my $password = shift;
 
      if(!$username || !$password || $password eq "''") {
-       $priv_conn->privmsg($from, "usage: ${commandprefix}auth <username> <password>");
+       $conn->privmsg($from, "usage: ${commandprefix}auth <username> <password>");
        return;
      }
 
      if(exists($users{$username})) {
        if($users{$username}->password() && (crypt($password, $users{$username}->password()) eq $users{$username}->password())) {
          $users{$username}->hostmasks($userhost); # add this hostmask
-         $priv_conn->privmsg($from, "User $username authenticated");
+         $conn->privmsg($from, "User $username authenticated");
        } else {
-         $priv_conn->privmsg($from, "Bad password");
+         $conn->privmsg($from, "Bad password");
        }
      } else {
-       $priv_conn->privmsg($from, "No such user: $username");
+       $conn->privmsg($from, "No such user: $username");
        return;
      }
    },
@@ -437,7 +465,7 @@ my %command_handlers =
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $newpassword = shift;
      my $user = host_to_user($userhost);
-     my $username;
+     my $username = username($user);
 
      if(!$newpassword) {
        $conn->privmsg($from, "Must specify a new password!");
@@ -447,13 +475,6 @@ my %command_handlers =
      if(!$user) {
        $conn->privmsg($from, "Not a known user, try auth first!");
        return;
-     }
-
-     foreach my $tempname (keys(%users)) {
-       if($user == $users{$tempname}) {
-         $username = $tempname;
-         last;
-       }
      }
 
      if(!$username) {
@@ -488,18 +509,11 @@ my %command_handlers =
    hostmasks => sub {
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $user = host_to_user($userhost);
-     my $username;
+     my $username = username($user);
 
      if(!$user) {
        $conn->privmsg($from, "Not a known user, try auth first!");
        return;
-     }
-
-     foreach my $tempname (keys(%users)) {
-       if($user == $users{$tempname}) {
-         $username = $tempname;
-         last;
-       }
      }
 
      if(!$username) {
@@ -533,7 +547,7 @@ my %command_handlers =
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $hostname = shift;
      my $user = host_to_user($userhost);
-     my $username;
+     my $username = username($user);
 
      if(!$hostname) {
        $conn->privmsg($from, "Must specify a hostname!");
@@ -543,13 +557,6 @@ my %command_handlers =
      if(!$user) {
        $conn->privmsg($from, "Not a known user, try auth first!");
        return;
-     }
-
-     foreach my $tempname (keys(%users)) {
-       if($user == $users{$tempname}) {
-         $username = $tempname;
-         last;
-       }
      }
 
      if(!$username) {
@@ -585,7 +592,7 @@ my %command_handlers =
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $hostname = shift;
      my $user = host_to_user($userhost);
-     my $username;
+     my $username = username($user);
 
      if(!$hostname) {
        $conn->privmsg($from, "Must specify a hostname!");
@@ -595,13 +602,6 @@ my %command_handlers =
      if(!$user) {
        $conn->privmsg($from, "Not a known user, try auth first!");
        return;
-     }
-
-     foreach my $tempname (keys(%users)) {
-       if($user == $users{$tempname}) {
-         $username = $tempname;
-         last;
-       }
      }
 
      if(!$username) {

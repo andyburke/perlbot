@@ -11,7 +11,7 @@ CHANGES:
   authentication.  What does this mean?
     If you log in from someplace other than the usual, you can now
     authenticate yourself, change your password, add a hostmask to your
-    list of hostmasks, remove old hostmasks, etc.
+    list of hostmasks, remove old hostmasks, op themselves, etc.
 - Mike Edwards contributed the neat Internals plugin.  It allows bot owners
   to debug things remotely by viewing internal perlbot variables.  Sometimes
   this can be easier than using "perl -d" and mucking with breakpoints...

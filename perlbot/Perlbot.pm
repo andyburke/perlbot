@@ -43,7 +43,7 @@ require Exporter;
 	     %handlers %users %channels
 	     &parse_config &write_config
 	     &notify_users &to_channel &from_channel
-	     &host_to_user &update_user
+	     &host_to_user &username &update_user
 	     &validate_plugin &load_one_plugin &start_plugin
 	     &add_handler &unload_one_plugin
 	     &shutdown_bot
@@ -213,6 +213,20 @@ sub host_to_user {
     }
   }
   return undef;
+}
+
+sub username {
+  my $user = shift;
+  my $username;
+
+  foreach my $tempname (keys(%users)) {
+    if($user == $users{$tempname}) {
+      $username = $tempname;
+      last;
+    }
+  }
+
+  return $username;
 }
 
 sub update_user {
