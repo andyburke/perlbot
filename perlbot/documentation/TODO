@@ -3,9 +3,7 @@ TODO:
 for 2.0:
 
 - make the bot quit gracefully and catch all the right signals
-- load/reload config files
 - output buffering
-- add a robust help system, possibly using xml
 - port plugins
 - create a plugin that publishes our config via RPC::XML::Server
   so we can make a botnet
