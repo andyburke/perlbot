@@ -540,9 +540,11 @@ sub on_join {
     }
   }
 
-  if(exists($channels{$chan})) {
-      $self->mode($chan, $channels{$chan}->{flags});
-  }
+# this should only happen when the bot is opped, i think
+
+#  if(exists($channels{$chan})) {
+#      $self->mode($chan, $channels{$chan}->{flags});
+#  }
 
 }
 
