@@ -1,12 +1,12 @@
 CHANGES:
 
-1.2.3 - crash log, configurable plugin and command trigger characters,
+1.2.3 - crash log, configurable plugin and command trigger prefixes,
         new plugin, plugin fixes, misc core updates/fixes
 - Due to popular demand, the character/string that prefixes spoken commands
   to the bot is now configurable!  bot.commandprefix and bot.pluginprefix
   are the config values to set (the defaults are # and ! to mimic previous
   behavior).  All stock plugins have been modified to work with this
-  setting.
+  setting.  (Note: this is actually a regexp, shhh!)
 - Mike Edwards contributed the neat Internals plugin.  It allows bot owners
   to debug things remotely by viewing internal perlbot variables.  Sometimes
   this can be easier than using "perl -d" and mucking with breakpoints...
@@ -21,6 +21,8 @@ CHANGES:
 - Cleaned up on-join mode setting
 - Fixed the server-cycling logic - now it works  :)
 - Fixed some forking problems in a few plugins
+- The Perlbot package now exports $currentnick which is the bot's current
+  IRC nick.
 - Plugins no longer support the "unimport" mechanism.  Just use perl's
   END instead.
 - On shutdown, all plugins are now explicitly unloaded
