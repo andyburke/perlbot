@@ -143,4 +143,64 @@ sub log_event {
   $self->file->flush();
 }
 
+sub search {
+  my $self = shift;
+  my $args = shift;
+
+  use Data::Dumper;
+  print Dumper $args;
+
+  my $maxresults = $args->{maxresults};
+  my $termsref = $args->{terms}; my @terms = @{$termsref};
+  my $initialdate = $args->{initialdate} || 1;
+  my $finaldate = $args->{finaldate} || time();
+
+  my @result;
+  my $resultcount = 0;
+
+  my $channel = Perlbot::Utils::strip_channel($self->channel);
+
+  if(opendir(DIR, File::Spec->catfile($self->perlbot->config->get(bot => 'logdir'), $channel))) {
+    my @tmp = readdir(DIR);
+    my @files = sort(@tmp);
+
+    foreach my $file (@files) {
+      my $initialdate_string = Perlbot::Utils::perlbot_date_filename($initialdate);
+      my $finaldate_string = Perlbot::Utils::perlbot_date_filename($finaldate);
+
+      next if $file lt $initialdate_string;
+      last if $file gt $finaldate_string;
+
+      CORE::open(FILE, File::Spec->catfile($self->perlbot->config->get(bot => 'logdir'), $channel, $file));
+      my @lines = <FILE>;
+      CORE::close FILE;
+
+      $initialdate_string = Perlbot::Utils::perlbot_date_string($initialdate);
+      $finaldate_string = Perlbot::Utils::perlbot_date_string($finaldate);
+
+      foreach my $line (@lines) {
+        next if $line lt $initialdate_string;
+        last if $line gt $finaldate_string;
+        my $add_to_result = 1;
+
+        foreach my $term (@terms) {
+          if($line !~ /$term/i) {
+            $add_to_result = 0;
+            last;
+          }
+        }
+
+        if($add_to_result) {
+          push(@result, $line);
+          $resultcount++;
+        }
+        last if defined($maxresults) and $resultcount >= $maxresults;
+      }
+      last if defined($maxresults) and $resultcount >= $maxresults;
+    }
+  }
+
+  return @result;
+}
+
 1;
