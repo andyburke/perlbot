@@ -63,12 +63,6 @@ sub key {
 sub logging {
     my $self = shift;
     $self->config->set(channel => $self->name => 'logging', shift) if @_;
-
-    # open/close logfile if logging value is being set
-    if (@_ and $_[0] eq 'no') {
-      $self->log->close;
-    }
-
     return $self->config->get(channel => $self->name => 'logging');
 }
 
