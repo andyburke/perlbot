@@ -76,7 +76,7 @@ sub sodoit {
   if($lengthchangedeterminer == 7) {
     $length = int($length / 3);
   } elsif($lengthchangedeterminer % 2 == 0) {
-    $length = int($length * 1.2);
+    $length = int($length * 1.1);
   } else {
     $length = int($length * .75);
   }
