@@ -978,7 +978,7 @@ sub on_ctcp_ping {
   my $nick = $event->nick;
   
   update_user($self, $event->nick, $event->userhost);
-  $self->ctcp_reply($nick, join (' ', ($event->args)));
+  $self->ctcp_reply($nick, join (' ', ('PING', $event->args)));
 }
 
 sub on_ctcp_version {
