@@ -82,8 +82,9 @@ sub starttrivia {
 
   $self->{numquestions} = $numquestions;
   $self->reply("Starting a new trivia game of $numquestions questions!");
-  $self->reply("  !!! To register to play in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "playing");
-  $self->reply("  !!! To stop playing in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "stopplaying");
+  $self->reply("  To register to play in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "playing");
+  $self->reply("  To stop playing in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "stopplaying");
+  $self->reply("  Lines beginning with a '.' will not be counted as answers.");
 
   $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
 }
@@ -106,6 +107,10 @@ sub answer {
   my $event = shift;
 
   if(!defined($self->{playing}{$event->nick()})) {
+    return;
+  }
+
+  if(substr($text, 0, 1) eq '.') {
     return;
   }
 
