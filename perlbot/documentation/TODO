@@ -8,8 +8,7 @@ for 2.0 (i.e. ASAP):
 - clean up code, make -w clean, etc.
 - User and Chan objects should know how to build a skeleton version of
   themselves in the config if their entry doesn't already exist
-- Fix the problem of having to create Config entries manually.  This may
-  require some kind of DTD-like specification for Configs.
+- use strict;
 
 for 2.2:
 
