@@ -3,22 +3,24 @@
 # chkconfig: 2345 97 02
 # description: Perlbot is an IRC bot written in perl.
 
+NAME=`basename $0`
+
 case "$1" in
 
   start)
-    if [ -f /var/run/$0.pid ]; then
-      echo "$0 already running!"
+    if [ -f /var/run/$NAME.pid ]; then
+      echo "$NAME already running!"
       exit
     fi
-    su perlbot -s /bin/tcsh -c "cd /home/perlbot/$0/ ;\
-                  /home/perlbot/$0/perlbot.pl >& /dev/null &"
+    su perlbot -s /bin/tcsh -c "cd /home/perlbot/$NAME/ ;\
+                  /home/perlbot/$NAME/perlbot.pl >& /dev/null &"
     sleep 1
-    pidof -x perlbot.pl | xargs ps | grep $0 | cut -f 1 -d ' ' > /var/run/$0.pid
+    pidof -x perlbot.pl | xargs ps | grep $0 | cut -f 1 -d ' ' > /var/run/$NAME.pid
     ;;
 
   stop)
-    kill `cat /var/run/$0.pid`
-    rm /var/run/$0.pid
+    kill `cat /var/run/$NAME.pid`
+    rm /var/run/$NAME.pid
     ;;
 
   *)
