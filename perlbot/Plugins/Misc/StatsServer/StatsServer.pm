@@ -21,6 +21,9 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
+  $self->want_fork(0);
+  $self->want_msg(0);
+
   $self->{_topics} = {};
 
   # remember we get a 'topic' even on channel joins, so nothing extra is
