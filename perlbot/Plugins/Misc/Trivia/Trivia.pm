@@ -577,7 +577,10 @@ sub getqualifyingplayers {
   my @players;
 
   foreach my $player (keys(%{$self->{totalanswered}})) {
-    if($self->{totalanswered}{$player} >= $self->{minquestionsanswered}) {
+    if($self->{totalanswered}{$player} >= $self->{minquestionsanswered} &&
+       defined($self->{correctlyanswered}{$player}) &&
+       defined($self->{fastestoverall}{$player}) &&
+       defined($self->score($player))) {
       push(@players, $player);
     }
   }
@@ -588,7 +591,18 @@ sub getqualifyingplayers {
 sub getallplayers {
   my $self = shift;
 
-  return keys(%{$self->{totalanswered}});
+  my @players;
+
+  foreach my $player (keys(%{$self->{totalanswered}})) {
+    if(defined($self->{correctlyanswered}{$player}) &&
+       defined($self->{fastestoverall}{$player}) &&
+       defined($self->score($player))) {
+      push(@players, $player);
+    }
+  }
+
+  return @players;
+
 }
 
 sub score {
