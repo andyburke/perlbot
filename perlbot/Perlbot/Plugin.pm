@@ -450,7 +450,7 @@ sub _help {
     if($self->contact) { $infostring .= " <" . $self->contact . ">"; }
     if($self->url) { $infostring .= ", " . $self->url; }
     push(@result, $infostring);
-    if(defined($self->helpitems) && defined($self->helpitems->{overview}[0])) {
+    if(defined($self->helpitems) && defined($self->helpitems->{overview})) {
       if(ref($self->helpitems->{overview}[0]) eq 'HASH') {
         push(@result, @{$self->helpitems->{overview}[0]{content}});
       } else {
