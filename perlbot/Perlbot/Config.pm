@@ -7,7 +7,7 @@ use XML::Simple;
 use Perlbot::Utils;
 
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(filename readonly config slaves);
+use fields qw(filename readonly config);
 
 sub new {
   my $self = shift;
@@ -18,7 +18,6 @@ sub new {
   $self->filename = $filename;
   $self->readonly = $readonly ? 1 : undef;
   $self->config = {};
-  $self->slaves = [];
 
   # if we didn't get a filename, just send back a config object
   # otherwise
