@@ -260,6 +260,8 @@ sub endofgame {
 
   my $questions = $self->{curquestion} - 1;
 
+  if($questions == 0) { return; }
+
   foreach my $nick (keys(%{$self->{score}})) {
     if(($self->{score}{$nick} / $questions) > $winnerscore) {
       $winner = $nick;
