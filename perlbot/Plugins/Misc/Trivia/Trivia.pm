@@ -33,15 +33,6 @@ sub init {
 
   $self->{playing} = {};
 
-#  open(TRIVIA, File::Spec->catfile($self->{directory}, 'trivia'));
-#  my $i = 0;
-#  while(my $q = <TRIVIA>) {
-#    chomp $q;
-#    $self->{questions}{$i} = $q;
-#    $i++;
-#  }
-#  close(TRIVIA);
-
   $self->{questions} = XMLin(File::Spec->catfile($self->{directory}, 'trivia.xml'))->{question};
 
   $self->{score} = {};
@@ -610,14 +601,20 @@ sub webtriviastats {
   my @timeranks = $self->rankplayersbytime($self->getqualifyingplayers());
   my @perfranks = $self->rankplayersbyperformance($self->getqualifyingplayers());
 
-  for(my $rank = 0; $rank < 20; $rank++) {
-    my $numerical_rank = $rank + 1;
-    $response .= "<tr><td>$numerical_rank</td>";
-    $response .= "<td>" . $percranks[$rank] . " (" . $self->score($percranks[$rank]) . "%)</td>";
-    $response .= "<td>" . $winsranks[$rank] . " (" . $self->{correctlyanswered}{$winsranks[$rank]} . ")</td>";
-    $response .= "<td>" . $timeranks[$rank] . " (" . $self->{fastestoverall}{$timeranks[$rank]} . ")</td>";
-    $response .= "<td>" . $perfranks[$rank] . " (" . sprintf("%0.2f", $self->{performanceoverall}{$perfranks[$rank]}) . ")</td>";
-    $response .= "</tr>";
+  if(@percranks && @winsranks && @timeranks && @perfranks) {
+
+    for(my $rank = 0; $rank < 20; $rank++) {
+      if(!defined($percranks[$rank])) { last; }
+      my $numerical_rank = $rank + 1;
+      $response .= "<tr><td>$numerical_rank</td>";
+      $response .= "<td>" . $percranks[$rank] . " (" . $self->score($percranks[$rank]) . "%)</td>";
+      $response .= "<td>" . $winsranks[$rank] . " (" . $self->{correctlyanswered}{$winsranks[$rank]} . ")</td>";
+      $response .= "<td>" . $timeranks[$rank] . " (" . $self->{fastestoverall}{$timeranks[$rank]} . ")</td>";
+      $response .= "<td>" . $perfranks[$rank] . " (" . sprintf("%0.2f", $self->{performanceoverall}{$perfranks[$rank]}) . ")</td>";
+      $response .= "</tr>";
+    }
+  } else {
+    $response .= "<tr><td colspan=5 align=middle><b>No current trivia rankings!</b></td></tr>";
   }
 
   $response .= "</table></body>";
