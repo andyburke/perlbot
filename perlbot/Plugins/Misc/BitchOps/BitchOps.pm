@@ -22,21 +22,28 @@ sub modechange {
   my @nicks = @{$event->{args}}; pop @nicks; # stupid irc
   my $channel = normalize_channel($event->{to}[0]);
 
+  if($modeline !~ /o/) { return; }
+
   while ($modeline !~ /^([+-][a-z])+$/) {
     $modeline =~ s/([+-])([a-z])([a-z])/$1$2$1$3/;
   }
+
   my @modes = $modeline =~ /([+-][a-z])/g;
 
   my %modehash;
   @modehash{@nicks} = @modes;
 
   foreach my $nick (keys(%modehash)) {
+    my $validop = 0;
+      
     if($nick eq $self->{perlbot}{curnick}) { next; } #heh
+
     if($modehash{$nick} eq '+o') {
-      my $validop = 0;
       foreach my $user (values(%{$self->{perlbot}{users}})) {
-        if(($user->{curnick} eq $nick) && $self->{perlbot}{channels}{$channel}{ops}{$user->{name}}) {
+        if(($user->{curnick} eq $nick)
+           && $self->{perlbot}{channels}{$channel}{ops}{$user->{name}}) {
           $validop = 1;
+          next;
         }
       }
     }
