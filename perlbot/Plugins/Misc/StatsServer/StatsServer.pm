@@ -60,7 +60,7 @@ sub stats {
     foreach my $channel (values %{$self->perlbot->channels}) {
       $response .= "<tr><table width=100% border=1><th width=20%>Name</th><th>Topic</th></tr>";
       $response .= "<tr><td>" . $channel->name() . "</td><td>" . $self->{_topics}{$channel->name()} . "</td></tr>";
-      $response .= "<tr><th colspan=2>Members</th></tr><tr><td colspan=2><ul>";
+      $response .= "<tr><th colspan=2>Members (" . scalar keys(%{$channel->{members}}) . ")</th></tr><tr><td colspan=2><ul>";
       foreach my $member (keys(%{$channel->{members}})) {
         $response .= "<li>$member";
       }
