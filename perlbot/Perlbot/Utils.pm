@@ -19,6 +19,7 @@ require Exporter;
              &read_generic_config &write_generic_config
              &normalize_channel &strip_channel
              &validate_hostmask &hostmask_to_regexp
+             &perlbot_date_filename &perlbot_date_string
              &exec_command
              &debug &set_debug
           );
@@ -205,6 +206,20 @@ sub exec_command {
     open (STDERR, ">&STDOUT") or die "Can't dup stdout: $!\n";
     exec $command, split(' ', $args) or die "Can't exec $command: $!\n";
   }
+}
+
+sub perlbot_date_filename {
+  my $ctime = shift;
+
+  my ($sec, $min, $hour, $mday, $mon, $year) = localtime($ctime);
+  return sprintf("%04d.%02d.%02d", $year+1900, $mon+1, $mday);
+}
+
+sub perlbot_date_string {
+  my $ctime = shift;
+
+  my ($sec, $min, $hour, $mday, $mon, $year) = localtime($ctime);
+  return sprintf("%04d/%02d/%02d-%02d:%02d:%02d", $year+1900, $mon+1, $mday, $hour, $min, $sec);
 }
 
 1;
