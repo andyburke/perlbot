@@ -1,5 +1,10 @@
 CHANGES:
 
+1.2.2 - misc updates, stability fixes, plugin modifications
+- fixed the flooding crashing the bot bug, stupid fork
+- got rid of reliance on nslookup because it is deprecated, now we use host
+
+
 1.2.1 - documentation fixes and additions; logsearch CGIs
 - Added a readme to the miscscripts/ directory and cleaned up the comments
   in the scripts there.
