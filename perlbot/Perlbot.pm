@@ -200,6 +200,7 @@ sub connect {
     $port = $self->config(server => $i => 'port'); $port ||= 6667;
     $nick = $self->config(bot => 'nick'); $nick ||= 'perlbot';
     $ircname = $self->config(bot => 'ircname'); $ircname ||= 'imabot';
+    $password = $self->config(server => $i => 'password') ; $password ||= '';
 
     print "connect: attempting to connect to server: $server\n" if $DEBUG;
 
@@ -207,6 +208,7 @@ sub connect {
       $self->{ircobject}->newconn(Nick => $nick,
                                   Server => $server,
                                   Port => $port,
+                                  Password => $password,
                                   Ircname => $ircname);
     $i++;
   }

@@ -61,6 +61,7 @@ sub reconnect {
     }
 
     for(; $i < $self->{perlbot}->config('server'); $i++) {
+      $server = join (':', $server, $self->{perlbot}->config(server => $i => 'password') ) if (length($self->{perlbot}->config(server => $i => 'password')));
       my $address = $self->{perlbot}->config(server => $i => 'address');
       my $port = $self->{perlbot}->config(server => $i => 'port');
       $address or last;

@@ -10,8 +10,6 @@ use Perlbot::Plugin;
 sub init {
   my $self = shift;
 
-  $self->{lastquit};
-
   $self->want_fork(0);
 
   $self->hook_event('public', \&update);
