@@ -17,6 +17,7 @@
   <!ATTLIST channel name CDATA #REQUIRED>
   <!ATTLIST channel flags CDATA #IMPLIED>
   <!ATTLIST channel logging (yes|no) "no">
+  <!ATTLIST channel singlelogfile (yes|no) "no">
   <!ATTLIST channel limit CDATA "0">
 <!ELEMENT user (hostmask*)>
   <!ATTLIST user name CDATA #REQUIRED>

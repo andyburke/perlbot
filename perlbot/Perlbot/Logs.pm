@@ -10,10 +10,8 @@ use File::Spec;
 # So it's called Logs now.
 
 sub new {
-  my ($class, $logdir, $chan, $rolllogfile) = @_;
+  my ($class, $logdir, $chan, $singlelogfile) = @_;
   my ($mday,$mon,$year);
-
-  if(!defined($rolllogfile)) { $rolllogfile = 1; }
 
   (undef,undef,undef,$mday,$mon,$year) = localtime;
   $year += 1900; #yay, y2k!
@@ -25,7 +23,7 @@ sub new {
     curyr       => $year,
     curmon      => $mon,
     curday      => $mday,
-    rolllogfile => $rolllogfile,
+    singlelogfile => $singlelogfile,
     file        => new IO::File
       };
   
@@ -57,10 +55,10 @@ sub curday {
   return $self->{curday};
 }
 
-sub rolllogfile {
+sub singlelogfile {
   my $self = shift;
-  $self->{rolllogfile} = shift if @_;
-  return $self->{rolllogfile};
+  $self->{singlelogfile} = shift if @_;
+  return $self->{singlelogfile};
 }
 
 sub update_date {
@@ -82,7 +80,20 @@ sub open {
   my $self = shift; 
   my $date;
 
-  if($self->rolllogfile) {
+  if ($self->singlelogfile) {
+    # user wants a single logfile per channel, not one file per day
+
+    stat $self->{logdir} or mkdir($self->{logdir}, 0755);
+
+    debug("Opening log file: " . File::Spec->catfile(strip_channel($self->{chan}) . '.log'), 2);
+
+    $self->{file}->close if $self->{file}->opened;   # is this necessary?
+
+    my $result = $self->{file}->open(">>" . File::Spec->catfile($self->{logdir}, strip_channel($self->chan) . '.log'));
+    $result or debug("Could not open logfile " . File::Spec->catfile($self->{logdir}, strip_channel($self->chan) . '.log') . ": $!");
+  } else {
+    # this is the standard behavior, one logfile per day
+
     # make necessary dirs if they don't exist
     stat $self->{logdir} or mkdir($self->{logdir}, 0755);
     stat File::Spec->catfile($self->{logdir}, strip_channel($self->chan)) or mkdir(File::Spec->catfile($self->{logdir}, strip_channel($self->chan)), 0755);
@@ -95,15 +106,6 @@ sub open {
     $self->{file}->close if $self->{file}->opened;   # is this necessary?
     my $result = $self->{file}->open(">>" . File::Spec->catfile($self->{logdir}, strip_channel($self->chan), "$date"));
     $result or debug("Could not open logfile " . File::Spec->catfile($self->{logdir}, strip_channel($self->chan), "$date") . ": $!");
-  } else {
-    stat $self->{logdir} or mkdir($self->{logdir}, 0755);
-
-    debug("Opening log file: " . File::Spec->catfile(strip_channel($self->{chan}) . '.log'), 2);
-
-    $self->{file}->close if $self->{file}->opened;   # is this necessary?
-
-    my $result = $self->{file}->open(">>" . File::Spec->catfile($self->{logdir}, strip_channel($self->chan) . '.log'));
-    $result or debug("Could not open logfile " . File::Spec->catfile($self->{logdir}, strip_channel($self->chan) . '.log') . ": $!");
   }
 
 }
@@ -123,9 +125,9 @@ sub write {
   $year += 1900;
   $mon += 1;
   
-  if(!$self->{file}->opened) { $self->open(); } 
+  if (! $self->{file}->opened) { $self->open(); } 
 
-  if($self->rolllogfile) {
+  if (! $self->singlelogfile) {
     # if the date has changed, roll the log file
     unless ($mday==$self->curday and $mon==$self->curmon and $year==$self->curyr) {
       debug("Rolling log file", 2);

@@ -416,17 +416,17 @@ Table of Contents
                    flags="-s+tn"
                    logging="yes" />
 
-    rolllogfile
-      - Tells the bot how to store logs.  If this is set to 'no', then
-        the file <logdir>/<channel>.log will be created.  If it is
-        set to 'yes', then <logdir>/<channel>/<date> files will be
-        created.  One log file will be created per day.
+    singlelogfile
+      - Tells the bot how to store logs.  If this is set to 'yes', then the
+	single file <logdir>/<channel>.log will be created.  If it is set to
+	'no', then <logdir>/<channel>/<date> files will be created, i.e. one
+        log file for each day.
 
         Example:
 
           <channel name="#perlbot"
                    logging="yes"
-                   rolllogfile="no" />
+                   singlelogfile="yes" />
 
     op
       - This sets a user to be an op for the channel.  It expects

@@ -7,16 +7,16 @@ use strict;
 sub new {
   my $class = shift;
   my ($name, $config) = @_;
-  my $rolllogfile = 1;
+  my $singlelogfile = 0;
 
-  if(lc($config->value(channel => $name => 'rolllogfile')) eq 'no') {
-    $rolllogfile = 0;
+  if (lc($config->value(channel => $name => 'singlelogfile')) eq 'yes') {
+    $singlelogfile = 1;
   }
 
   my $self = {
     config   => $config,
     name     => $name,
-    log      => new Perlbot::Logs($config->value(bot => 'logdir'), $name, $rolllogfile),
+    log      => new Perlbot::Logs($config->value(bot => 'logdir'), $name, $singlelogfile),
     members  => {},
   };
 
