@@ -240,9 +240,9 @@ sub search {
   my $args = shift;
 
   my $maxresults = $args->{maxresults};
-  my $terms = $args->{terms};
-  my $nick = $args->{nick};
-  my $type = $args->{type};
+  my $terms = $args->{terms}; 
+  my $nick = $args->{nick}; $nick = undef if (defined($nick) and $nick eq '');
+  my $type = $args->{type}; $type = undef if (defined($type) and $type eq '');
   my $initialdate = $args->{initialdate} || 1;
   my $finaldate = $args->{finaldate} || time();
   my $boolean = $args->{boolean} || 0;
@@ -256,17 +256,17 @@ sub search {
 
     my $curdate = $initialdate;
     do {
-      my (undef, undef, undef, $d, $m, $y) = localtime($curdate);
+      my (undef, undef, undef, $d, $m, $y) = gmtime($curdate);
       $d = sprintf("%02d", $d);
       $m = sprintf("%02d", $m + 1);
       $y += 1900;
       
       if(-f File::Spec->catfile($self->directory, $channel, "$y.$m.$d")) {
-        $resultcount = 1;
-        return $resultcount;
+        return 1;
       }
       $curdate += 86400; # add a day
     } while ($curdate < $finaldate);
+    return 0;
   }
   
   my $files = $self->get_filelist($initialdate, $finaldate);
@@ -285,7 +285,7 @@ sub search {
 
     my @lines = <FILE>;
 
-    if(defined($terms)) {
+    if(defined($terms) && @{$terms}) {
       foreach my $term (@$terms) {
         @lines = grep(/\Q$term\E/i, @lines);  
       }
@@ -298,6 +298,7 @@ sub search {
     # place here, and that our dates are more fine-grained than
     # to the day, so we to some real conversions and searching
     # here...
+
     foreach my $line (@lines) {
       chomp $line;
       my $datestring = $self->filename_to_datestring($filename);
@@ -307,12 +308,12 @@ sub search {
       next if $event->time < $initialdate;
       last if $event->time > $finaldate;
 
-      next if $nick and $event->nick ne $nick;
-      next if $type and $event->type ne $type;
+      next if defined($nick) and $event->nick ne $nick;
+      next if defined($type) and $event->type ne $type;
 
       my $add_to_result = 1;
 
-      if (defined($terms)) {
+      if (defined($terms) && @{$terms}) {
         defined($event->text) or next;
         
         foreach my $term (@$terms) {

@@ -137,7 +137,7 @@ sub search {
   my $querystring = "SELECT * FROM logs WHERE channel = '" . $self->channel . "' AND";
   defined($nick) and $querystring .= " nick = '$nick' AND";
   defined($type) and $querystring .= " eventtype = '$type' AND";
-  if(defined($terms)) {
+  if(defined($terms) && @{$terms}) {
     foreach my $term (@{$terms}) {
       $querystring .= " text LIKE '$term' AND";
     }

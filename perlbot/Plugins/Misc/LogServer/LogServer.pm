@@ -16,7 +16,7 @@ use Perlbot::Plugin;
 use base qw(Perlbot::Plugin);
 use Perlbot::Utils;
 
-use Date::Manip;
+use Time::Local;
 
 use CGI qw(:standard);
 
@@ -53,7 +53,25 @@ sub logserver {
   }
 
   $response .= '<link rel="stylesheet" href="/perlbot.css" type="text/css" />';
-  $response .= '</head><body><center><h1>Perlbot Logs</h1></center><hr>';
+#  $response .= '
+#
+#  </head>
+#  <body>
+#    <div style="width: 99%; border-bottom: 1px solid;">
+#      <table border="0" width="99%"><tr>
+#        <td width="50%">
+#          <div style="text-align: left; font-size: x-large; font-weight: bold;">Perlbot Logs</div>
+#        </td>
+#        <td width="50%">
+#';
+  $response .= '
+
+  </head>
+  <body>
+    <div style="width: 99%; border-bottom: 1px solid;">
+      <span style="width: 50%; text-align: left; font-size: x-large; font-weight: bold;">Perlbot Logs</span>
+';
+
         
   my ($command, $options_string) = $arguments =~ /^(.*?)\?(.*)$/;
 
@@ -63,6 +81,12 @@ sub logserver {
     my ($key, $value) = $option =~ /^(.*?)=(.*)$/;
     $options->{$key} = $value;
   }
+
+  if($options->{channel}) {
+    $response .= "      <span style=\"text-align: right;\"><a href=\"/logserver/search?channel=" . $options->{channel} . "\">[search]</a> <a href=\"/logserver/display?channel=" . $options->{channel} . "\">[" . $options->{channel} . "]</a> <a href=\"/logserver\">[top]</a></span>";
+  }
+
+  $response .= '</div><p>';
 
   if(!$command) {
     $response .= '<ul>';
@@ -84,9 +108,6 @@ sub logserver {
       return $self->std_response($response . "<b>You must specify a channel!</b>");
     }
 
-    # standard header
-    $response .= "<a href=\"/logserver/search?channel=" . $options->{channel} . "\">[search]</a> <a href=\"/logserver/display?channel=" . $options->{channel} . "\">[" . $options->{channel} . "]</a> <a href=\"/logserver\">[top]</a><p>";
-
     my $channel = $self->perlbot->get_channel($options->{channel});
 
     if(!$options->{year}) { # they need to choose a year
@@ -107,10 +128,9 @@ sub logserver {
     
       my $year = $options->{year};
 
-      $response .= "<center><h1>Logs for channel: " . $options->{channel} . "</h1></center>";
-      $response .= '<p><hr>';
-      
-      $response .= "<p><center><h1>$year</h1></center>\n";
+      $response .= '<div style="width: 99%; border-bottom: 1px solid;">';
+      $response .= "<b>#" . $options->{channel} . " logs for $year<b>\n";
+      $response .= '</div><br>';
 
       $response .= '
 
@@ -118,20 +138,17 @@ sub logserver {
         <!--
 
           table {
-            width: 99%;
           }
 
           tr {
-            height: 30px;
+            height: 1.2em;
           }
 
           td {
-            width: 14%;
+            width: 1.5em;
           }
 
           table.main {
-            width: 99%;
-            border: 1px solid;
           }
 
           tr.main {
@@ -142,31 +159,39 @@ sub logserver {
             width: 25%;
             vertical-align: top;
             text-align: left;
-            padding: 10px;
+            padding: 5px;
           }
 
         -->
         </style>';
 
 
-      $response .= "<table class=\"main\">\n";
+      $response .= "<center><table class=\"main\">\n";
 
       $response .= "  <tr class=\"main\">\n";
       foreach my $month ((1..12)) {
         $response .= "    <td class=\"main\">\n";
         $month = sprintf("%02d", $month);
-        my $cal = HTML::CalendarMonth->new(year => $year, month => $month);
+
+        my $cal = HTML::CalendarMonth->new(year => $year, month => $month, head_y =>0, class => 'table');
+
+        $cal->item($cal->month)->attr(class => 'tableheader');
+        foreach my $day_header ($cal->dayheaders()) {
+          $cal->item($day_header)->attr(class => 'tablesubheader');
+        }
+        
         foreach my $day ($cal->days()) {
           if($channel->logs->search({
             initialdate
-                => Date::Manip::UnixDate("$year/$month/$day-00:00:00",'%s'),
+                => timegm(0, 0, 0, $day, $month - 1, $year - 1900),
             finaldate
-                => Date::Manip::UnixDate("$year/$month/$day-23:59:59",'%s'),
+                => timegm(59, 59, 23, $day, $month - 1, $year - 1900),
             boolean
                 => 1
-          })) {
-
+              })) {
+            
             my $padded_day = sprintf("%02d", $day);
+            print "linking day: $padded_day\n";
             $cal->item($day)->wrap_content(HTML::Element->new('a',
                                                               href => "/logserver/display?channel="
                                                               . $options->{channel}
@@ -177,24 +202,18 @@ sub logserver {
         $response .= "    </td>\n";
         if($month % 4 == 0) { $response .= "  </tr>\n  <tr class=\"main\">\n"; }
       }
-      $response .= "</table>\n";
+      $response .= "</table></center>\n";
 
       return $self->std_response($response);
     }
 
     if(defined($options->{day}) && defined($options->{month}) && defined($options->{year})) {
-      my @events = $channel->logs->search({ initialdate => Date::Manip::UnixDate($options->{year}
-                                                                                 . "/"
-                                                                                 . $options->{month}
-                                                                                 . "/"
-                                                                                 . $options->{day}
-                                                                                 . "-00:00:00",'%s'),
-                                            finaldate   => Date::Manip::UnixDate($options->{year}
-                                                                                 . "/"
-                                                                                 . $options->{month}
-                                                                                 . "/"
-                                                                                 . $options->{day}
-                                                                                 . "-23:59:59",'%s')});
+      my @events = $channel->logs->search({ initialdate
+                                                => timegm(0, 0, 0, $options->{day}, $options->{month} - 1, $options->{year} - 1900),
+
+                                            finaldate
+                                                => timegm(59, 59, 23, $options->{day}, $options->{month} - 1, $options->{year} - 1900)
+                                              });
 
       if(!@events) {
         $response .= "<center>
@@ -227,8 +246,6 @@ sub logserver {
     }
 
     my $channel = $self->perlbot->get_channel($options->{channel});
-
-    $response .= "<a href=\"/logserver/search?channel=" . $options->{channel} ."\">[search]</a> <a href=\"/logserver/display?channel=" . $options->{channel} . "\">[" . $options->{channel} . "]</a> <a href=\"/logserver\">[top]</a><p>";
 
     if(!defined($options->{submit})) {
       $response .= "<h2>Search logs for channel: " . $options->{channel} . "</h2><p>";
@@ -339,13 +356,7 @@ sub logserver {
       my $initialhour = $options->{initialhour} || 0;
       my $initialmin = $options->{initialmin} || 0;
       my $initialsec = $options->{initialsec} || 0;
-      my $initialdatestring = sprintf("%04d/%02d/%02d-%02d:%02d:%02d",
-                                      $initialyear,
-                                      $initialmonth,
-                                      $initialday,
-                                      $initialhour,
-                                      $initialmin,
-                                      $initialsec);
+      my $initialdate = timegm($initialsec, $initialmin, $initialhour, $initialday, $initialmonth - 1, $initialyear - 1900);
 
       my $finalyear = $options->{finalyear};
       my $finalmonth = $options->{finalmonth};
@@ -353,16 +364,7 @@ sub logserver {
       my $finalhour = $options->{finalhour} || 23;
       my $finalmin = $options->{finalmin} || 59;
       my $finalsec = $options->{finalsec} || 59;
-      my $finaldatestring = sprintf("%04d/%02d/%02d-%02d:%02d:%02d",
-                                      $finalyear,
-                                      $finalmonth,
-                                      $finalday,
-                                      $finalhour,
-                                      $finalmin,
-                                      $finalsec);
-
-      my $initialdate = Date::Manip::UnixDate($initialdatestring,'%s');
-      my $finaldate = Date::Manip::UnixDate($finaldatestring,'%s');
+      my $finaldate = timegm($finalsec, $finalmin, $finalhour, $finalday, $finalmonth - 1, $finalyear - 1900);
 
       my $nick = $options->{nick};
       my $type = $options->{type}; if($type eq 'all') { $type = undef; };
@@ -417,29 +419,29 @@ sub event_as_html_string {
 
   my $type = $event->type;
 
-  my $format_string = '<tt><a name="%timestamp">%hour:%min:%sec</a> ';
+  my $format_string = '<a name="%timestamp"></a><span class="time">%hour:%min:%sec</span><span class="irctext"> ';
 
   if($type eq 'public') {
-    $format_string .= '&lt;%nick&gt; %text';
+    $format_string .= '<span class="public">&lt;%nick&gt; %text</span>';
   } elsif($type eq 'caction') {
-    $format_string .= '* %nick %text';
+    $format_string .= '<span class="caction">* %nick %text</span>';
   } elsif($type eq 'mode') {
-    $format_string .= '%nick set mode: %text';
+    $format_string .= '<span class="mode">%nick set mode: %text</span>';
   } elsif($type eq 'topic') {
-    $format_string .= '<font color="red">[%type] %nick: %text</font>';
+    $format_string .= '<span class="topic">[%type] %nick: %text</span>';
   } elsif($type eq 'nick') {
-    $format_string .= '<font color="red">[%type] %nick changed nick to: %nick</font>';
+    $format_string .= '<span class="nick">[%type] %nick changed nick to: %nick</span>';
   } elsif($type eq 'quit') {
-    $format_string .= '<font color="red">[%type] %nick quit: %text</font>';
+    $format_string .= '<span class="quit">[%type] %nick quit: %text</span>';
   } elsif($type eq 'kick') {
-    $format_string .= '<font color="red">[%type] %target was kicked by %nick (%text)</font>';
+    $format_string .= '<span class="kick">[%type] %target was kicked by %nick (%text)</span>';
   } elsif($type eq 'join') {
-    $format_string .= '<font color="blue">%nick (%userhost) joined %channel</font>';
+    $format_string .= '<span class="join">%nick (%userhost) joined %channel</span>';
   } elsif($type eq 'part') {
-    $format_string .= '<font color="blue">%nick (%userhost) left %channel</font>';
+    $format_string .= '<span class="part">%nick (%userhost) left %channel</span>';
   }
 
-  $format_string .= '</tt><br>';
+  $format_string .= '</span><br>';
 
   my $result =
       $event->as_string_formatted($format_string,
