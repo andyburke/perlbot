@@ -56,7 +56,7 @@ sub addline {
 
   chomp $text;
 
-  open(KNOWLEDGE, '>>' . File::Spec->catfile($self->{directory}, 'knowledge'));
+  open(KNOWLEDGE, '>>' . File::Spec->catfile($self->{directory}, 'learned_knowledge'));
   print KNOWLEDGE $text . "\n";
   close(KNOWLEDGE);
 }
@@ -75,30 +75,30 @@ sub sodoit {
   if((rand()*10)/ 2 == 0) {
     $length = int($length * 1.2);
   } else {
-    $length = int($length / 2);
+    $length = int($length * .75);
   }
   if($length < 1) { $length = 1; }
   undef @words;
 
   if($text !~ /$curnick/i) {
-    $text =~ s/^.*?(?:,|:)\s*//;
+    if(int(rand(20)) == 10) {
+      $text =~ s/^.*?(?:,|:)\s*//;
 
-    my $starttime = time();
-    my @response = $self->{chain}->spew(complete => $text, length => $length);
-    $reply = "@response";
-    chomp $reply;
-    my $endchar;
-    if(rand(10) % 3 == 0) {
-      $endchar = '!';
-    } elsif(rand(10) % 4 == 0) {
-      $endchar = '?';
-    } else {
-      $endchar = '.';
-    }
-    $reply = $reply . $endchar;
-    $reply = $self->babel($reply);
-
-    if(int(rand(50)) == 25) {
+      my $starttime = time();
+      my @response = $self->{chain}->spew(complete => $text, length => $length);
+      $reply = "@response";
+      chomp $reply;
+      my $endchar;
+      my $endchardeterminer = int(rand(10));
+      if($endchardeterminer % 3 == 0) {
+        $endchar = '!';
+      } elsif($endchardeterminer % 2 == 0) {
+        $endchar = '?';
+      } else {
+        $endchar = '.';
+      }
+      $reply = $reply . $endchar;
+      $reply = $self->babel($reply);
 
       my $timediff = time() - $starttime;
 
@@ -124,9 +124,10 @@ sub sodoit {
     $reply = "@response";
     chomp $reply;
     my $endchar;
-    if(rand(10) % 3 == 0) {
+    my $endchardeterminer = int(rand(10));
+    if($endchardeterminer % 3 == 0) {
       $endchar = '!';
-    } elsif(rand(10) % 4 == 0) {
+    } elsif($endchardeterminer % 2 == 0) {
       $endchar = '?';
     } else {
       $endchar = '.';
@@ -150,7 +151,7 @@ sub sodoit {
   if(length($text) > 50) {
     $self->addline($text);
   }
-  if(time() - $self->{lastseedtime} > 120) {
+  if(time() - $self->{lastseedtime} > 86400) {
     $self->seed();
     $self->{lastseedtime} = time();
   }
