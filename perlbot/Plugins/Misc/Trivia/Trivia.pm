@@ -112,7 +112,7 @@ sub answer {
     return;
   }
 
-  if(substr($text, 0, 1) eq '.') {
+  if(substr($text, 0, 1) eq '.' || substr($text, 0, 1) eq '!') {
     return;
   }
 
