@@ -4,12 +4,12 @@
 
 chan {
 	key		
-	name		#fdn
+	name		#perlbot
 	flag		+t
 	logging	        yes	
 	limit		0
-	op		plastik
-	op		ender
+	op		leet_admin
+	op		lame_user
 }
 
 ###############################
@@ -23,9 +23,9 @@ bot {
 	noload		Whois
 	noload		Guile
 	noload 		Host
-	nickappend		_
+	nickappend	_
 	nick		perlbot
-	plugindir		./plugins
+	plugindir	./plugins
 	ircname		imabot
 }
 
@@ -35,16 +35,15 @@ bot {
 ###############################
 
 user {
-	name		plastik
-	hostmask		*!*jmuhlich@chimera.acm.jhu.edu
-    hostmask        *!jmuhlich@127.0.0.1
-	flag		w
+	name		leet_admin
+	hostmask	*!*bob@something.foo.com
+	hostmask	*!*robert@somewhere.else.org
 }
 
 user {
-	name		ender
-	hostmask		*!*ender@landcow.pas.rochester.edu
-	hostmask		*!*ender@d185fc1ab.rochester.rr.com
+	name		lame_user
+# THIS WOULD BE INSECURE, since we don't do passwords yet!
+	hostmask	*!*lamer@*.aol.com
 }
 
 
@@ -53,7 +52,7 @@ user {
 ###############################
 
 server {
-	name		fdntech
-	addr		irc.fdntech.com
+	name		example
+	addr		example.ircnetwork.net
 }
 
