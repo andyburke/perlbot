@@ -121,7 +121,7 @@ sub Guile_err {
   my (@ready, $fh, $line, @bc, $ok);
   $ok = 0;
 
-print "ERR\n";
+  print "ERR\n" if $debug;
   @ready = $Guile_sel->has_error(1);
   foreach $fh (@ready) {
     if ($fh == $Guile_io[2]) {
@@ -147,7 +147,7 @@ sub Guile_init {
 
 # open3(\*WTRFH, \*RDRFH, \*ERRFH, 'some cmd and args', 'optarg', ...);
   $Guile_pid = open3($Guile_io[0], $Guile_io[1], $Guile_io[2], 'guile');
-  print "Guile:$Guile_pid\n";
+  print "Guile:$Guile_pid\n" if $debug;
 
   $Guile_sel = IO::Select->new();
   $Guile_sel->add($Guile_io[0]);
@@ -160,7 +160,7 @@ sub Guile_init {
     foreach $fh (@ready) {
       if ($fh == $Guile_io[1]) {
         $fh->sysread($ln, 1024);
-        print $ln;
+        print $ln if $debug;
       }
     }
 }
