@@ -4,11 +4,11 @@
 
 package PriceWatch::Plugin;
 
+use strict;
+
 use Perlbot;
 
-use Socket;
-use POSIX;
-
+use LWP::Simple;
 use HTML::TableExtract;
 
 sub get_hooks {
@@ -16,42 +16,39 @@ sub get_hooks {
 }
 
 sub on_public {
-  my $conn = shift;
-  my $event = shift;
+  my ($conn, $event) = @_;
   my $args;
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!pricewatch/  || $args =~ /^!pw/) {
+  if ($args =~ /^!pricewatch/  || $args =~ /^!pw/) {
     get_pw($conn, $event, $event->{to}[0]);
   }
 }
 
 sub on_msg {
-  my $conn = shift;
-  my $event = shift;
+  my ($conn, $event) = @_;
   my $args;
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!pricewatch/  || $args =~ /^!pw/) {
+  if ($args =~ /^!pricewatch/  || $args =~ /^!pw/) {
     get_pw($conn, $event, $event->nick);
   }
 }
 
 sub get_pw {
-  my $conn = shift;
-  my $event = shift;
-  my $chan = shift;
+  my ($conn, $event, $chan) = @_;
+  my ($pid);
 
-  if(!defined($pid = fork)) {
+  if (!defined($pid = fork)) {
     $conn->privmsg($chan, "error in pricewatch plugin...");
     return;
   }
 
-  if($pid) {
+  if ($pid) {
     #parent
-    
+
     $SIG{CHLD} = sub { wait; };
     return;
 
@@ -62,152 +59,49 @@ sub get_pw {
     ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
     $args =~ s/^!pricewatch\s*//;
     $args =~ s/^!pw\s*//;
+    $args =~ tr/[A-Z]/[a-z]/;
 
     my @words = split(' ', $args);
     
-    my($remote,$port,$iaddr,$paddr,$proto,$line);
-    $remote = "brook.pricewatch.com";
-    $port = "80";
-    
-    if(!defined($iaddr = inet_aton($remote))) {
-      $conn->privmsg($chan, "Could not get address for $remote");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-    if(!defined($paddr = sockaddr_in($port, $iaddr))) {
-      $conn->privmsg($chan, "Could not get port for $remote");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-    if(!defined($proto = getprotobyname('tcp'))) {
-      $conn->privmsg($chan, "Could not get tcp protocol");
+    my $url = 'http://queen.pricewatch.com/search/search.idq?qc=';
+    $url .= join('+AND+', @words);
+
+    my $html = get($url);
+    if (!$html) {
+      $conn->privmsg($chan, "Could not connect to PriceWatch server.");
       $conn->{_connected} = 0;
       exit 1;
     }
     
-    if(!socket(SOCK, PF_INET, SOCK_STREAM, $proto)) {
-      $conn->privmsg($chan, "Could not open socket to $remote");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-    if(!connect(SOCK, $paddr)) {
-      $conn->privmsg($chan, "Could not connect to $remote");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
+    $html =~ s/&reg\;//g;
+    $html =~ s/&amp\;/&/g;
 
-    $msg = "GET /search/search.asp?criteria=";
-    $i = 0;
-    foreach $temp (@words) {
-      $temp =~ tr/[A-Z]/[a-z]/;
-      $msg = $msg . "$temp";
-      $i++;
-      if($i < @words) { $msg = $msg . '+'; }
-    }
-    $msg = $msg . "\n\n";
+    my ($price, $brand, $product, $description, $shipping);
+    my ($te, $row);
 
-    if(!send(SOCK, $msg, 0)) {
-      $conn->privmsg($chan, "Could not send to $remote");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
+    $te = new HTML::TableExtract( headers => [qw(Brand Product Description Price Ship)] );
+    $te->parse($html);
+    $row = ($te->rows)[0];
 
-    
-    my $newplace = '';
-    while(<SOCK>) {
-      if($newplace eq '') {
-	($newplace) = $_ =~ /Location\:\s+(.*?)$/;
-	if($newplace ne '') { last; }
-      }
-    }
-    close SOCK;
+    $brand = $$row[0];
+    $product = $$row[1];
+    $description = $$row[2];
 
-    my $server;
-    ($server) = $newplace =~ /http:\/\/(.*?)\//;
-    $newplace =~ s/http:\/\/.*?\///;
-
-    my $msg = "GET /" . $newplace . "\n\n";
-
-    if(!defined($iaddr = inet_aton($server))) {
-      $conn->privmsg($chan, "Could not get address for $server");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-    if(!defined($paddr = sockaddr_in($port, $iaddr))) {
-      $conn->privmsg($chan, "Could not get port for $server");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-    if(!defined($proto = getprotobyname('tcp'))) {
-      $conn->privmsg($chan, "Could not get tcp protocol");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-    
-    if(!socket(SOCK, PF_INET, SOCK_STREAM, $proto)) {
-      $conn->privmsg($chan, "Could not open socket to $server");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-    if(!connect(SOCK, $paddr)) {
-      $conn->privmsg($chan, "Could not connect to $server");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-
-    if(!send(SOCK, $msg, 0)) {
-      $conn->privmsg($chan, "Could not send to $server");
-      $conn->{_connected} = 0;
-      exit 1;
-    }
-
-    my $price = '';
-    my $brand = '';
-    my $product = '';
-    my $description = '';
-    my $shipping = '';
-
-    my $html_string;
-
-    while (my $lala = <SOCK>) {
-      $lala =~ s/&reg\;//g;
-      $lala =~ s/&amp\;/&/g;
-      $html_string = $html_string . $lala;
-    }
-
-#    $te = new HTML::TableExtract( depth => 0, count => 0 );
-    $te = new HTML::TableExtract( headers => [qw(Price Brand Product Description Ship)] );
-
-    $te->parse($html_string);
-
-    my @rows = $te->rows;
-    my $row = $rows[0];
-
-    ($price) = $$row[0] =~ /(\$.*?\d+)/;
+    ($price) = $$row[3] =~ /(\$.*?\d+)/;
     $price =~ s/\s+//g;
 
-    $brand = $$row[1];
-    $product = $$row[2];
-    $description = $$row[3];
-
     $shipping = $$row[4];
-    $shipping  =~ s/\s\s+//gs; #(\w+.*)[\n|\s*]/;
+    $shipping  =~ s/\s\s+//gs;
 
-    if(($brand ne '') && ($product ne '') && ($price ne '')) {
+    if ($brand && $product && $price) {
       $conn->privmsg($chan, "$price / $shipping / $brand / $product / $description");
-      close SOCK;
-      $conn->{_connected} = 0;
-      exit 0;
+    } else {
+      $conn->privmsg($chan, "No pricewatch matches found for: $args");
     }
 
-    $conn->privmsg($chan, "No pricewatch matches found for: $args");
-    close SOCK;
     $conn->{_connected} = 0;
     exit 0;
   }
-
-  close SOCK;
-  
 }
 
 1;
