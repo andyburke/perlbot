@@ -44,8 +44,6 @@ sub ircstats {
   my $self = shift;
   my @args = @_;
 
-  $self->{channels} = XMLin($self->{datafile});
-
   if(!scalar @args) {
     my $response = "<html><head><title>IRC Stats</title></head>";
 
