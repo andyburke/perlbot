@@ -51,16 +51,22 @@ sub on_public {
       if($tempmaxresults) { $maxresults = $tempmaxresults; }
       $args =~ s/^\d+\s+//;
 
-      my ($initialyear, $initialmonth, $initialday) = $args =~ /(\d\d\d\d)[\.\/-](\d\d)[\.\/-](\d\d)\s+/;
-      $args =~ s/\d\d\d\d[\.\/-]\d\d[\.\/-]\d\d\s+//;
+      my ($initialyear, $initialmonth, $initialday) = $args =~ /(\d\d\d\d)[\.\/-](\d\d)[\.\/-](\d\d)/;
+      $args =~ s/\d\d\d\d[\.\/-]\d\d[\.\/-]\d\d\s*//;
       $initialdate = $initialyear . $initialmonth . $initialday;
 
-      my ($finalyear, $finalmonth, $finalday) = $args =~ /(\d\d\d\d)[\.\/-](\d\d)[\.\/-](\d\d)\s+/;
-      $args =~ s/\d\d\d\d[\.\/-]\d\d[\.\/-]\d\d\s+//;
+      my ($finalyear, $finalmonth, $finalday) = $args =~ /(\d\d\d\d)[\.\/-](\d\d)[\.\/-](\d\d)/;
+      $args =~ s/\d\d\d\d[\.\/-]\d\d[\.\/-]\d\d\s*//;
       $finaldate = $finalyear . $finalmonth . $finalday;
 
       my @words = split(/ /, $args);
-      
+     
+      if(!@words) {
+        $conn->privmsg($who, "usage: ${pluginchar}logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>");
+        $conn->{_connected} = 0;
+        exit 0;
+      }
+
       if(!$channel) {
 	$conn->privmsg($who, "usage: ${pluginchar}logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>");
 	$conn->{_connected} = 0;
