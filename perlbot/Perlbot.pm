@@ -324,25 +324,25 @@ sub add_handler {
   my ($event, $coderef, $plugin) = @_;
 
   # do some init stuff if nobody has hooked this event yet
-  unless ($self->{handlers}->{$event}) {
-    $self->{handlers}->{$event} = {};                    # create the hash ref
+  unless (%{$self->{handlers}{$event}}) {
+    $self->{handlers}{$event} = {};                    # create the hash ref
     # add our 'multiplexer' sub as the handler
-    $self->{ircconn}->add_handler($event, sub { $self->event_multiplexer(@_); });
+    $self->{ircconn}->add_handler($event, sub { $self->event_multiplexer(@_) });
   }
-  $self->{handlers}->{$event}->{$plugin} = $coderef;       # store the code ref
+  $self->{handlers}{$event}{$plugin} = $coderef;       # store the code ref
 }
 
-# Removes all handlers for a given plugin
+# Removes the handler for one event type for a given plugin
 # params:
 #   1) plugin name
-sub remove_handlers {
+#   2) event type (same as param 1 to add_handler)
+sub remove_handler {
   my $self = shift;
-  my $plugin = shift;;
+  my ($event, $plugin) = @_;
 
-  # loop over all the hash refs that store the code refs
-  foreach my $ref (values(%{$self->{handlers}})) {
-    delete $ref->{$plugin};
-  }
+  delete $self->{handlers}{$event}{$plugin};
+  # Net::IRC doesn't provide handler removal functionality, so there's
+  # nothing more to do here.
 }
 
 sub event_multiplexer {
@@ -352,16 +352,17 @@ sub event_multiplexer {
   my $text = $event->{args}[0];
   my $user = $self->get_user($event->{from});
 
-  $| = 1;
-  foreach my $plugin (keys(%{$self->{handlers}->{$event->type}})) {
-    if (exists($self->{handlers}->{$event->type}->{$plugin})) {
-      my $handler = $self->{handlers}->{$event->type}->{$plugin};
+  print "event_multiplexer: Got event '".$event->type."'\n" if $DEBUG >= 3;
+  foreach my $plugin (keys(%{$self->{handlers}{$event->type}})) {
+    if (exists($self->{handlers}{$event->type}{$plugin})) {
+      print "  -> dispatching to '$plugin'\n" if $DEBUG >= 3;
+      my $handler = $self->{handlers}{$event->type}{$plugin};
       &$handler($event, $user, $text);
     } else {
       # If we get here, we must have already processed an unload
       # request for this plugin in the core handler, so we need
       # to be careful to skip it here!
-      if ($DEBUG > 2) { print "  (unloaded; skipping)\n" }
+      print "  -> '$plugin' unloaded -- skipping\n" if $DEBUG >= 3;
     }
   }
 

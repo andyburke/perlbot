@@ -26,19 +26,18 @@ sub new {
     lastcontact => '',
     lastnick => '',
     lasthost => '',
-    behaviors => {
-      msg => 1, public => 1, action => 0, chat => 0,
-      fork => 1, reply_via_msg => 0
-    },
+    behaviors => {}, # must initialize via want_* calls below!
   };
 
   bless $self, $class;
 
+  $self->want_msg(1);
+  $self->want_public(1);
+  $self->want_action(0);
+  $self->want_chat(0);
+  $self->want_fork(1);
+  $self->want_reply_via_msg(0);
 
-  $self->{perlbot}->add_handler('msg',     sub {$self->_process(@_)}, $self->{name});
-  $self->{perlbot}->add_handler('public',  sub {$self->_process(@_)}, $self->{name});
-  $self->{perlbot}->add_handler('caction', sub {$self->_process(@_)}, $self->{name});
-  $self->{perlbot}->add_handler('chat',    sub {$self->_process(@_)}, $self->{name});
   return $self;
 }
 
@@ -49,7 +48,7 @@ sub new {
 #      current value
 # returns:
 #   current value of the specified behavior
-sub behavior {
+sub _behavior {
   my ($self, $behavior, $bool) = @_;
   if (defined $bool) {
     $self->{behaviors}{$behavior} = $bool ? 1 : undef;
@@ -57,13 +56,32 @@ sub behavior {
   return $self->{behaviors}{$behavior};
 }
 
+# adds or removes a handler based on a boolean parameter
+# (just a helper for want_* that deal with wanting irc events)
+# params:
+#   1: event name
+#   2: 0/1 to remove/add the handler (if undef, no action taken)
+sub _addremove_handler {
+  my ($self, $event, $bool) = @_;
+
+  if (defined $bool) {
+    if ($bool) {
+      print "_addremove_handler: adding '$event' handler for '$self->{name}'\n" if $DEBUG >= 2;
+      $self->{perlbot}->add_handler($event, sub {$self->_process(@_)}, $self->{name});
+    } else {
+      print "_addremove_handler: removing '$event' handler for '$self->{name}'\n" if $DEBUG >= 2;
+      $self->{perlbot}->remove_handler($event, $self->{name});
+    }
+  }
+}
 
 # want to be triggered by private messages?
 # params:
 #   1: 0/1 to disable/enable, or undef to just query
 sub want_msg {
   my ($self, $bool) = @_;
-  $self->behavior('msg', $bool);
+  $self->_addremove_handler('msg', $bool);
+  $self->_behavior('msg', $bool);
 }
 
 
@@ -72,7 +90,8 @@ sub want_msg {
 #   1: 0/1 to disable/enable, or undef to just query
 sub want_public {
   my ($self, $bool) = @_;
-  $self->behavior('public', $bool);
+  $self->_addremove_handler('public', $bool);
+  $self->_behavior('public', $bool);
 }
 
 
@@ -81,13 +100,17 @@ sub want_public {
 #   1: 0/1 to disable/enable, or undef to just query
 sub want_action {
   my ($self, $bool) = @_;
-  $self->behavior('action', $bool);
+  $self->_addremove_handler('caction', $bool);
+  $self->_behavior('action', $bool);
 }
 
 # want to be triggered by dcc chat msgs?
+# params:
+#   1: 0/1 to disable/enable, or undef to just query
 sub want_chat {
   my ($self, $bool) = @_;
-  $self->behavior('chat', $bool);
+  $self->_addremove_handler('chat', $bool);
+  $self->_behavior('chat', $bool);
 }
 
 # want handlers to be forked automatically?
@@ -95,12 +118,15 @@ sub want_chat {
 #   1: 0/1 to disable/enable, or undef to just query
 sub want_fork {
   my ($self, $bool) = @_;
-  $self->behavior('fork', $bool);
+  $self->_behavior('fork', $bool);
 }
 
+# want all replies to be sent via private msg?
+# params:
+#   1: 0/1 to disable/enable, or undef to just query
 sub want_reply_via_msg {
   my ($self, $bool) = @_;
-  $self->behavior('reply_via_msg', $bool);
+  $self->_behavior('reply_via_msg', $bool);
 }
 
 
@@ -203,11 +229,6 @@ sub _process { # _process to stay out of people's way
   my $event = shift;
   my $user  = shift;
   my $text  = shift;
-
-  if($event->type eq 'msg' and !$self->want_msg) { return; }
-  if($event->type eq 'public' and !$self->want_public) { return; }
-  if($event->type eq 'caction' and !$self->want_action) { return; }
-  if($event->type eq 'chat' and !$self->want_chat) { return; }
 
   $self->{lastnick} = $event->nick();
   $self->{lasthost} = $event->host();
