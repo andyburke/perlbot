@@ -20,7 +20,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!av-demos/) {
+  if($args =~ /^${pluginchar}av-demos/) {
     get_avdemos($conn, $event, $event->{to}[0]);
   }
 }
@@ -32,7 +32,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!av-demos/) {
+  if($args =~ /^${pluginchar}av-demos/) {
     get_avdemos($conn, $event, $event->nick);
   }
 }
@@ -44,13 +44,13 @@ sub get_avdemos {
   my $max;
 
   ($max = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-  $max =~ s/^!av-demos//;
-  $max =~ s/\s+(\d+)\s*.*/\1/;
+  $max =~ s/^${pluginchar}av-demos//;
+  $max =~ s/\s+(\d+)\s*.*/$1/;
 
   if($max eq '' || $max < 1) { $max = 5; }
 
   if(!defined($pid = fork)) {
-    $conn->privmsg($chan, "error in av-demos plugin...");
+    $conn->privmsg($who, "error in av-demos plugin...");
     return;
   }
 
@@ -99,7 +99,7 @@ sub get_avdemos {
     }
 
     $msg = "GET /\n\n";
-    
+
     if(!send(SOCK, $msg, 0)) {
       $conn->privmsg($who, "Could not send to $remote");
       $conn->{_connected} = 0;
@@ -111,7 +111,7 @@ sub get_avdemos {
     my $k =0;
 
     while (my $input = <SOCK>){
-      if($input =~ m#<font face=\"Arial\" size=1>DEMOS</font><br>#) {
+      if($input =~ m#<a href="/pcrl/" class="menu">LATEST DEMOS</a></font>#) {
 	  $i++;
 	  next;
       }
@@ -120,22 +120,24 @@ sub get_avdemos {
 	  next;
       }
       if ($i == 2){
-	  my $string;
-	  $input =~ s/<b>//g;
-	  $input =~ s/<br>//g;
-	  $input =~ s/<\/b>//g;
-	  $input =~ s/\s*<font.*?\/font>\s*//g;
+          my $string;
+          print "[AVDEMOS] BEFORE STRIPPING: $input\n" if $debug;
+	  $input =~ s#<br>##g;
+	  $input =~ s#</?b>##g;
+	  $input =~ s#</?font.*?>##g;
+          print "[AVDEMOS] AFTER STRIPPING: $input\n" if $debug;
 	  @string = $input =~ m#(.*?)\s<a.*?\">(.*?)</a>#g;
+          print "[AVDEMOS] LIST: ", join('|', @string), "\n";
 	  $conn->privmsg($who, "AVault.com Demos: \n");
 	  for (my $j =0;($j < @string) && ($k < $max); $j+=2){
-	      $conn->privmsg($who, "    @string[$j] : @string[$j+1]");
+	      $conn->privmsg($who, "    $string[$j] : $string[$j+1]");
 	      $k++;
 	  }
       }
 
       $i=0;
   }
-    
+
     $conn->{_connected} = 0;
     exit 0;
   }

@@ -20,7 +20,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!av-news/) {
+  if($args =~ /^${pluginchar}av-news/) {
     get_avnews($conn, $event, $event->{to}[0]);
   }
 }
@@ -32,7 +32,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!av-news/) {
+  if($args =~ /^${pluginchar}av-news/) {
     get_avnews($conn, $event, $event->nick);
   }
 }
@@ -44,13 +44,13 @@ sub get_avnews {
   my $max;
 
   ($max = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-  $max =~ s/^!av-news//;
-  $max =~ s/\s+(\d+)\s*.*/\1/;
+  $max =~ s/^${pluginchar}av-news//;
+  $max =~ s/\s+(\d+)\s*.*/$1/;
 
   if($max eq '' || $max < 1) { $max = 5; }
 
   if(!defined($pid = fork)) {
-    $conn->privmsg($chan, "error in av-news plugin...");
+    $conn->privmsg($who, "error in av-news plugin...");
     return;
   }
 
@@ -110,7 +110,7 @@ sub get_avnews {
     my $k =0;
 
     while (my $input = <SOCK>) {
-      if($input =~ /PC<\/font><br>/) {
+      if($input =~ m#<a href="/news/" class="menu">NEWS HEADLINES</a></font>#) {
 	  $i++;
 	  next;
       }
@@ -120,14 +120,16 @@ sub get_avnews {
       }
       if ($i == 2){
 	  my $string;
-	  $input =~ s/<b>//g;
-	  $input =~ s/<br>//g;
-	  $input =~ s/<\/b>//g;
-	  $input =~ s/\s*<font.*?\/font>\s*//g;
+          print "[AVNEWS] BEFORE STRIPPING: $input\n" if $debug;
+	  $input =~ s#<br>##g;
+	  $input =~ s#</?b>##g;
+	  $input =~ s#</?font.*?>##g;
+          print "[AVNEWS] AFTER STRIPPING: $input\n" if $debug;
 	  @string = $input =~ m#(.*?)\s<a.*?\">(.*?)</a>#g;
+          print "[AVNEWS] LIST: ", join('|', @string), "\n";
 	  $conn->privmsg($who, "AVault.com Headlines: \n");
 	  for (my $j =0; ($j < @string) && ($k < $max); $j+=2){
-	      $conn->privmsg($who, "    @string[$j] : @string[$j+1]");
+	      $conn->privmsg($who, "    $string[$j] : $string[$j+1]");
 	      $k++;
 	  }
       }
