@@ -76,8 +76,8 @@ sub ircstats {
     
     for(my $hour = 0; $hour < 24; $hour++) {
       my $percentage = 0;
-      if(exists($self->{channels}{$chan}{'hour' . $hour})) {
-        $percentage = sprintf("%0.0f", 100 * ($self->{channels}{$chan}{'hour' . $hour} / $totallines));
+      if(exists($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)})) {
+        $percentage = sprintf("%0.0f", 100 * ($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)} / $totallines));
       }
       $response .= "<td width=4% valign=bottom align=middle><img src=\"/ircstats/pixel.jpg\" height=$percentage width=12></td>";
     }
@@ -85,9 +85,9 @@ sub ircstats {
     $response .= "</tr><tr>";
 
     for(my $hour = 0; $hour < 24; $hour++) {
-      $response .= "<td width=4% align=middle><font size=-1>$hour<br>";
-      if(exists($self->{channels}{$chan}{'hour' . $hour})) {
-        $response .= "(" . sprintf("%0.0f", 100 * ($self->{channels}{$chan}{'hour' . $hour} / $totallines)) . "%)";
+      $response .= "<td width=4% align=middle><font size=-1>" . sprintf("%02d", $hour) . "<br>";
+      if(exists($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)})) {
+        $response .= "(" . sprintf("%0.0f", 100 * ($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)} / $totallines)) . "%)";
       } else {
         $response .= "(0%)";
       }
