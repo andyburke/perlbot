@@ -287,10 +287,6 @@ sub start_plugin {
   print "\n" if $debug;
 }
 
-# default unimport sub for plugins that don't define their own
-sub default_unimport {
-}
-
 # Tries to unload a plugin
 # params:
 #   1) name of plugin to unload
@@ -299,6 +295,7 @@ sub default_unimport {
 #   1 if unload succeeded
 sub unload_one_plugin {
   my $pi = shift;
+  return if $pi eq 'PerlbotCore';
   print "Stopping '$pi'\n" if $debug;
   remove_handlers($pi);
   eval "no ${pi}::Plugin";             # try to unload the plugin's package
@@ -362,6 +359,10 @@ sub shutdown_bot {
   }
 
   $conn->quit($quitmsg);
+  my @plugins_copy = @plugins;
+  foreach my $plugin (@plugins_copy) {
+    unload_one_plugin($plugin);
+  }
   # MacOS doesn't implement wait, so let's avoid a warning
   if($^O !~ /mac/i) {
     print "Waiting for child processes to exit...\n" if $debug;
