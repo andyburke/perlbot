@@ -19,10 +19,7 @@ chan {
 bot {
 	logdir		./logs
 	noload		MegaHal
-	noload		Stock
-	noload		Whois
 	noload		Guile
-	noload 		Host
 	nickappend	_
 	nick		perlbot
 	plugindir	./plugins
