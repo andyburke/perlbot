@@ -324,8 +324,6 @@ sub connect {
 sub load_all_plugins {
   my $self = shift;
 
-  print "in load all plugins\n";
-
   my @plugins;
   my @plugins_found = $self->find_plugins;
   # FIXME: need config->value_array() or somesuch
