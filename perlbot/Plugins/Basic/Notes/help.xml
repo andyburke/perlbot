@@ -1,6 +1,9 @@
 <help>
   <overview>This plugin stores and retrieves notes for users.</overview>
-  <command name="note">This command leaves a note.<br/>Usage: note [username|nick] notetext<br/>Leaves a note for username (or their current nick) consisting of notetext</command>
-  <command name="listnotes">This command lists a user's notes.<br/>Usage: listnotes<br/>Returns a list of a user's stored notes.</command>
-  <command name="readnote">This will read notes stored for a user.<br/>Usage: readnote [notenum]<br/>Reads the note number specified or your oldest note if no notenum is specified.</command>
+  <command name="note">This command leaves a note for a bot user.</command>
+  <usage name="note">note [username|nick] some note text here</usage>
+  <command name="listnotes">This command lists a user's stored notes.</command>
+  <usage name="listnotes">listnotes</usage>
+  <command name="readnote">This will read notes stored for a user.  Reads the oldest note if no notenum is specified.</command>
+  <usage name="readnote">readnote [notenum]</usage>
 </help>

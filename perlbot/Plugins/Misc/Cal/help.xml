@@ -1,4 +1,5 @@
 <help>
   <overview>This plugin prints out a calendar for a specified month.</overview>
-  <command name="cal">Lists this month's calendar by default.<br/>Usage: cal [mon [year]]</command>
+  <command name="cal">Lists a calendar for a given month.</command>
+  <usage name="cal">cal [mon [year]]<br/>If no date is specified, lists the current month's calendar.</usage>
 </help>

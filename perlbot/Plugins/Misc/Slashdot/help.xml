@@ -1,4 +1,5 @@
 <help>
   <overview>This plugin fetches headlines from slashdot.org.</overview>
-  <command name="slashdot">Gets the headlines from slashdot.org<br/>Usage: slashdot [max]</command>
+  <command name="slashdot">Gets the headlines from slashdot.org</command>
+  <usage name="slashdot">slashdot [maxheadlines]</usage>
 </help>

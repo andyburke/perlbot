@@ -1,4 +1,5 @@
 <help>
   <overview>This plugin performs spelling checks.</overview>
-  <command name="spell">Spell-checks a query.<br/>Usage: spell query</command>
+  <command name="spell">Spell-checks a query against google.com.</command>
+  <usage name="spell">spell query</usage>
 </help>

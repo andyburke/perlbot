@@ -1,4 +1,5 @@
 <help>
   <overview>This plugin keeps track of the last time a person was seen by the bot.</overview>
-  <command name="seen">Looks up the last seen time of a user.<br/>Usage: seen nickname|username</command>
+  <command name="seen">Looks up the last seen time of a user.</command>
+  <usage name="seen">seen (nickname|username)</usage>
 </help>

@@ -1,4 +1,5 @@
 <help>
   <overview>This plugin translates from one language to another.</overview>
-  <command name="translate">Translates text from a source language to a dest language.<br/>Usage: translate source dest text<br/>If nothing is specified but the command, it will reply with a list of available languages.</command>
+  <command name="translate">Translates text from a source language to a destination language.</command>
+  <usage name="translate">translate [source destination text to be translated]<br/>If nothing is specified but the command, it will reply with a list of available languages.</usage>
 </help>

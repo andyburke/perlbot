@@ -1,4 +1,5 @@
 <help>
   <overview>This plugin allows bot admins to examine internal structures of the bot.</overview>
-  <command name="internal">Returns the variable specified via Data::Dumper.<br/>Usage: internal variable [stdout|msg]</command>
+  <command name="internal">Returns the variable specified via Data::Dumper.</command>
+  <usage name="internal">internal variable [stdout|msg]</usage>
 </help>

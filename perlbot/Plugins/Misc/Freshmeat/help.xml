@@ -1,5 +1,7 @@
 <help>
   <overview>This plugin fetches freshmeat.net headlines</overview>
-  <command name="freshmeat">Fetches headlines from freshmeat.net and returns them.<br/>Usage: freshmeat [maxheadlines]</command>
+  <command name="freshmeat">Fetches headlines from freshmeat.net and returns them.</command>
+  <usage name="freshmeat">freshmeat [maxheadlines]</usage>
   <command name="fm">Alias for the freshmeat command.</command>
+  <usage name="fm">fm [maxheadlines]</usage>
 </help>

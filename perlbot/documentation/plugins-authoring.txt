@@ -217,7 +217,7 @@ additional argument.
 The same as hook, but it will only be triggered by bot admins saying
 the command.
 
-    3.3.8) hook_admin
+    3.3.8) hook_event
     -----------------
 
 With this, you can hook any irc event you like.  To hook all messages:
@@ -263,6 +263,18 @@ a username/password combination that is a bot admin.
 
 For good examples, see the StatsServer or LogServer plugins.
 
+There is also a plugin which supplies a stylesheet for the bot.
+It is probably a good idea to include this style sheet in your
+generated pages, ie:
+
+<link rel="stylesheet" href="/perlbot.css" type="text/css" />
+
+should be included in your html output.  This helps to maintain
+a consistent look across plugins. Additionaly, the bot admin has the
+option of pointing that stylesheet to another file, which might
+help to unify the look of pages on that admin's entire site, for
+example.  However, it will always be provdided at the /perlbot.css
+location, regardless of the filename the admin has pointed it to.
 
 4) Configuration Files
 ---------------

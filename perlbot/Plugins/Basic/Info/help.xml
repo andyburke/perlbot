@@ -1,8 +1,13 @@
 <help>
   <overview>This plugin provides information about the bot.</overview>
-  <command name="status">Shows the bot's status.<br/>Usage: status</command>
-  <command name="plugins">Lists the bot's currently loaded plugins. (deprecated)<br/>Usage: plugins</command>
-  <command name="listplugins">Lists the bot's currently loaded plugins.<br/>Usage: listplugins</command>
-  <command name="listchannels">Lists the bot's current channels.<br/>Usage: listchannels</command>
-  <command name="listusers">Lists the bot's known usernames.<br/>Usage: listusers</command>
+  <command name="status">Shows the bot's status.</command>
+  <usage name="status">status</usage>
+  <command name="plugins">Lists the bot's currently loaded plugins. (deprecated)</command>
+  <usage name="plugins">plugins</usage>
+  <command name="listplugins">Lists the bot's currently loaded plugins.</command>
+  <usage name="listplugins">listplugins</usage>
+  <command name="listchannels">Lists the bot's current channels.</command>
+  <usage name="listchannels">listchannels</usage>
+  <command name="listusers">Lists the bot's known usernames.</command>
+  <usage name="listusers">listusers</usage>
 </help>

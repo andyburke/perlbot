@@ -1,5 +1,6 @@
 <help>
   <overview>A gateway to the traceroute command.</overview>
-  <command name="traceroute">Performs a traceroute.<br/>Usage: traceroute host</command>
+  <command name="traceroute">Performs a traceroute.</command>
+  <usage name="traceroute">traceroute host</usage>
   <command name="tr">Alias for the traceroute command.</command>
 </help>
