@@ -350,7 +350,7 @@ sub load_plugin {
   my ($self, $plugin) = @_;
 
   print "load_plugin: loading plugin: $plugin\n" if $DEBUG;
-  eval "require ${plugin}";  # try to import the plugin's package
+  eval "local \$SIG{__DIE__}='DEFAULT'; require ${plugin}";  # try to import the plugin's package
   # check for module load error
   if ($@) {
     print $@ if $DEBUG;
@@ -360,7 +360,7 @@ sub load_plugin {
   my $pluginfile = $INC{"${plugin}.pm"};
   my (undef,$pluginpath,undef) = File::Spec->splitpath($pluginfile);
   $pluginpath = File::Spec->canonpath($pluginpath);
-  my $pluginref = eval "new Perlbot::Plugin::${plugin}(\$self, \$pluginpath)";
+  my $pluginref = eval "local \$SIG{__DIE__}='DEFAULT'; new Perlbot::Plugin::${plugin}(\$self, \$pluginpath)";
   # check for constructor error
   if ($@) {
     print $@ if $DEBUG;

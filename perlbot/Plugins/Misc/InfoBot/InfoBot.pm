@@ -7,6 +7,7 @@
 
 package Perlbot::Plugin::InfoBot;
 
+use Perlbot::Util;
 use Perlbot::Plugin;
 @ISA = qw(Perlbot::Plugin);
 
@@ -72,7 +73,7 @@ sub load_db {
     }
   }
 
-  if($Perlbot::DEBUG) {
+  if($DEBUG) {
     print "InfoBot loading $db...\n";
     print "  $good/$total good entries found\n";
     print "  $collisions collisions\n";
