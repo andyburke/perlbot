@@ -33,6 +33,8 @@ my $pid;
 $VERSION = '1.5.1';
 $AUTHORS = 'jmuhlich@bitflood.org / burke@bitflood.org';
 
+if($debug) { print "Using Net::IRC Version: " . $Net::IRC::VERSION . "\n"; }
+
 # Let the user specify a config file as the first command line param, or
 # default to 'config'.
 $PerlbotCore::CONFIG = ($ARGV[0] ? $ARGV[0] : 'config');
