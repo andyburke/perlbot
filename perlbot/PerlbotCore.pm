@@ -186,8 +186,6 @@ my %command_handlers =
      } else {
        $priv_conn->privmsg($from, "You are not an owner.");
      }
-     use Data::Dumper;
-     print Dumper(%channels) . "\n";
    },
    part => sub {
      my ($priv_conn, $from, $userhost) = (shift, shift, shift);
