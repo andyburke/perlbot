@@ -200,10 +200,10 @@ sub logserver {
                 s/>/\&gt\;/g;
                 s/(\&lt\;.*?\&gt\;)/<b>$1<\/b>/;
                 s|^(\d+:\d+:\d+) \* (\w+) (.*)|$1 * <b>$2</b> $3|;
-                s/^(\d+:\d+:\d+\s)(.*? joined \#.*?$)/$1<font color=\"blue\">$2<\/font>/;
-                s/^(\d+:\d+:\d+\s)(.*? left \#.*?$)/$1<font color=\"blue\">$2<\/font>/;
-                s/^(\d+:\d+:\d+\s)(\[.*?\])/$1<font color\=\"red\">$2<\/font>/;
-                s/(\d+\:\d+:\d+)/<a name=\"$1\">$1<\/A>/;
+                s|^(\d+:\d+:\d+\s)(.*? joined \#.*?$)|$1<font color=\"blue\">$2</font>|;
+                s|^(\d+:\d+:\d+\s)(.*? left \#.*?$)|$1<font color=\"blue\">$2</font>|;
+                s|^(\d+:\d+:\d+\s)(\[.*?\])|$1<font color=\"red\">$2</font>|;
+                s|(\d+\:\d+:\d+)|<a name=\"$1\">$1</a>|;
                 $response .= "<tt>$_</tt><br>";
               }
             }
