@@ -137,7 +137,7 @@ sub op {
   if (! $chan->is_op($user)) {
     $self->reply("You are not a valid op for channel $channel");
   } else {
-    $self->perlbot->op($channel, $user->{curnick});
+    $self->perlbot->op($channel, $user->curnick);
   }
 }
 
