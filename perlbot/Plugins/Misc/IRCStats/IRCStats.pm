@@ -7,8 +7,10 @@
 
 package Perlbot::Plugin::IRCStats;
 
+use strict;
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
+use fields qw(datafile channels);
 
 use XML::Simple;
 use Perlbot::Utils;

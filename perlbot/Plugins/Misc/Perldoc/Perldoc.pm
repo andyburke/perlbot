@@ -3,8 +3,9 @@
 
 package Perlbot::Plugin::Perldoc;
 
+use strict;
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
 
 use Perlbot::Utils;
 

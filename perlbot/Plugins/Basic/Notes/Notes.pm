@@ -1,7 +1,8 @@
 package Perlbot::Plugin::Notes;
 
-use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use strict;
+use base qw(Perlbot::Plugin);
+use fields qw(notes notified);
 
 use DB_File;
 

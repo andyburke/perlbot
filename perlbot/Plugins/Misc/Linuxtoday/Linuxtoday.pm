@@ -10,8 +10,9 @@
 
 package Perlbot::Plugin::Linuxtoday;
 
+use strict;
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
 
 use Perlbot;
 use LWP::Simple;
@@ -73,7 +74,7 @@ sub lt {
       $self->reply_error('Error in linuxtoday plugin - failed to fetch http data!');
     } else {
 
-      $data = XMLin($xml);
+      my $data = XMLin($xml);
       $self->reply('Linux Today headlines:');
 
       my $i = 1;

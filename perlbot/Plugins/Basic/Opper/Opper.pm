@@ -1,7 +1,7 @@
 package Perlbot::Plugin::Opper;
 
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
 
 our $VERSION = '1.0.0';
 

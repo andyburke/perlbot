@@ -4,10 +4,9 @@
 
 package Perlbot::Plugin::Dictionary;
 
-use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
-
 use strict;
+use Perlbot::Plugin;
+use base qw(Perlbot::Plugin);
 
 use LWP::Simple;
 

@@ -1,10 +1,10 @@
 package Perlbot::Plugin::AdminControl;
 
+use strict;
+use base qw(Perlbot::Plugin);
+
 use Perlbot;
 use Perlbot::Utils;
-
-use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
 
 our $VERSION = '1.0.0';
 

@@ -9,12 +9,14 @@ package Perlbot::Plugin::InfoBot;
 
 use strict;
 use Perlbot::Plugin;
+use base qw(Perlbot::Plugin);
+use fields qw(facts);
+
 use Perlbot::Utils;
 
 use File::Spec;
 use DB_File;
 
-our @ISA = qw(Perlbot::Plugin);
 our $VERSION = '1.0.0';
 
 sub init {

@@ -8,6 +8,9 @@ package Perlbot::Plugin;
 
 use strict;
 
+use vars qw($AUTOLOAD %FIELDS);
+use fields qw(name perlbot directory config helpitems infoitems commandprefix_hooks addressed_command_hooks regular_expression_hooks addressed_hooks commandprefix_admin_hooks addressed_command_admin_hooks commandprefix_advanced_hooks addressed_command_advanced_hooks event_hooks lastcontact lastnick lasthost behaviors);
+
 use Perlbot::Utils;
 use File::Spec;
 
@@ -17,29 +20,32 @@ sub new {
   my $directory = shift;
   my ($name) = $class =~ /Plugin::(.*?)$/;
 
-  my $self = {
-    name => $name,
-    perlbot => $perlbot,
-    directory => $directory,
-    config => undef,
-    helpitems => {},
-    infoitems => {},
-    commandprefix_hooks => {},
-    addressed_command_hooks => {},
-    regular_expression_hooks => {},
-    addressed_hooks => [],
-    commandprefix_admin_hooks => {},
-    addressed_command_admin_hooks => {},
-    commandprefix_advanced_hooks => {},
-    addressed_command_advanced_hooks => {},
-    event_hooks => {},
-    lastcontact => '',
-    lastnick => '',
-    lasthost => '',
-    behaviors => {}, # must initialize via want_* calls below!
-  };
+  my $self = fields::new($class);
 
-  bless $self, $class;
+  $self->name = $name;
+  $self->perlbot = $perlbot;
+  $self->directory = $directory;
+
+  $self->config = new Perlbot::Config(File::Spec->catfile($self->directory, 'config.xml'));
+  # if config.xml failed to load, try config-sample.xml but do it read-only
+  $self->config ||= new Perlbot::Config(File::Spec->catfile($self->directory, 'config-sample.xml'), 1);
+
+  $self->helpitems = $self->_read_help();
+  $self->infoitems = $self->_read_info();
+  
+  $self->commandprefix_hooks = {};
+  $self->addressed_command_hooks = {};
+  $self->regular_expression_hooks = {};
+  $self->addressed_hooks = [];
+  $self->commandprefix_admin_hooks = {};
+  $self->addressed_command_admin_hooks = {};
+  $self->commandprefix_advanced_hooks = {};
+  $self->addressed_command_advanced_hooks = {};
+  $self->event_hooks = {};
+  $self->lastcontact = '';
+  $self->lastnick = '';
+  $self->lasthost = '';
+  $self->behaviors = {};
 
   # here we set all our desired default behavior
 
@@ -50,40 +56,25 @@ sub new {
   $self->want_fork(1);
   $self->want_reply_via_msg(0);
 
-  # try to read their config file
-  # try to read their help file
-
-  $self->{config} = new Perlbot::Config(File::Spec->catfile($self->{directory}, 'config.xml'));
-  # if config.xml failed to load, try config-sample.xml but do it read-only
-  $self->{config} ||= new Perlbot::Config(File::Spec->catfile($self->{directory}, 'config-sample.xml'), 1);
-  $self->{helpitems} = $self->_read_help();
-  $self->{infoitems} = $self->_read_info();
-  
   return $self;
 }
 
+sub AUTOLOAD : lvalue {
+  my $self = shift;
+  my $field = $AUTOLOAD;
+
+  $field =~ s/.*:://;
+
+  if(!exists($FIELDS{$field})) {
+    return;
+  }
+
+  debug("Got call for field: $field", 15);
+
+  $self->{$field};
+}
+
 sub init { } # stub
-
-sub property {
-  my ($self, $property, @params) = @_;
-  if(scalar @params) { $self->{$property} = $params[0]; }
-  return $self->{$property};
-}
-
-sub name {
-  my $self = shift;
-  return $self->property('name', @_);
-}
-
-sub perlbot {
-  my $self = shift;
-  return $self->property('perlbot', @_);
-}
-
-sub directory {
-  my $self = shift;
-  return $self->property('directory', @_);
-}
 
 sub author {
   my $self = shift;
@@ -111,17 +102,7 @@ sub url {
 
 sub version {
   my $self = shift;
-  return eval '$Perlbot::Plugin::'.$self->{name}.'::VERSION';
-}
-
-sub helpitems {
-  my $self = shift;
-  return $self->property('helpitems', @_);
-}
-
-sub infoitems {
-  my $self = shift;
-  return $self->property('infoitems', @_);
+  return eval '$Perlbot::Plugin::'.$self->name.'::VERSION';
 }
 
 # params:
@@ -133,9 +114,9 @@ sub infoitems {
 sub _behavior {
   my ($self, $behavior, $bool) = @_;
   if (defined $bool) {
-    $self->{behaviors}{$behavior} = $bool ? 1 : undef;
+    $self->behaviors->{$behavior} = $bool ? 1 : undef;
   }
-  return $self->{behaviors}{$behavior};
+  return $self->behaviors->{$behavior};
 }
 
 # adds or removes a handler based on a boolean parameter
@@ -148,11 +129,11 @@ sub _addremove_handler {
 
   if (defined $bool) {
     if ($bool) {
-      debug("  adding '$event' handler for '$self->{name}'", 3);
-      $self->perlbot->add_handler($event, sub {$self->_process(@_)}, $self->{name});
+      debug("  adding '$event' handler for '$self->name'", 3);
+      $self->perlbot->add_handler($event, sub {$self->_process(@_)}, $self->name);
     } else {
-      debug("  removing '$event' handler for '$self->{name}'", 3);
-      $self->perlbot->remove_handler($event, $self->{name});
+      debug("  removing '$event' handler for '$self->name'", 3);
+      $self->perlbot->remove_handler($event, $self->name);
     }
   }
 }
@@ -238,7 +219,7 @@ sub hook_commandprefix {
   my $hook = shift;
   my $call = shift;
 
-  $self->{commandprefix_hooks}{$hook} = $call;
+  $self->commandprefix_hooks->{$hook} = $call;
 }
 
 sub hook_addressed_command {
@@ -246,7 +227,7 @@ sub hook_addressed_command {
   my $hook = shift;
   my $call = shift;
 
-  $self->{addressed_command_hooks}{$hook} = $call;
+  $self->addressed_command_hooks->{$hook} = $call;
 }
 
 sub hook_regular_expression {
@@ -254,14 +235,14 @@ sub hook_regular_expression {
   my $hook = shift;
   my $call = shift;
 
-  $self->{regular_expression_hooks}{$hook} = $call;
+  $self->regular_expression_hooks->{$hook} = $call;
 }
 
 sub hook_addressed {
   my $self = shift;
   my $call = shift;
 
-  push(@{$self->{addressed_hooks}}, $call);
+  push(@{$self->addressed_hooks}, $call);
 }
 
 sub hook_admin {
@@ -278,7 +259,7 @@ sub hook_commandprefix_admin {
   my $hook = shift;
   my $call = shift;
 
-  $self->{commandprefix_admin_hooks}{$hook} = $call;
+  $self->commandprefix_admin_hooks->{$hook} = $call;
 }
 
 sub hook_addressed_command_admin {
@@ -286,7 +267,7 @@ sub hook_addressed_command_admin {
   my $hook = shift;
   my $call = shift;
 
-  $self->{addressed_command_admin_hooks}{$hook} = $call;
+  $self->addressed_command_admin_hooks->{$hook} = $call;
 }
 
 sub hook_event {
@@ -297,8 +278,8 @@ sub hook_event {
   # push the callback onto our list for this event type
   # add a handler for the event type with our perlbot object
 
-  push(@{$self->{event_hooks}{$event}}, $call);
-  $self->perlbot->add_handler($event, sub {$self->_process(@_)}, $self->{name});
+  push(@{$self->event_hooks->{$event}}, $call);
+  $self->perlbot->add_handler($event, sub {$self->_process(@_)}, $self->name);
 }
 
 sub hook_advanced {
@@ -315,7 +296,7 @@ sub hook_commandprefix_advanced {
   my $hook = shift;
   my $call = shift;
 
-  $self->{commandprefix_advanced_hooks}{$hook} = $call;
+  $self->commandprefix_advanced_hooks->{$hook} = $call;
 }
 
 sub hook_addressed_command_advanced {
@@ -323,7 +304,7 @@ sub hook_addressed_command_advanced {
   my $hook = shift;
   my $call = shift;
 
-  $self->{addressed_command_advanced_hooks}{$hook} = $call;
+  $self->addressed_command_advanced_hooks->{$hook} = $call;
 }
 
 sub hook_web {
@@ -359,11 +340,11 @@ sub reply {
   if($self->perlbot->config->get(bot => 'max_public_reply_lines') &&
      @output > $self->perlbot->config->get(bot => 'max_public_reply_lines')) {
     foreach my $line (@output) {
-      $self->perlbot->msg($self->{lastnick}, $line);
+      $self->perlbot->msg($self->lastnick, $line);
     }
   } else {
     foreach my $line (@output) {
-      $self->perlbot->msg($self->{lastcontact}, $line);
+      $self->perlbot->msg($self->lastcontact, $line);
     }
   }
 }
@@ -383,7 +364,7 @@ sub reply_via_msg {
   # send reply via msg
 
   foreach my $line (@output) {
-    $self->perlbot->msg($self->{lastnick}, $line);
+    $self->perlbot->msg($self->lastnick, $line);
   }
 }
 
@@ -406,11 +387,11 @@ sub reply_error {
 
   if($self->perlbot->config->get(bot => 'send_errors_via_msg')) {
     foreach my $line (@output) {
-      $self->perlbot->msg($self->{lastnick}, $line);
+      $self->perlbot->msg($self->lastnick, $line);
     }
   } else {
     foreach my $line (@output) {
-      $self->perlbot->msg($self->{lastcontact}, $line);
+      $self->perlbot->msg($self->lastcontact, $line);
     }
   }
 }
@@ -432,11 +413,11 @@ sub addressed_reply {
   if($self->perlbot->config->get(bot => 'max_public_reply_lines') &&
      @output > $self->perlbot->config->get(bot => 'max_public_reply_lines')) {
     foreach my $line (@output) {
-      $self->perlbot->msg($self->{lastnick}, $self->{lastnick} . ', ' . $line);
+      $self->perlbot->msg($self->lastnick, $self->lastnick . ', ' . $line);
     }
   } else {
     foreach my $line (@output) {
-      $self->perlbot->msg($self->{lastcontact}, $self->{lastnick} . ', ' . $line);
+      $self->perlbot->msg($self->lastcontact, $self->lastnick . ', ' . $line);
     }
   }
 }
@@ -454,7 +435,7 @@ sub _help {
   #   send back the help content for that command
   # return our (possibly empty) result
 
-  if($command eq $self->{name}) {
+  if($command eq $self->name) {
     my $infostring = $self->name;
     if($self->version) { $infostring .= " v" . $self->version; }
     if($self->author) { $infostring .= " by " . $self->author; }
@@ -500,7 +481,7 @@ sub _process { # _process to stay out of people's way
   # anything
   my $chan_name = normalize_channel($event->{to}[0]);
   if ($event->type ne 'msg' and
-      grep {$_ eq $self->{name}}
+      grep {$_ eq $self->name}
            $self->perlbot->config->get_array(channel => $chan_name => 'ignoreplugin')) {
     return;
   }
@@ -509,8 +490,8 @@ sub _process { # _process to stay out of people's way
 
   # set a couple of history things for our reply* methods
 
-  $self->{lastnick} = $event->nick;
-  $self->{lasthost} = $event->host;
+  $self->lastnick = $event->nick;
+  $self->lasthost = $event->host;
 
   # foreach normal hook we have
   #   append the command prefix to it
@@ -522,62 +503,42 @@ sub _process { # _process to stay out of people's way
   #       set our last contact to the channel this event came from
   #     dispatch this event to the appropriate handler with the right args
 
-  foreach my $commandprefix_hook (keys(%{$self->{commandprefix_hooks}})) {
+  foreach my $commandprefix_hook (keys(%{$self->commandprefix_hooks})) {
     my $regexp = $self->perlbot->config->get(bot => 'commandprefix') . $commandprefix_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
-
-      if(($event->type() eq 'msg') || $self->{behaviors}{reply_via_msg}) {
-        $self->{lastcontact} = $event->nick();
-      } else {
-        $self->{lastcontact} = $event->{to}[0];
-      }
-      $self->_dispatch($self->{commandprefix_hooks}{$commandprefix_hook}, $user, $texttocallwith, $event);
+      $self->_set_lastcontact($event);
+      $self->_dispatch($self->commandprefix_hooks->{$commandprefix_hook}, $user, $texttocallwith, $event);
     }
   }
 
-  foreach my $addressed_command_hook (keys(%{$self->{addressed_command_hooks}})) {
+  foreach my $addressed_command_hook (keys(%{$self->addressed_command_hooks})) {
     my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->get(bot => 'commandprefix') . '*' . $addressed_command_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/${regexp}//i;
-
-      if(($event->type() eq 'msg') || $self->{behaviors}{reply_via_msg}) {
-        $self->{lastcontact} = $event->nick();
-      } else {
-        $self->{lastcontact} = $event->{to}[0];
-      }
-      $self->_dispatch($self->{addressed_command_hooks}{$addressed_command_hook}, $user, $texttocallwith, $event);
+      $self->_set_lastcontact($event);
+      $self->_dispatch($self->addressed_command_hooks->{$addressed_command_hook}, $user, $texttocallwith, $event);
     }
   }
 
   # like above, but with a raw regular expression
 
-  foreach my $regular_expression_hook (keys(%{$self->{regular_expression_hooks}})) {
+  foreach my $regular_expression_hook (keys(%{$self->regular_expression_hooks})) {
     if($text =~ /$regular_expression_hook/) {
-      if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
-        $self->{lastcontact} = $event->nick();
-      } else {
-        $self->{lastcontact} = $event->{to}[0];
-      }
-
-      $self->_dispatch($self->{regular_expression_hooks}{$regular_expression_hook}, $user, $text, $event);
+      $self->_set_lastcontact($event);
+      $self->_dispatch($self->regular_expression_hooks->{$regular_expression_hook}, $user, $text, $event);
     }
   }
   
   # like above, but here we can return any event in which the bot was addressed
 
   if($text =~ /^$botnick(?:,|:|\.|\s)*/i) {
-    if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
-      $self->{lastcontact} = $event->nick();
-    } else {
-      $self->{lastcontact} = $event->{to}[0];
-    }
-
+    $self->_set_lastcontact($event);
     my $texttocallwith = $text;
     $texttocallwith =~ s/^$botnick(?:,|:|\.|\s)*//i;
-    foreach my $addressed_hook (@{$self->{addressed_hooks}}) {
+    foreach my $addressed_hook (@{$self->addressed_hooks}) {
       $self->_dispatch($addressed_hook, $user, $texttocallwith, $event);
     }
   }
@@ -585,83 +546,58 @@ sub _process { # _process to stay out of people's way
   # just like the first one, but with an added check to make sure the
   # person generating the event is an admin
 
-  foreach my $commandprefix_admin_hook (keys(%{$self->{commandprefix_admin_hooks}})) {
+  foreach my $commandprefix_admin_hook (keys(%{$self->commandprefix_admin_hooks})) {
     my $regexp = $self->perlbot->config->get(bot => 'commandprefix') . $commandprefix_admin_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       if($user && $self->perlbot->is_admin($user)) {
         my $texttocallwith = $text;
         $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
-
-        if(($event->type() eq 'msg') || $self->{behaviors}{reply_via_msg}) {
-          $self->{lastcontact} = $event->nick();
-        } else {
-          $self->{lastcontact} = $event->{to}[0];
-        }
-        $self->_dispatch($self->{commandprefix_admin_hooks}{$commandprefix_admin_hook}, $user, $texttocallwith, $event);
+        $self->_set_lastcontact($event);
+        $self->_dispatch($self->commandprefix_admin_hooks->{$commandprefix_admin_hook}, $user, $texttocallwith, $event);
       } else {
         $self->perlbot->msg($event->nick(), 'You are not an admin!');
       }
     }
   }
 
-  foreach my $addressed_command_admin_hook (keys(%{$self->{addressed_command_admin_hooks}})) {
+  foreach my $addressed_command_admin_hook (keys(%{$self->addressed_command_admin_hooks})) {
     my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->get(bot => 'commandprefix') . '*' . $addressed_command_admin_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       if($user && $self->perlbot->is_admin($user)) {
         my $texttocallwith = $text;
         $texttocallwith =~ s/${regexp}//i;
-
-        if(($event->type() eq 'msg') || $self->{behaviors}{reply_via_msg}) {
-          $self->{lastcontact} = $event->nick();
-        } else {
-          $self->{lastcontact} = $event->{to}[0];
-        }
-        $self->_dispatch($self->{addressed_command_admin_hooks}{$addressed_command_admin_hook}, $user, $texttocallwith, $event);
+        $self->_set_lastcontact($event);
+        $self->_dispatch($self->addressed_command_admin_hooks->{$addressed_command_admin_hook}, $user, $texttocallwith, $event);
       }
     }
   }
 
   # here we just return the event in addition to the other stuff
 
-  foreach my $commandprefix_advanced_hook (keys(%{$self->{commandprefix_advanced_hooks}})) {
+  foreach my $commandprefix_advanced_hook (keys(%{$self->commandprefix_advanced_hooks})) {
     my $regexp = $self->perlbot->config->get(bot => 'commandprefix') . $commandprefix_advanced_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
-
-      if(($event->type() eq 'msg') || $self->{behaviors}{reply_via_msg}) {
-        $self->{lastcontact} = $event->nick();
-      } else {
-        $self->{lastcontact} = $event->{to}[0];
-      }
-      $self->_dispatch($self->{commandprefix_advanced_hooks}{$commandprefix_advanced_hook}, $user, $texttocallwith, $event);
+      $self->_set_lastcontact($event);
+      $self->_dispatch($self->commandprefix_advanced_hooks->{$commandprefix_advanced_hook}, $user, $texttocallwith, $event);
     }
   }
 
-  foreach my $addressed_command_advanced_hook (keys(%{$self->{addressed_command_advanced_hooks}})) {
+  foreach my $addressed_command_advanced_hook (keys(%{$self->addressed_command_advanced_hooks})) {
     my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->get(bot => 'commandprefix') . '*' . $addressed_command_advanced_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/${regexp}//i;
-
-      if(($event->type() eq 'msg') || $self->{behaviors}{reply_via_msg}) {
-        $self->{lastcontact} = $event->nick();
-      } else {
-        $self->{lastcontact} = $event->{to}[0];
-      }
-      $self->_dispatch($self->{addressed_command_advanced_hooks}{$addressed_command_advanced_hook}, $user, $texttocallwith, $event);
+      $self->_set_lastcontact($event);
+      $self->_dispatch($self->addressed_command_advanced_hooks->{$addressed_command_advanced_hook}, $user, $texttocallwith, $event);
     }
   }
 
   # here we just return raw events
 
-  foreach my $event_hook (@{$self->{event_hooks}{$event->type()}}) {
-    if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
-      $self->{lastcontact} = $event->nick();
-    } else {
-      $self->{lastcontact} = $event->{to}[0];
-    }
-
+  foreach my $event_hook (@{$self->event_hooks->{$event->type()}}) {
+    $self->_set_lastcontact($event);
     $self->_dispatch($event_hook, $event);
   }
 }
@@ -690,7 +626,7 @@ sub _dispatch {
   if ($self->want_fork) {
     debug("Forking off plugin: " . $self->name, 3);
     if (!defined($pid = fork)) {
-      $self->reply_error("fork error in $self->{name} plugin");
+      $self->reply_error("fork error in $self->name plugin");
       return;
     }
 
@@ -712,9 +648,7 @@ sub _dispatch {
   }
 }
 
-sub shutdown {
-  my $self = shift;
-}
+sub shutdown { } # stub
 
 sub _shutdown {
   my $self = shift;
@@ -724,20 +658,23 @@ sub _shutdown {
   $self->shutdown();
 }
 
+sub _set_lastcontact {
+  my $self = shift;
+  my $event = shift;
 
-sub config {
-  my ($self) = @_;
-
-  return $self->{config};
+  if($event->type() eq 'msg' || $self->behaviors->{reply_via_msg}) {
+    $self->lastcontact = $event->nick();
+  } else {
+    $self->lastcontact = $event->{to}[0];
+  }
 }
-
 
 sub _read_help {
   my $self = shift;
   my $filename = shift;
   $filename ||= 'help.xml';
 
-  return read_generic_config(File::Spec->catfile($self->{directory}, $filename));
+  return read_generic_config(File::Spec->catfile($self->directory, $filename));
 }
 
 sub _read_info {
@@ -745,7 +682,7 @@ sub _read_info {
   my $filename = shift;
   $filename ||= 'info.xml';
 
-  return read_generic_config(File::Spec->catfile($self->{directory}, $filename));
+  return read_generic_config(File::Spec->catfile($self->directory, $filename));
 }
 
 1;

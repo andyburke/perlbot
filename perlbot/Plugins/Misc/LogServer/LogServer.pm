@@ -11,8 +11,9 @@
 
 package Perlbot::Plugin::LogServer;
 
+use strict;
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
 
 use Perlbot::Utils;
 
@@ -48,6 +49,7 @@ sub logs {
   $response .= '</head><body><center><h1>Perlbot Logs</h1></center><hr>';
 
   my ($chan, $year, $month, $day) = @args;
+  my $search;
   my @searchwords;
 
   if(defined($year) && $year =~ /search/) {
@@ -208,17 +210,17 @@ sub logs {
       $response .= "<a href=\"/logs/${chan}/search\">[search]</a> <a href=\"/logs/${chan}\">[${chan}]</a> <a href=\"/logs\">[top]</a><p>";
       
       if(opendir(DIR, File::Spec->catfile($self->logdir, $chan))) {
-        @tmp = readdir(DIR);
-        @files = sort(@tmp);
+        my @tmp = readdir(DIR);
+        my @files = sort(@tmp);
         
         my $results_found = 0;
         
-        foreach $file (@files) {
+        foreach my $file (@files) {
           open(FILE, File::Spec->catfile($self->logdir, $chan, $file));
-          @lines = <FILE>;
+          my @lines = <FILE>;
           close FILE;
           
-          foreach $word (@searchwords) {
+          foreach my $word (@searchwords) {
             @lines = grep(/\Q$word\E/i, @lines);  
           }
           

@@ -3,10 +3,11 @@
 
 package Perlbot::Plugin::FServ;
 
-use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
-
 use strict;
+use Perlbot::Plugin;
+use base qw(Perlbot::Plugin);
+use fields qw(files);
+
 use File::stat;
 use File::Spec;
 

@@ -1,13 +1,10 @@
 package Perlbot::Plugin::PluginControl;
 
-use Perlbot;
-use Perlbot::Plugin;
 use strict;
-
-our @ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
+use Perlbot;
 
 our $VERSION = '1.0.0';
-
 
 sub init {
   my $self = shift;

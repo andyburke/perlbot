@@ -1,13 +1,12 @@
 package Perlbot::Plugin::UserUpdater;
 
-use Perlbot::Utils;
+use strict;
+use base qw(Perlbot::Plugin);
 use Perlbot;
+use Perlbot::Utils;
 use Perlbot::User;
-use Perlbot::Plugin;
 
-@ISA = qw(Perlbot::Plugin);
-
-our $VERSION;
+our $VERSION = '1.0.0';
 
 sub init {
   my $self = shift;

@@ -1,11 +1,10 @@
 package Perlbot::Plugin::Logger;
 
+use strict;
+use base qw(Perlbot::Plugin);
 use Perlbot;
 use Perlbot::Utils;
 use Perlbot::User;
-use Perlbot::Plugin;
-
-@ISA = qw(Perlbot::Plugin);
 
 our $VERSION = '1.0.0';
 

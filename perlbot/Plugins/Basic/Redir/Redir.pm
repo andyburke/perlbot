@@ -1,7 +1,8 @@
 package Perlbot::Plugin::Redir;
 
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
+use fields qw(redirs);
 
 use Perlbot;
 use Perlbot::Utils;

@@ -1,8 +1,7 @@
 package Perlbot::Plugin::ConnectionManagement;
 
-use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
-
+use strict;
+use base qw(Perlbot::Plugin);
 use Perlbot::Utils;
 
 our $VERSION = '1.0.0';

@@ -1,5 +1,7 @@
 package Perlbot::WebServer;
 
+use strict;
+
 use Perlbot::Utils;
 
 use HTTP::Daemon;
@@ -88,7 +90,7 @@ sub connection {
 
   if ($pid) {
     # parent
-    $SIG{CHLD} = IGNORE;
+    $SIG{CHLD} = 'IGNORE';
 
   } else {
     # child

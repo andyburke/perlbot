@@ -1,9 +1,8 @@
 package Perlbot::Plugin::Authentication;
 
-use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
-
 use strict;
+
+use base qw(Perlbot::Plugin);
 
 use Perlbot::Utils;
 
