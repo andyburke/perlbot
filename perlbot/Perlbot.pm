@@ -21,6 +21,8 @@ sub new {
     configfile => $configfile, 
     ircobject => undef,
     ircconn => undef,
+    msg_queue => [],
+    empty_queue => 1,
     plugins => [],
     handlers => {},
     users => {},
@@ -402,12 +404,34 @@ sub get_user {
 
 }
 
+# sends out the msg on the front of the queue and (re-)schedules itself
+sub process_queue {
+  my ($self) = @_;
+
+  # if there's something on the queue, send it and schedule this method to
+  # be called again in a bit.  otherwise, just set the empty_queue flag.
+  my $params = shift(@{$self->{msg_queue}});
+  if ($params) {
+    $self->{ircconn}->privmsg(@$params);
+    $self->{ircconn}->schedule(1, \&process_queue, $self);
+  } else {
+    $self->{empty_queue} = 1;
+  }
+}
+
+# send a msg to a nick or channel
 sub msg {
   my $self = shift;
   my $target = shift;
   my $text = shift;
 
-  $self->{ircconn}->privmsg($target, $text);
+  # push msg on the queue, and process the queue if it was previously empty
+  # (then flag the queue as non-empty)
+  push(@{$self->{msg_queue}}, [$target, $text]);
+  if ($self->{empty_queue}) {
+    $self->process_queue;
+    $self->{empty_queue} = 0;
+  }
 }
 
 sub join {
