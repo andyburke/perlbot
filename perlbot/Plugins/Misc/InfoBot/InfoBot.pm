@@ -7,13 +7,14 @@
 
 package Perlbot::Plugin::InfoBot;
 
-use Perlbot::Utils;
+use strict;
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use Perlbot::Utils;
 
 use File::Spec;
 use DB_File;
 
+our @ISA = qw(Perlbot::Plugin);
 our $VERSION = '1.0.0';
 
 sub init {
@@ -150,7 +151,7 @@ sub termify {
   # what country is ...
   if ($term =~ 
     s/wh(at|ich)\s+(add?res?s|country|place|net (suffix|domain))//ig) {
-    if ((length($in) == 2) && ($term !~ /^\./)) {
+    if ((length($term) == 2) && ($term !~ /^\./)) {
       $term = 'what is .'.$term;
     }
     $term .= '?';

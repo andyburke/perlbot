@@ -11,15 +11,11 @@ sub new {
   my ($name, $config, $perlbot) = @_;
   my $singlelogfile = 0;
 
-  if (lc($config->get(channel => $name => 'singlelogfile')) eq 'yes') {
-    $singlelogfile = 1;
-  }
-
   my $self = fields::new($class);
 
   $self->config = $config;
   $self->name = $name;
-  $self->log = new Perlbot::LogFile($config->get(bot => 'logdir'), $name, $singlelogfile);
+  $self->log = new Perlbot::LogFile($name, $config);
   $self->members = {};
   $self->currentopped = {};
   $self->currentvoiced = {};
@@ -77,7 +73,7 @@ sub logging {
 sub limit {
     my $self = shift;
     $self->config->set(channel => $self->name => 'limit', shift) if @_;
-    return $self->config->get(channel => $self->name => 'limit');
+    return $self->config->get(channel => $self->name => 'limit') or 0;
 }
 
 sub ops {

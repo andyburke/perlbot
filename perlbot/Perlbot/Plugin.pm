@@ -64,7 +64,7 @@ sub init { } # stub
 
 sub property {
   my ($self, $property, @params) = @_;
-  if(scalar @params) { $self->{$property} = $param[0]; }
+  if(scalar @params) { $self->{$property} = $params[0]; }
   return $self->{$property};
 }
 

@@ -24,20 +24,22 @@ sub init {
   $self->want_msg(0);
   $self->want_public(0);
   
-  $self->{logdir} = $self->perlbot->config->get(bot => 'logdir') || 'logs';
-
   $self->hook_web('logs', \&logs, 'Channel Logs');
+}
+
+sub logdir {
+  my $self = shift;
+
+  return Perlbot::LogFile::directory_from_config($self->perlbot->config);
 }
 
 sub logs {
   my $self = shift;
   my @args = @_;
-  my $logdir = $self->{logdir};
 
   my $response = '<html><head><title>Perlbot Logs</title>';
  
-  if(defined($self->config->value(logserver => 'allowsearchengines'))
-     && lc($self->config->value(logserver => 'allowsearchengines')) eq 'yes') {
+  if (lc($self->config->get(logserver => 'allowsearchengines')) eq 'yes') {
      # don't bother adding the meta tag to disallow archiving
   } else {
     $response .= '<meta name="ROBOTS" content="NOINDEX, NOFOLLOW, NOARCHIVE" />';
@@ -60,13 +62,13 @@ sub logs {
   }          
           
   if(!$chan && !$search) {
-    if(opendir(DIR, $logdir)) {
+    if(opendir(DIR, $self->logdir)) {
       my @channels = readdir(DIR);
       closedir(DIR);
       
       $response .= '<ul>';
       foreach my $channel (@channels) {
-        if (-d File::Spec->catfile($logdir, $channel)) {
+        if (-d File::Spec->catfile($self->logdir, $channel)) {
           if ($channel !~ /^(\.\.?|msg)$/) {
             $response .= "<li><b><a href=\"/logs/${channel}\">$channel</a></b>";
           }
@@ -80,7 +82,7 @@ sub logs {
   
   if($chan && !$year && !$search) {
     $response .= "<a href=\"/logs/${chan}/search\">[search]</a> <a href=\"/logs/${chan}\">[${chan}]</a> <a href=\"/logs\">[top]</a><p>";
-    if(!opendir(LOGLIST, File::Spec->catfile($logdir, $chan))) {
+    if(!opendir(LOGLIST, File::Spec->catfile($self->logdir, $chan))) {
       $response .= "No logs for channel: $chan";
     } else {
       my @tmpfiles =  readdir(LOGLIST);
@@ -111,7 +113,7 @@ sub logs {
     
     use HTML::CalendarMonth;
     
-    if(!opendir(LOGLIST, File::Spec->catfile($logdir, $chan))) {
+    if(!opendir(LOGLIST, File::Spec->catfile($self->logdir, $chan))) {
       $response .= "No logs for channel: $chan";
     } else {
       my @tmpfiles =  readdir(LOGLIST);
@@ -146,7 +148,7 @@ sub logs {
     $response .= "<a href=\"/logs/${chan}/search\">[search]</a> <a href=\"/logs/${chan}\">[${chan}]</a> <a href=\"/logs\">[top]</a><p>";
     use HTML::CalendarMonth;
     
-    if(!opendir(LOGLIST, File::Spec->catfile($logdir, $chan))) {
+    if(!opendir(LOGLIST, File::Spec->catfile($self->logdir, $chan))) {
       $response .= "No logs for channel: $chan";
     } else {
       my @tmpfiles =  readdir(LOGLIST);
@@ -172,7 +174,7 @@ sub logs {
   
   if($chan && $year && $month && $day && !$search) {
     $response .= "<a href=\"/logs/${chan}/search\">[search]</a> <a href=\"/logs/${chan}\">[${chan}]</a> <a href=\"/logs\">[top]</a><p>";
-    my $filename = File::Spec->catfile($logdir, $chan, "$year.$month.$day");
+    my $filename = File::Spec->catfile($self->logdir, $chan, "$year.$month.$day");
     
     if(open(FILE, $filename)) {
       my @lines = <FILE>;
@@ -205,14 +207,14 @@ sub logs {
     } else {
       $response .= "<a href=\"/logs/${chan}/search\">[search]</a> <a href=\"/logs/${chan}\">[${chan}]</a> <a href=\"/logs\">[top]</a><p>";
       
-      if(opendir(DIR, File::Spec->catfile($logdir, $chan))) {
+      if(opendir(DIR, File::Spec->catfile($self->logdir, $chan))) {
         @tmp = readdir(DIR);
         @files = sort(@tmp);
         
         my $results_found = 0;
         
         foreach $file (@files) {
-          open(FILE, File::Spec->catfile($logdir, $chan, $file));
+          open(FILE, File::Spec->catfile($self->logdir, $chan, $file));
           @lines = <FILE>;
           close FILE;
           
@@ -237,8 +239,8 @@ sub logs {
               s|^(\d+:\d+:\d+) \* (\w+) (.*)|$1 * <b>$2</b> $3|;
               s|^(\d+:\d+:\d+\s)(.*? joined \#.*?$)|$1<font color=\"blue\">$2</font>|;
               s|^(\d+:\d+:\d+\s)(.*? left \#.*?$)|$1<font color=\"blue\">$2</font>|;
-              s|^(\d+:\d+:\d+\s)(\[.*?\])|$1<font color=\"red\">$2</font>|;
-              s|(\d+:\d+:\d+)|<a href=\"/logs/${chan}/${year}/${month}/${day}#$1\">$1</a>|;
+              s|^(\d+:\d+:\d+\s)(\[.*?\])|$1<font color="red">$2</font>|;
+              s|(\d+:\d+:\d+)|<a href="/logs/${chan}/${year}/${month}/${day}#$1">$1</a>|;
               s#(\w+://.*?|www\d*\..*?|ftp\d*\..*?|web\d*\..*?)(\s+|'|,|$)#<a href="$1">$1</a>$2#;
               $response .= "<tt>$_</tt><br>";
               
@@ -257,11 +259,7 @@ sub logs {
 
   $response .= '</body></html>';
 
-  if(defined($self->config->value(logserver => 'authtyperequired'))) {
-    return ('text/html', $response, $self->config->value(logserver => 'authtyperequired'));
-  } else {
-    return ('text/html', $response);
-  }
+  return ('text/html', $response, $self->config->get(logserver => 'authtyperequired'));
 }
 
 1;

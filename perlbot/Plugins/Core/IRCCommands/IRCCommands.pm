@@ -53,7 +53,7 @@ sub join {
 
   $channel = normalize_channel($channel);
   my $chan;
-  if(defined($self->perlbot->config->value(channel => $channel))) {
+  if ($self->perlbot->config->exists(channel => $channel)) {
     $chan = new Perlbot::Channel($channel, $self->perlbot->config, $self->perlbot());
   } else {
     $chan = new Perlbot::Channel($channel, new Perlbot::Config(), $self->perlbot());

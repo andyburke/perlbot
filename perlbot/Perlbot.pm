@@ -176,7 +176,9 @@ sub sigdie_handler {
     $SIG{__DIE__} = 'DEFAULT';
 
     $diemsg ||= '(no message)';
-    open CRASHLOG, ">>" . File::Spec->catfile($self->config->get(bot => 'crashlogdir'), 'crashlog') or warn "Could not open crashlog '$crashlog' for writing: $!";
+    my $filename = File::Spec->catfile($self->config->get(bot => 'crashlogdir'), 'crashlog');
+    open CRASHLOG, ">>$filename"
+      or warn "Could not open crashlog '$filename' for writing: $!";
     print CRASHLOG "Died with: $diemsg\n\n", Carp::longmess(), "\n=====\n\n\n";
     close CRASHLOG;
 
@@ -685,7 +687,7 @@ sub get_user {
   if (@tempusers == 1) {
     return $tempusers[0];
   } elsif (@tempusers > 1) {
-    debug("Multiple users matched $hostmask !");
+    debug("Multiple users matched $param !");
     debug(Dumper(@tempusers));
   }
 

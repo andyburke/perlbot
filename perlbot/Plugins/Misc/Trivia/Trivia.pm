@@ -4,15 +4,15 @@
 
 package Perlbot::Plugin::Trivia;
 
-use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
-
 use strict;
+use Perlbot::Plugin;
+
 use Time::HiRes qw(time);
 use DB_File;
 use String::Approx qw(amatch);
 use XML::Simple;
 
+our @ISA = qw(Perlbot::Plugin);
 our $VERSION = '0.2.0';
 
 sub init {
@@ -101,8 +101,8 @@ sub starttrivia {
 
   $self->{numquestions} = $numquestions;
   $self->reply("Starting a new trivia game of $numquestions questions!");
-  $self->reply("  To register to play in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "playing");
-  $self->reply("  To stop playing in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "stopplaying");
+  $self->reply("  To register to play in this game, type " . $self->perlbot->config->get(bot => 'commandprefix') . "playing");
+  $self->reply("  To stop playing in this game, type " . $self->perlbot->config->get(bot => 'commandprefix') . "stopplaying");
   $self->reply("  Lines beginning with a '.' will not be counted as answers.");
 
   srand();

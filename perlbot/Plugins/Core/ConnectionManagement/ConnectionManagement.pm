@@ -56,9 +56,9 @@ sub reconnect {
   debug($event->dump());
   debug("---End dump...");
 
-  while ($i < @{$self->perlbot->config->value('server')}
-         && $self->perlbot->config->value('server' => $i => 'address') ne $old_server) {
-    debug("looking at server: " . $self->perlbot->config->value('server' => $i => 'address'));
+  while ($i < $self->perlbot->config->array_get('server')
+         && $self->perlbot->config->get(server => $i => 'address') ne $old_server) {
+    debug("looking at server: " . $self->perlbot->config->get(server => $i => 'address'));
     $i++;
   }
 
@@ -66,7 +66,7 @@ sub reconnect {
 
   while (!$self->perlbot->connect($i)) {
     $i++;
-    $i = $i % @{$self->perlbot->config->value('server')};
+    $i = $i % $self->perlbot->config->array_get('server');
   }
 }
 
@@ -74,7 +74,7 @@ sub cycle_nick {
   my $self = shift;
   my $event = shift;
 
-  my $nickappend = $self->perlbot->config->value(bot => 'nickappend');
+  my $nickappend = $self->perlbot->config->get(bot => 'nickappend');
   $nickappend ||= '_';
 
   $self->perlbot->nick($self->perlbot->curnick . $nickappend);

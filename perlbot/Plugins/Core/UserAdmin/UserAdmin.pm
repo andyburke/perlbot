@@ -58,15 +58,14 @@ sub useradmin {
       $self->reply("User $username already exists!");
       return;
     }
-    $self->perlbot->config->value('user')->{$username} = {};
+    $self->perlbot->config->hash_initialize(user => $username);
     $self->perlbot->config->save;
     $self->perlbot->users->{$username} = new Perlbot::User($username, $self->perlbot->config);
     $self->reply("Added user: $username");
 
   } elsif ($command eq 'remove') {
     delete $self->perlbot->users->{$username};
-    # hash lookup must be performed "outside" of ->value call for delete to work
-    delete $self->perlbot->config->value('user')->{$username};
+    $self->perlbot->config->hash_delete(user => $username);
     $self->perlbot->config->save;
     $self->reply("Removed user: $username");
 

@@ -31,7 +31,7 @@ sub spell {
   my $user = shift;
   my $text = shift;
 
-  my $google = Net::Google->new(key => $self->config->value(google => 'apikey'));
+  my $google = Net::Google->new(key => $self->config->get(google => 'apikey'));
 
   my $result = $google->spelling(phrase => $text)->suggest();
 

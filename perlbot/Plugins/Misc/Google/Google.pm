@@ -24,7 +24,7 @@ sub google {
   my $user = shift;
   my $text = shift;
 
-  my $google = new Net::Google(key => $self->config->value(google => 'apikey'));
+  my $google = new Net::Google(key => $self->config->get(google => 'apikey'));
   my $search = $google->search();
 
   $search->query($text);

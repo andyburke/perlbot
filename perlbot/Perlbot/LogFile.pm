@@ -6,7 +6,7 @@ use strict;
 use File::Spec;
 
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(logdir chan curyr curmon curday singlelogfile file);
+use fields qw(config chan curyr curmon curday file);
 
 # note: This used to be called 'Log' instead of 'Logs', but when we put
 # perlbot into CVS, Log created problems with keyword substitution.
@@ -14,7 +14,7 @@ use fields qw(logdir chan curyr curmon curday singlelogfile file);
 # Actually now it's called LogFile.
 
 sub new {
-  my ($class, $logdir, $chan, $singlelogfile) = @_;
+  my ($class, $chan, $config) = @_;
   my ($mday,$mon,$year);
 
   (undef,undef,undef,$mday,$mon,$year) = localtime;
@@ -23,12 +23,11 @@ sub new {
 
   my $self = fields::new($class);
   
-  $self->logdir = $logdir || 'logs';
   $self->chan = $chan;
+  $self->config = $config;
   $self->curyr = $year;
   $self->curmon = $mon;
   $self->curday = $mday;
-  $self->singlelogfile = $singlelogfile;
   $self->file = new IO::File;
 
   return $self;
@@ -64,6 +63,26 @@ sub update_date {
   $self->curday = $mday;
 }
 
+# *class* function to get the logdir from a config, with a default of 'logs'
+sub directory_from_config {
+  my $config = shift;
+
+  return $config->exists(bot => 'logdir') ? $config->get(bot => 'logdir') : 'logs';
+}
+
+# object method to get the logdir for this object
+sub directory {
+  my $self = shift;
+ 
+  return directory_from_config($self->config);
+}
+
+sub singlelogfile {
+  my $self = shift;
+
+  return lc($self->config->get(channel => $self->chan => 'singlelogfile')) eq 'yes';
+}
+
 sub open {
   my $self = shift; 
   my $date;
@@ -72,24 +91,25 @@ sub open {
     # user wants a single logfile per channel, not one file per day
     $self->close;
 
-    stat $self->logdir or mkdir($self->logdir, 0755);
+    stat $self->directory or mkdir($self->directory, 0755);
 
     debug("Opening log file: " . File::Spec->catfile(strip_channel($self->chan) . '.log'), 2);
-    my $result = $self->file->open(">>" . File::Spec->catfile($self->logdir, strip_channel($self->chan) . '.log'));
-    $result or debug("Could not open logfile " . File::Spec->catfile($self->logdir, strip_channel($self->chan) . '.log') . ": $!");
+    my $result = $self->file->open(">>" . File::Spec->catfile($self->directory, strip_channel($self->chan) . '.log'));
+    $result or debug("Could not open logfile " . File::Spec->catfile($self->directory, strip_channel($self->chan) . '.log') . ": $!");
   } else {
     # this is the standard behavior, one logfile per day
     # make necessary dirs if they don't exist
     $self->close;
-    stat $self->logdir or mkdir($self->logdir, 0755);
-    stat File::Spec->catfile($self->logdir, strip_channel($self->chan)) or mkdir(File::Spec->catfile($self->logdir, strip_channel($self->chan)), 0755);
+    stat $self->directory or mkdir($self->directory, 0755);
+    stat File::Spec->catfile($self->directory, strip_channel($self->chan))
+      or mkdir(File::Spec->catfile($self->directory, strip_channel($self->chan)), 0755);
     
     $self->update_date();
     $date = sprintf("%04d.%02d.%02d", $self->curyr, $self->curmon, $self->curday);
     
     debug("Opening log file: " . File::Spec->catfile(strip_channel($self->chan) , $date), 2);
-    my $result = $self->file->open(">>" . File::Spec->catfile($self->logdir, strip_channel($self->chan), "$date"));
-    $result or debug("Could not open logfile " . File::Spec->catfile($self->logdir, strip_channel($self->chan), "$date") . ": $!");
+    my $result = $self->file->open(">>" . File::Spec->catfile($self->directory, strip_channel($self->chan), "$date"));
+    $result or debug("Could not open logfile " . File::Spec->catfile($self->directory, strip_channel($self->chan), "$date") . ": $!");
   }
 
 }

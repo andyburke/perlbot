@@ -93,6 +93,13 @@ sub ircstats {
       }
     }
 
+    # TODO: test this better before putting it into production
+    #if ($highest_percentage == 0) {
+    #  debug("no data yet");
+    #  return ('text/html', "No statistics yet for $chan.  You might ask an administrator to run ".
+    #    $self->perlbot->config->get(bot=>'commandprefix')."updatestats on the bot to read statistics from logfiles.");
+    #}
+
     my $normalization_factor = 100 / $highest_percentage;
     
     for(my $hour = 0; $hour < 24; $hour++) {
@@ -168,12 +175,16 @@ sub action {
 
 }
 
+sub logdir {
+  my $self = shift;
+
+  return Perlbot::LogFile::directory_from_config($self->perlbot->config);
+}
+
 sub import_from_logs {
   my $self = shift;
 
   $self->reply("Updating stats from logs...");
-
-  my $logdir = $self->perlbot->config->value(bot => 'logdir') || 'logs';
 
   foreach my $chan (keys(%{$self->{channels}})) {
     for(my $i=0; $i < 24; $i++) {
@@ -182,16 +193,16 @@ sub import_from_logs {
     }
   }
 
-  opendir(LOGSDIR, File::Spec->catfile($logdir));
+  opendir(LOGSDIR, File::Spec->catfile($self->logdir));
   my @dirs = grep { !/^\./ } readdir(LOGSDIR);
   close(LOGSDIR);
 
   foreach my $channel (@dirs) {
-    opendir(CHANLOGS, File::Spec->catfile($logdir, $channel));
+    opendir(CHANLOGS, File::Spec->catfile($self->logdir, $channel));
     my @logs = grep { !/^\./ } readdir(CHANLOGS);
     close(CHANLOGS);
     foreach my $log (@logs) {
-      open(LOG, File::Spec->catfile($logdir, $channel, $log));
+      open(LOG, File::Spec->catfile($self->logdir, $channel, $log));
       while(my $line = <LOG>) {
         if ($line =~ /^(\d\d):\d\d:\d\d\s<.*?>\s.+$/) {
           my $hour = $1;
