@@ -160,6 +160,10 @@ sub answer {
     my @answerwords = split(' ', $tmpanswer);
     my @guesswords = split(' ', $tmptext);
 
+    use Data:Dumper;
+    print "answer: " . Dumper(@answerwords);
+    print "guess : " . Dumper(@guesswords);
+
     if(length(@answerwords) != length(@guesswords)) {
       return;
     }
