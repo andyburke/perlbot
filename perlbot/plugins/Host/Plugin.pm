@@ -50,8 +50,8 @@ sub lookup {
 
   } else {
     # child...
-
-    ($in = $event->{args}[0]) =~ s/^${pluginprefix}(host|nslookup)\s*//;
+    $in = $event->{args}[0];
+    $in =~ s/^.*?\s+//;
 
     $in =~ s/\`//g; #security?
     $in =~ s/\$//g;
