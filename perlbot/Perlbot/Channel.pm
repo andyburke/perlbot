@@ -20,8 +20,19 @@ sub new {
   $self->perlbot = $perlbot;
 
   # TODO: make 'logtype' use defaults system
+  # TODO: make this not this ugly ... in english:
+  #         if the channel object has a logtype
+  #           set the logtype to that specified value
+  #         else
+  #           if the bot has a default logtype
+  #             use that
+  #           else
+  #             use 'Files'
   my $logtype = $self->config->exists(channel => $self->name => 'logtype') ?
-    $self->config->get(channel => $self->name => 'logtype') : 'Files';
+    $self->config->get(channel => $self->name => 'logtype') :
+    ( $self->config->exists(bot => 'defaultlogtype') ?
+      $self->config->get(bot => 'defaultlogtype') :
+      'Files' );
   $logtype =~ /^\w+(::\w+)*$/ or die "Channel $name: Invalid logtype '$logtype'";
   debug("loading Logs package '$logtype'");
 
