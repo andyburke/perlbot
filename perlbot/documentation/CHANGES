@@ -6,6 +6,8 @@ CHANGES:
   default config file, or the one specified on the commandline.
 - Debugging is now enabled by setting the environment variable
   PERLBOT_DEBUG to 1 (or 2, etc.) instead of editing perlbot.pl
+- Changed sample config and renamed it to config-sample so people who
+  run the bot without reading the readme can be scolded.
 - updated manual.txt and plugins.txt
 - NSLookup plugin: Removed, since the nslookup utility is deprecated.
   It has been replaced with the Host plugin (!host).
