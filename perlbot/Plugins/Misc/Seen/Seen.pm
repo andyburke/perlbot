@@ -31,9 +31,52 @@ sub seen {
 
   if(defined($self->{seen}{$name})) {
     my ($lastseentime, $type, $lasttext) = split(':', $self->{seen}{$name}, 3);
-    $lastseentime = scalar(localtime($lastseentime));
+    my $curtime = time();
+    
+    $lastseentime = $curtime - $lastseentime;
+    $listedvals = 0;
 
-    my $replystring = "$name last seen on ${lastseentime} ";
+    my $replystring = "$name last seen ";
+
+    my $days = int($lastseentime / (60*60*24)); $lastseentime = $lastseentime % (60*60*24);
+    my $hours = int($lastseentime / (60*60)); $lastseentime = $lastseentime % (60*60);
+    my $minutes = int($lastseentime / 60); $lastseentime = $lastseentime % 60;
+    my $seconds = $lastseentime;
+
+    if($days && $listedvals < 2) {
+      $listedvals++;
+      if($days > 1) {
+        $replystring .= "$days days ";
+      } else {
+        $replystring .= "$days day ";
+      }
+    }
+    if($hours && $listedvals < 2) {
+      $listedvals++;
+      if($hours > 1) {
+        $replystring .= "$hours hours ";
+      } else {
+        $replystring .= "$hours hour ";
+      }
+    }
+    if($minutes && $listedvals < 2) {
+      $listedvals++;
+      if($minutes > 1) {
+        $replystring .= "$minutes minutes ";
+      } else {
+        $replystring .= "$minutes minute ";
+      }
+    }
+    if($seconds && $listedvals < 2) {
+      $listedvals++;
+      if($seconds > 1) {
+        $replystring .= "$seconds seconds ";
+      } else {
+        $replystring .= "$seconds second ";
+      }
+    }
+
+    $replystring .= "ago ";
 
     if($type eq 'PUBLIC') {
       $replystring .= "saying '${lasttext}'";

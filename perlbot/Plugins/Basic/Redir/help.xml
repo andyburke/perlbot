@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin does message redirection between channels.</overview>
+  <command name="redir">This controls redirections<br/>Usage: redir [add|del|list] [source] [dest]<br/>add source dest - adds a redirect from source to dest<br/>del source dest - deletes the redirect from source to dest<br/>list - lists current redirects</command>
+</help>

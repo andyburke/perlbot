@@ -6,8 +6,9 @@ use Perlbot::Plugin;
 sub init {
   my $self = shift;
 
-  $self->hook('help', \&gethelp);
+  $self->want_public(0);
 
+  $self->hook('help', \&gethelp);
 }
 
 sub gethelp {
@@ -28,7 +29,7 @@ sub gethelp {
     }
   } else {
     $self->reply_error('Please specify a command or plugin name for help!');
-    $self->reply_error('Sending the bot the \'plugins\' command might be a good place to start.');
+    $self->reply_error('Sending the bot the \'listplugins\' command might be a good place to start.');
   }
 }
 

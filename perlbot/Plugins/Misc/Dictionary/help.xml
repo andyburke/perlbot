@@ -1,0 +1,5 @@
+<help>
+  <overview>This plugin looks up a word at www.ibiblio.org and returns it.</overview>
+  <command name="dictionary">Takes a word to look up and max definitions to return.<br/>Usage: dictionary word [maxdefs]</command>
+  <command name="dict">Alias for the dictionary command.</command>
+</help>

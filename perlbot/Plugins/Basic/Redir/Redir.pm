@@ -43,6 +43,11 @@ sub adminredirs {
       $self->reply("No such redirect: $source -> $dest");
       return;
     }
+  } elsif(lc($command) eq 'list') {
+    foreach my $src (keys(%{$self->{redirs}})) {
+      $self->reply("$src -> " . $self->{redirs}{$src});
+    }
+    return;
   }
 }
 

@@ -1,0 +1,5 @@
+<help>
+  <overview>This plugin is a gateway to the unix host command.</overview>
+  <command name="host">Looks up a host using the unix host command.<br/>Usage: host [unix host options] hostname|ip</command>
+  <command name="nslookup">Alias for the host command. (deprecated)</command>
+</help>

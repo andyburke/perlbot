@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin is a gateway to the unix dig command.</overview>
+  <command name="dig">Uses the unix command dig to gather information.<br/>Usage: dig [unix dig options]</command>
+</help>

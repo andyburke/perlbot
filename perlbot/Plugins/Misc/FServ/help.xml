@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin provides basic FServ functionality</overview>
+  <command name="fserv">Allows control of the fserv.<br/>Usage: fserv [list|send] [file]<br/>list - lists available files<br/>send file - sends file via dcc</command>
+</help>

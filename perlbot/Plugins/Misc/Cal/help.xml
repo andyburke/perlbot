@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin is a gateway to the unix cal utility.</overview>
+  <command name="cal">Lists this month's calendar by default.<br/>Usage: cal [unix cal options]</command>
+</help>

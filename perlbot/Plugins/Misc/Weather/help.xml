@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin gets the weather for a given location.</overview>
+  <command name="weather">Gets the weather for the specified location and returns it.<br/>Usage: weather city, state|zipcode</command>
+</help>

@@ -1,0 +1,9 @@
+<help>
+  <overview>This plugin provides information about the bot.</overview>
+  <command name="status">Shows the bot's status.<br/>Usage: status</command>
+  <command name="plugins">Lists the bot's currently loaded plugins. (deprecated)<br/>Usage: plugins</command>
+  <command name="listplugins">Lists the bot's currently loaded plugins.<br/>Usage: listplugins</command>
+  <command name="listchannels">Lists the bot's current channels.<br/>Usage: listchannels</command>
+  <command name="listchans">Lists the bot's current channels. (deprecated)<br/>Usage: listchans</command>
+  <command name="listusers">Lists the bot's known usernames.<br/>Usage: listusers</command>
+</help>
