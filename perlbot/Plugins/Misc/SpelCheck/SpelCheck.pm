@@ -1,6 +1,7 @@
 # SpelCheck
 # =========
 #
+# Jeremy Muhlich <jmuhlich@bitflood.org>
 # Andrew Burke <burke@bitflood.org>
 #
 # Spell checks words using the Google API. 
@@ -9,10 +10,9 @@
 
 package Perlbot::Plugin::SpelCheck;
 
-use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
-
 use strict;
+use Perlbot::Plugin;
+use base qw(Perlbot::Plugin);
 
 use Net::Google;
 

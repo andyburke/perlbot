@@ -1,7 +1,9 @@
 package Perlbot::Plugin::Seen;
 
+use strict;
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
+use fields qw(seen expiretime);
 
 use DB_File;
 
@@ -37,7 +39,7 @@ sub seen {
     my $curtime = time();
     
     $lastseentime = $curtime - $lastseentime;
-    $listedvals = 0;
+    my $listedvals = 0;
 
     my $replystring = "$name last seen ";
 

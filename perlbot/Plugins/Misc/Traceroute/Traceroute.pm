@@ -3,8 +3,10 @@
 
 package Perlbot::Plugin::Traceroute;
 
+use strict;
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
+use fields qw(traceroutebinary);
 
 use Perlbot::Utils;
 

@@ -9,8 +9,10 @@
 
 package Perlbot::Plugin::StatsServer;
 
+use strict;
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
+use fields qw(_topics);
 
 use Perlbot::Utils;
 
@@ -96,7 +98,7 @@ sub stats {
                     activeplugins => scalar @{$self->perlbot->plugins}};
     
     foreach my $channel (values %{$self->perlbot->channels}) {
-      $chan_data = {name => $channel->name, topic => { text => $self->{_topics}{$channel->name}[0], nick => $self->{_topics}{$channel->name}[1] }, member => [ keys(%{$channel->{members}}) ], logging => $channel->logging, limit => $channel->limit, flags => $channel->flags};
+      my $chan_data = {name => $channel->name, topic => { text => $self->{_topics}{$channel->name}[0], nick => $self->{_topics}{$channel->name}[1] }, member => [ keys(%{$channel->{members}}) ], logging => $channel->logging, limit => $channel->limit, flags => $channel->flags};
       push @{$data->{channel}}, $chan_data;
     }
     

@@ -6,13 +6,14 @@ package Perlbot::Plugin::Trivia;
 
 use strict;
 use Perlbot::Plugin;
+use base qw(Perlbot::Plugin);
+use fields qw(state minquestionsanswered gameid question questions playing score answeredthisquestion answeredthisround correctlyanswered totalanswered percentageranks winsranks performanceranks timeranks percentagerank winsrank performancerank timerank askedtime fastest fastestoverall beaten beatenoverall performance performanceoverall requestedhintnum lastrequestedhinttime initialhintgiven curquestion numquestions answered);
 
 use Time::HiRes qw(time);
 use DB_File;
 use String::Approx qw(amatch);
 use XML::Simple;
 
-our @ISA = qw(Perlbot::Plugin);
 our $VERSION = '0.2.0';
 
 sub init {

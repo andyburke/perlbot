@@ -4,10 +4,9 @@
 
 package Perlbot::Plugin::Weather;
 
-use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
-
 use strict;
+use Perlbot::Plugin;
+use base qw(Perlbot::Plugin);
 
 use Geo::Weather;
 
@@ -32,6 +31,9 @@ sub weather {
     $self->reply_error('Unable to get weather report!');
     return;
   } else {
+
+    use Data::Dumper;
+    print Dumper $report;
 
     my ($city, $state, $zip) = ($report->{city}, $report->{state}, $report->{zip});
     my $conditions = $report->{cond};

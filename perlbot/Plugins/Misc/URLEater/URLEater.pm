@@ -1,9 +1,10 @@
 package Perlbot::Plugin::URLEater;
 
-use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
-
 use strict;
+use Perlbot::Plugin;
+use base qw(Perlbot::Plugin);
+use fields qw(urls);
+
 use DB_File;
 
 our $VERSION = '1.0.0';

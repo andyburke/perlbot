@@ -4,8 +4,9 @@
 
 package Perlbot::Plugin::Slashdot;
 
+use strict;
 use Perlbot::Plugin;
-@ISA = qw(Perlbot::Plugin);
+use base qw(Perlbot::Plugin);
 
 use LWP::Simple;
 use XML::Simple;
@@ -34,7 +35,7 @@ sub slashdot {
 
     $self->reply('Slashdot search results:');
 
-    for($i = 0; $i < $max && $data->{item}[$i]; $i++) {
+    for(my $i = 0; $i < $max && $data->{item}[$i]; $i++) {
       my $short_title = $data->{item}[$i]->{title};
       $short_title =~ s/\(.*?\)$//;
       $short_title = substr($short_title, 0, 31);
@@ -55,7 +56,7 @@ sub slashdot {
     my $data = XMLin($xml);
     
     $self->reply('Slashdot headlines:');
-    for($i = 0; $i < $max; $i++) {
+    for(my $i = 0; $i < $max; $i++) {
       my $short_title = substr($data->{story}[$i]->{title}, 0, 31);
       my $output = sprintf("%32s / %10s / %8s\n", $short_title, $data->{story}[$i]->{author}, $data->{story}[$i]->{time});
       $self->reply($output);
