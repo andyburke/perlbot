@@ -48,71 +48,32 @@ sub new {
   return $self;
 }
 
-# The following are all just accessor functions into the bot object
+# This sub provides programmatic access to our object's variables
+# If someone tries to call a function that the perl interpreter
+# doesn't find, it tries this function.
 
-sub starttime {
+sub AUTOLOAD {
   my $self = shift;
-  return $self->{starttime};
-}
+  my $value = shift;
+  my $call = $AUTOLOAD;
 
-sub configfile {
-  my $self = shift;
-  my $filename = shift;
+  $call =~ s/.*:://;
 
-  if($filename) {
-    $self->{configfile} = $filename;
+  if($call eq 'BEGIN' || $call eq 'DESTROY') {
+    return;
   }
-  return $self->{configfile};
-}
 
-sub config {
-  my ($self) = @_;
-  return $self->{config};
-}
+  debug("AUTOLOAD:  Got call for method/variable: $call", 8);
 
-sub ircobject {
-  my $self = shift;
-  return $self->{ircobject};
-}
+  if(!exists($self->{$call})) {
+    die("No such method/variable: $call");
+  }
 
-sub ircconn {
-  my $self = shift;
-  return $self->{ircconn};
-}
+  if(defined($value)) {
+    $self->{$call} = $value;
+  }
 
-sub webserver {
-  my $self = shift;
-  return $self->{webserver};
-}
-
-sub plugins {
-  my ($self) = @_;
-  return $self->{plugins};
-}
-
-sub handlers {
-  my $self = shift;
-  return $self->{handlers};
-}
-
-sub users {
-  my $self = shift;
-  return $self->{users};
-}
-
-sub channels {
-  my $self = shift;
-  return $self->{channels};
-}
-
-sub curnick {
-  my $self = shift;
-  return $self->{curnick};
-}
-
-sub masterpid {
-  my $self = shift;
-  return $self->{masterpid};
+  return $self->{$call};
 }
 
 # starts everything rolling...
@@ -592,7 +553,7 @@ sub event_multiplexer {
   #   else
   #     do nothing
 
-  debug("event_multiplexer: Got event '".$event->type, 3);
+  debug("event_multiplexer: Got event '" . $event->type . "'", 3);
   foreach my $plugin (keys(%{$self->{handlers}{$event->type}})) {
     if (exists($self->{handlers}{$event->type}{$plugin})) {
       debug("  -> dispatching to '$plugin'", 3);
