@@ -1,11 +1,4 @@
 TODO:
-- make command character (character that prefaces commands sent to
-  the bot in msgs or in public) a configurable option instead of
-  hard-coded.  possibly also add some functionality to handler
-  code to allow easily hooking a command via msg or public, with
-  the command character stuff taken care of by the bot code.
-    -- this is done, pretty much, there is now Perlbot::pluginchar and
-       Perlbot::commandchar, both user-configgable
 - per-channel option to auto-rejoin when kicked
 - write help files for all the plugins that are included in the base
   distribution.
@@ -35,8 +28,6 @@ TODO:
     both parse and save out a seperate user config file
 - rewrite the define plugin to behave just like an infobot... or better yet,
   port infobot to a perlbot plugin... major props to anyone who does this
-- logsearch plugin, phil fibiger (pnf1@cornell.edu) is working on this, but
-  if you're interested in helping, drop him a line
 
 THOUGHTS:
 
@@ -48,7 +39,3 @@ THOUGHTS:
   and package names, so this might not be possible without a lot of directory
   rearranging and other hacking.
 
-- we should make several classes that represent redirections.  one for
-  channels, one for users, etc.  each channel would have a list of these
-  objects, and to redir something it would just pass a user and a string
-  to redir_obj->redir .
