@@ -97,8 +97,6 @@ sub answer {
 
   my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
 
-  print "text: <$text>  /  answer: <$answer>\n";
-
   if(lc($text) eq lc($answer)) {
     my $timediff = sprintf("%0.2f", time() - $self->{askedtime});
     $self->{answered} = 1;
@@ -176,8 +174,6 @@ sub hint {
   my $self = shift;
   my $question = shift;
 
-  print "in hint: self::curquestion = $self->{curquestion} / this question: $question\n";
-
   if($self->{state} ne 'asked' || $self->{curquestion} != $question) {
     return;
   }
@@ -204,8 +200,6 @@ sub hint {
 sub notanswered {
   my $self = shift;
   my $question = shift;
-
-  print "in notanswered: self::curquestion = $self->{curquestion} / this question: $question\n";
 
   if($self->{state} ne 'asked' || $self->{curquestion} != $question) {
     return;
