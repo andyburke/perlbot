@@ -38,8 +38,9 @@ sub new {
   # HUP reloads the config
   # DIE will give us a dump of what happened into the crashlog
 
-  $SIG{INT} = sub { $self->shutdown('ctrl-c from console') };
-  $SIG{HUP} = sub { $self->reload_config };
+  $SIG{INT}  = sub { $self->shutdown('ctrl-c from console') };
+  $SIG{TERM} = sub { $self->shutdown('killed') };
+  $SIG{HUP}  = sub { $self->reload_config };
   $SIG{__DIE__} = sub { $self->sigdie_handler(@_) };
 
   return $self;
