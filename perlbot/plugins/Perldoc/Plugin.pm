@@ -49,7 +49,7 @@ sub perldoc_response {
     #child
 
     ($parms = $event->{args}[0]) =~ s/^!perldoc\s*//;
-    my ($lines, $query) = split(' ', $parms, 2);
+    my ($query) = $parms;
 
     if($lines eq '') { $lines = 10; }
     
