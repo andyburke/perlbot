@@ -61,7 +61,9 @@ sub logsearch {
   my @results = $channel_obj->logs->search($args);
 
   if(@results) {
-    $self->reply(@results);
+    foreach my $result (@results) {
+      $self->reply($result->as_string());
+    }
   } else {
     $self->reply_error('No results found!');
   }

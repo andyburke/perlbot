@@ -46,10 +46,12 @@ Table of Contents
   - Optional, but recommended:
       Algorithm::MarkovChain (For the Outlander plugin)
       Calendar::Simple (For the Cal plugin)
+      Date::Manip (Misc modules use this)
       HTML::CalendarMonth (Used by the LogServer plugin)
       HTML::TableExtract (Used by some web plugins)
       HTTP::Daemon (Used by the integrated webserver)
       LWP::Simple (Many web plugins use this module)
+      Net::DNS (For the Host plugin)
       Net::Google (For the Google and SpelCheck plugins)
       String::Approx (Used by the Trivia plugin)
       Weather::Underground (For the Weather plugin)

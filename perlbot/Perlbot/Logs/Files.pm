@@ -271,20 +271,21 @@ sub search {
       next if $nick and $event->nick ne $nick;
       next if $type and $event->type ne $type;
 
-      if (@$terms) {
-        defined($event->text) or next;
-      }
-
       my $add_to_result = 1;
-      foreach my $term (@$terms) {
-        if ($event->text !~ /$term/i) {
-          $add_to_result = 0;
-          last;
+
+      if (defined($terms)) {
+        defined($event->text) or next;
+        
+        foreach my $term (@$terms) {
+          if ($event->text !~ /$term/i) {
+            $add_to_result = 0;
+            last;
+          }
         }
       }
 
       if ($add_to_result) {
-        push(@result, $line) if wantarray();
+        push(@result, $event) if wantarray();
         $resultcount++;
         last FILE if $boolean;
       }
