@@ -24,8 +24,6 @@ sub host {
 
   my @result = Perlbot::Utils::exec_command($self->{traceroutebinary}, $text);
 
-  foreach my $line (@result) {
-    $self->reply($line);
-  }
+  $self->reply(@result);
 }
 

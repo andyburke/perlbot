@@ -173,6 +173,7 @@ sub process_config {
                             logdir => $self->config(bot => 'logdir'));
       
       foreach my $op ($self->config(channel => $channel => 'op')) {
+        $op or next;
         $chan->add_op($op) if (exists($self->{users}{$op}));
       }
 

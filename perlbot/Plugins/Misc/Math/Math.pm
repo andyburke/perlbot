@@ -31,7 +31,11 @@ sub math {
   $compartment->permit_only(qw(:base_core));
 
   my $result = $compartment->reval($text);
-  $self->reply($result);
+  if(length($result) > 0) {
+    $self->reply($result);
+  } else {
+    $self->reply("Enter a valid perl mathematical expression!");
+  }
 }
 
 1;

@@ -64,6 +64,8 @@ sub hostmasks {
     my $self = shift;
     my @hostmasks = @_;
 
+    $self or return undef;
+
     foreach my $hostmask (@hostmasks) {
         # make sure the hostmask is OK before adding it
 	if (!validate_hostmask($hostmask)) {

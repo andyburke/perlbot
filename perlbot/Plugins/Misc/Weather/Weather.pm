@@ -56,7 +56,7 @@ sub weather {
     if($visibility =~ /\d+/) {
       $self->reply("  Visibility: ${visibility}Mi (${visibilitym}Km)");
     } else {
-      $self->reply("  Visibitliy: $visibility");
+      $self->reply("  Visibility: $visibility");
     }
   }
 }
