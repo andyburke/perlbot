@@ -20,6 +20,7 @@ bot {
 	logdir		./logs
 	noload		MegaHal
 	noload		Guile
+        noload		Internals
 	nickappend	_
 	nick		perlbot
 	plugindir	./plugins
