@@ -35,6 +35,7 @@ sub lookup {
   my $event = shift;
   my $who = shift;
   my $in;
+  my @text;
 
   if (!defined($pid = fork)) {
     $conn->privmsg($chan, "error in host plugin... weird.");
@@ -79,7 +80,7 @@ sub lookup {
 
     chomp @text;
     foreach my $text (@text) {
-      $conn->privmsg($who, $lookup[0]);
+      $conn->privmsg($who, $text);
     }
     $conn->{_connected} = 0;
     exit 0;
