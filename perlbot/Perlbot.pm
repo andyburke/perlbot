@@ -1,6 +1,6 @@
 package Perlbot;
 
-use 5.8.0;
+use v5.8.0;
 
 use strict;
 use Net::IRC;
