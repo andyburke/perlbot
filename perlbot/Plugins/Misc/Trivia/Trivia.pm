@@ -140,7 +140,7 @@ sub answer {
   }
 
   if(!defined($self->{answeredthisquestion}{$nick})) {
-    if(!defined($self->{answeredthisround}{$nick})) {
+    if(!defined($self->{answeredthisround}{$nick}) || $self->{answeredthisround}{$nick} <= 0) {
       $self->{answeredthisround}{$nick} = 1;
     } else {
       $self->{answeredthisround}{$nick}++;
