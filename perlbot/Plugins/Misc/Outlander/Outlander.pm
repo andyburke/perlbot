@@ -143,7 +143,7 @@ sub sodoit {
     } else {
       $endchar = '.';
     }
-    $reply = $reply . $endchar;
+#    $reply = $reply . $endchar;
     $reply = $self->babel($reply);
     my $timediff = time() - $starttime;
     
@@ -154,21 +154,21 @@ sub sodoit {
     if($timediff > $self->delay($reply)) {
       my $replyorder = int(rand(10));
       if($replyorder == 7) { # 1/10 chance
-        $self->reply($reply); # don't put on a nick
+        $self->reply($reply . $endchar); # don't put on a nick
       } elsif($replyorder % 3 == 0) { # ~ 1/3 chance
-        $self->reply($reply . ", $theirnick"); # put their nick on the end
+        $self->reply($reply . ", $theirnick" . $endchar); # put their nick on the end
       } else { # the rest
-        $self->addressed_reply($reply);
+        $self->addressed_reply($reply . $endchar);
       }
     } else {
       sleep($self->delay($reply) - $timediff);
       my $replyorder = int(rand(10));
       if($replyorder == 7) { # 1/10 chance
-        $self->reply($reply); # don't put on a nick
+        $self->reply($reply . $endchar); # don't put on a nick
       } elsif($replyorder % 3 == 0) { # ~ 1/3 chance
-        $self->reply($reply . ", $theirnick"); # put their nick on the end
+        $self->reply($reply . ", $theirnick" . $endchar); # put their nick on the end
       } else { # the rest
-        $self->addressed_reply($reply);
+        $self->addressed_reply($reply . $endchar);
       }
     }
   }
