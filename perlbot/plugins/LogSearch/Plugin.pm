@@ -17,10 +17,15 @@ sub on_public {
   my $args = $event->{args}[0];
   my $logdir;
   my $who = $event->{to}[0];
-  my $max_results = 5;
+    
+  my $maxresults = 5;
   my $results = 0;
+    
+  my $initialdate;
+  my $finaldate;
+    
   my $pid;
-
+    
   if($args =~ /^${pluginchar}logsearch/) { 
     if(!defined($pid = fork)) {
       $conn->privmsg($who, "error in logsearch plugin: failed to fork");
@@ -38,12 +43,26 @@ sub on_public {
       $args =~ tr/[A-Z]/[a-z]/;
       
       $args =~ s/^${pluginchar}logsearch\s+//;
+
+      my($channel) = split(/ /, $args);
+      $args =~ s/^$channel\s+//;
+
+      my ($tempmaxresults) = $args =~ /^(\d+)\s+/;
+      if($tempmaxresults) { $maxresults = $tempmaxresults; }
+      $args =~ s/^\d+\s+//;
+
+      my ($initialyear, $initialmonth, $initialday) = $args =~ /(\d\d\d\d)[\.\/-](\d\d)[\.\/-](\d\d)\s+/;
+      $args =~ s/\d\d\d\d[\.\/-]\d\d[\.\/-]\d\d\s+//;
+      $initialdate = $initialyear . $initialmonth . $initialday;
+
+      my ($finalyear, $finalmonth, $finalday) = $args =~ /(\d\d\d\d)[\.\/-](\d\d)[\.\/-](\d\d)\s+/;
+      $args =~ s/\d\d\d\d[\.\/-]\d\d[\.\/-]\d\d\s+//;
+      $finaldate = $finalyear . $finalmonth . $finalday;
+
       my @words = split(/ /, $args);
       
-      my $channel = shift @words;
-      
       if(!$channel) {
-	$conn->privmsg($who, "No channel specified!");
+	$conn->privmsg($who, "usage: ${pluginchar}logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>");
 	$conn->{_connected} = 0;
 	exit 0;
       }
@@ -56,8 +75,6 @@ sub on_public {
         $logdir = $Logs::basedir . "/" . $channel . "/";
       }
      
-     print $logdir . "\n";
- 
       if($Logs::basedir =~ /^\./) {
 	my @topleveldir = `pwd`;
 	chomp $topleveldir[0];
@@ -69,6 +86,18 @@ sub on_public {
 	
 	my @files = sort(@tmpfiles);
 	foreach my $file (@files) {
+          my ($year) = $file =~ /^(\d\d\d\d)/;
+          my ($month) = $file =~ /\.(\d\d)\./;
+          my ($day) = $file =~ /(\d\d)$/;
+          my $abstime = $year . $month . $day; # YYYYMMDD
+
+          if($initialdate) {
+            if($abstime < $initialdate) { next; }
+          }
+          if($finaldate) {
+            if($abstime > $finaldate) { next; }
+          }
+
 	  my @lines;
 	  open FILE, "$logdir$file";
 	  @lines = <FILE>;
@@ -80,7 +109,7 @@ sub on_public {
 	  
 	  my $i = 0;
 	  foreach(@lines) {
-	    if($results < $max_results) {
+	    if($results < $maxresults) {
 	      if($i == 0) { $conn->privmsg($who, "$file:"); }
 	      chomp $lines[$i];
 	      $conn->privmsg($who, "  " . $lines[$i]);
@@ -94,12 +123,16 @@ sub on_public {
 	}
 	
       } else {
-	$conn->privmsg($who, "No logs for channel: $channel");
+	$conn->privmsg($who, "usage: ${pluginchar}logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>");
 	$conn->{_connected} = 0;
 	exit 0;
       }
+      
+      $conn->{_connected} = 0;
+      exit 0;
     }
   }
+
 }
 
 sub on_msg {
