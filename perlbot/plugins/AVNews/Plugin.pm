@@ -65,7 +65,7 @@ sub get_avnews {
 
     my $args;
     ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-    $args =~ s/^!av-news\s*//;
+    $args =~ s/^${pluginchar}av-news\s*//;
     
     my($remote,$port,$iaddr,$paddr,$proto,$line);
     $remote = "www.avault.com";

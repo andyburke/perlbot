@@ -65,7 +65,7 @@ sub get_avdemos {
 
     my $args;
     ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-    $args =~ s/^!av-demos\s*//;
+    $args =~ s/^${pluginchar}av-demos\s*//;
     
     my($remote,$port,$iaddr,$paddr,$proto,$line);
     $remote = "www.avault.com";
