@@ -33,6 +33,8 @@ if(defined($ENV{PERLBOT_DEBUG})) {
 }
 $DEBUG ||= 0;
 
+my $DEBUG_LINENUMBERS = defined($ENV{PERLBOT_DEBUG_LINENUMBERS}) ? $ENV{PERLBOT_DEBUG_LINENUMBERS} : 0;
+
 sub debug {
   my $ref = shift;
   my $level = shift;
@@ -46,7 +48,7 @@ sub debug {
 
   my $output = "($$) $subroutine";
 
-  if($DEBUG >= 5) {
+  if($DEBUG_LINENUMBERS) {
     $output .= " ($filename, line $line)";
   }
 
