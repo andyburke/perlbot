@@ -54,7 +54,7 @@ sub sodoit {
     $text =~ s/^.*?(?:,|:)\s*//;
 
     my $starttime = time();
-    my @response = $self->{chain}->spew(complete => $text, length => length($text));
+    my @response = $self->{chain}->spew(complete => $text, length => length($text)/2);
     $reply = "@response";
     chomp $reply;
     $reply = $self->babel($reply);
@@ -81,7 +81,7 @@ sub sodoit {
     $text =~ s/$curnick/$theirnick/ig;
 
     my $starttime = time();
-    my @response = $self->{chain}->spew(complete => $text, length => length($text));
+    my @response = $self->{chain}->spew(complete => $text, length => length($text)/2);
     $reply = "@response";
     chomp $reply;
     $reply = $self->babel($reply);
@@ -104,7 +104,7 @@ sub sodoit {
 
   open(KNOWLEDGE, '>' . File::Spec->catfile($self->{directory}, 'knowledge'));
   foreach my $s (@{$self->{symbols}}) {
-    print KNOWLEDGE $s;
+    print KNOWLEDGE "$s ";
   }
   close(KNOWLEDGE);
 }
