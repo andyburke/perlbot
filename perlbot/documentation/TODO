@@ -15,6 +15,9 @@ for 2.0:
 - move config stuff into a Config object
 - add character-counting to max-output functionality in case of
   very long lines (1 line = 80 chars?)
+- !seen info for everyone, not just users (should probably search
+  on username first, then on irc nick if requested user does not
+  exist).  also store last spoken line and display with timestamp.
 
 when we can:
 
