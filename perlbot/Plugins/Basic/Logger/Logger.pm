@@ -36,7 +36,7 @@ sub log {
   my $nick = $event->nick;
 
   my $channel = $event->{to}[0];
-  my $chan = $self->{perlbot}->get_channel($channel);
+  my $chan = $self->perlbot->get_channel($channel);
 
   if($type eq 'public') {
     my $text = $event->{args}[0];
@@ -67,21 +67,21 @@ sub log {
     }
   } elsif($type eq 'nick') {
     my $newnick = $event->{args}[0];
-    foreach my $chan (values(%{$self->{perlbot}->channels})) {
+    foreach my $chan (values(%{$self->perlbot->channels})) {
       if ($chan->is_member($nick) || $chan->is_member($newnick)) {
         $chan->log_write("[NICK] $nick changed nick to: $newnick");
       } 
     }
   } elsif($type eq 'quit') {
     my $text = $event->{args}[0];
-    foreach my $chan (values(%{$self->{perlbot}->channels})) {
+    foreach my $chan (values(%{$self->perlbot->channels})) {
       if ($chan->is_member($nick)) {
         $chan->log_write("[QUIT] $nick quit: $text");
         $chan->remove_member($nick);
       }
     }
   } elsif($type eq 'kick') {
-    my $chan = $self->{perlbot}->get_channel($event->{args}[0]);
+    my $chan = $self->perlbot->get_channel($event->{args}[0]);
     if ($chan) {
       $chan->log_write('[KICK] ' . $event->{to}[0] . ' was kicked by ' . $event->nick . ' (' . $event->{args}[1] . ')');
     }

@@ -29,10 +29,10 @@ sub join_channels {
 
   print "joining channels\n" if $DEBUG;
 
-  foreach my $channel (values(%{$self->{perlbot}->{channels}})) {
+  foreach my $channel (values(%{$self->perlbot->channels})) {
     print "Joining ".$channel->name."\n" if $DEBUG;
-    $self->{perlbot}->join($channel);
-    $self->{perlbot}->whois($channel);
+    $self->perlbot->join($channel);
+    $self->perlbot->whois($channel);
   }
 
 }
@@ -54,17 +54,17 @@ sub reconnect {
     print "---End dump...\n";
   }
 
-  while ($i < @{$self->{perlbot}->config->value('server')}
-         && $self->{perlbot}->config->value('server' => $i => 'address') ne $old_server) {
-    print "looking at server: " . $self->{perlbot}->config->value('server' => $i => 'address') . "\n" if $DEBUG;
+  while ($i < @{$self->perlbot->config->value('server')}
+         && $self->perlbot->config->value('server' => $i => 'address') ne $old_server) {
+    print "looking at server: " . $self->perlbot->config->value('server' => $i => 'address') . "\n" if $DEBUG;
     $i++;
   }
 
   $i++; #look at the server AFTER the old one
 
-  while (!$self->{perlbot}->connect($i)) {
+  while (!$self->perlbot->connect($i)) {
     $i++;
-    $i = $i % @{$self->{perlbot}->config->value('server')};
+    $i = $i % @{$self->perlbot->config->value('server')};
   }
 }
 
@@ -72,7 +72,7 @@ sub cycle_nick {
   my $self = shift;
   my $event = shift;
 
-  $self->{perlbot}->nick($self->{perlbot}->{curnick} . $self->{perlbot}->config->value(bot => 'nickappend'));
+  $self->perlbot->nick($self->perlbot->curnick . $self->perlbot->config->value(bot => 'nickappend'));
 }
 
 1;

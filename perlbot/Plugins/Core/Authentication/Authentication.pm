@@ -34,7 +34,7 @@ sub auth {
     return;
   }
 
-  if (my $check_user = $self->{perlbot}->get_user($username)) {
+  if (my $check_user = $self->perlbot->get_user($username)) {
     if ($check_user->password
         && (crypt($password, $check_user->password) eq $check_user->password())) {
       $check_user->add_temp_hostmask($userhost);
@@ -135,7 +135,7 @@ sub delhostmask {
   if (@{$user->hostmasks} == $old_num) {
     $self->reply("$hostmask not in your list of hostmasks!");
   } else {
-    $self->{perlbot}->config->save;
+    $self->perlbot->config->save;
     $self->reply("Permanently removed $hostmask from your list of hostmasks.");
   }
 

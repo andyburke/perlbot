@@ -108,7 +108,7 @@ sub updater {
   my $event = shift;
   my $nick = $event->nick;
 
-  my $user = $self->{perlbot}->get_user($event->from());
+  my $user = $self->perlbot->get_user($event->from());
 
   if($event->type eq 'public') {
     if($user) {

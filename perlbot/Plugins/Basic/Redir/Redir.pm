@@ -59,7 +59,7 @@ sub redir {
 
   if($self->{redirs}{normalize_channel($chan)}) {
     foreach my $target (@{$self->{redirs}{normalize_channel($chan)}}) {
-      $self->{perlbot}->msg($target, "[${chan}] <$event->{nick}> $event->{args}[0]");
+      $self->perlbot->msg($target, "[${chan}] <$event->{nick}> $event->{args}[0]");
     }
   }
 }

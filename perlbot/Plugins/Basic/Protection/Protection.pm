@@ -21,16 +21,16 @@ sub modechange {
   my $deopper = $event->nick();
   my $mintime = $self->config->value('mintimebetweendeops');
 
-  if ($deopper eq $self->{perlbot}{curnick}) { return; }
+  if ($deopper eq $self->perlbot->curnick) { return; }
 
   if ($modestring =~ /-o/) {
     my $numdeops = length(($modestring =~ /-(o+)/g)[0]);
 
     if ($numdeops > 1 && $mintime > 0) {
-      $self->{perlbot}->deop($event->{to}[0], $event->nick());
+      $self->perlbot->deop($event->{to}[0], $event->nick());
     } elsif ($self->{deoppers}{$deopper} &&
              (time() - $self->{deoppers}{$event->nick()}) < $mintime) {
-      $self->{perlbot}->deop($event->{to}[0], $event->nick());
+      $self->perlbot->deop($event->{to}[0], $event->nick());
     }
 
     $self->{deoppers}{$event->nick()} = time();

@@ -41,7 +41,7 @@ sub useradmin {
     return;
   }
 
-  my $other_user = $self->{perlbot}->get_user($username);
+  my $other_user = $self->perlbot->get_user($username);
   if (grep {$_ eq $command} qw(remove hostmasks addhostmask delhostmask password addop)) {
     if (!$other_user) {
       $self->reply("$username is not a known user!");
@@ -54,16 +54,16 @@ sub useradmin {
       $self->reply("User $username already exists!");
       return;
     }
-    $self->{perlbot}->config->value('user')->{$username} = {};
-    $self->{perlbot}->config->save;
-    $self->{perlbot}{users}{$username} = new Perlbot::User($username, $self->{perlbot}->config);
+    $self->perlbot->config->value('user')->{$username} = {};
+    $self->perlbot->config->save;
+    $self->perlbot->users->{$username} = new Perlbot::User($username, $self->perlbot->config);
     $self->reply("Added user: $username");
 
   } elsif ($command eq 'remove') {
-    delete $self->{perlbot}->users->{$username};
+    delete $self->perlbot->users->{$username};
     # hash lookup must be performed "outside" of ->value call for delete to work
-    delete $self->{perlbot}->config->value('user')->{$username};
-    $self->{perlbot}->config->save;
+    delete $self->perlbot->config->value('user')->{$username};
+    $self->perlbot->config->save;
     $self->reply("Removed user: $username");
 
   } elsif ($command eq 'hostmasks') {
@@ -80,7 +80,7 @@ sub useradmin {
       $self->reply("Invalid hostmask: $hostmask");
     } else {
       $other_user->add_hostmask($hostmask);
-      $self->{perlbot}->config->save;
+      $self->perlbot->config->save;
       $self->reply("Permanently added $hostmask to ${username}'s list of hostmasks.");
     }
 
@@ -95,7 +95,7 @@ sub useradmin {
     if ($old_num == @{$other_user->hostmasks}) {
       $self->reply("$hostmask is not in ${username}'s list of hostmasks!");
     } else {
-      $self->{perlbot}->config->save;
+      $self->perlbot->config->save;
       $self->reply("Permanently removed $hostmask from ${username}'s list of hostmasks.");
     }
 
@@ -107,7 +107,7 @@ sub useradmin {
     }
     my $newpass = crypt($password, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
     $other_user->password($newpass);
-    $self->{perlbot}->config->save;
+    $self->perlbot->config->save;
     $self->reply("Password saved for user: $username");
 
   } elsif ($command eq 'addop') {
@@ -116,13 +116,13 @@ sub useradmin {
       $self->reply_error('You must specify both a channel and a username!');
       return;
     }
-    my $channel = $self->{perlbot}->get_channel($channame);
+    my $channel = $self->perlbot->get_channel($channame);
     if (!$channel) {
       $self->reply_error("No such channel: $channame");
       return;
     }
     $channel->add_op($username);
-    $self->{perlbot}->config->save;
+    $self->perlbot->config->save;
     $self->reply("Added $username to the list of ops for $channel");
 
   } else {

@@ -27,7 +27,7 @@ sub random {
   my $user = shift;
   my $text = shift;
 
-  my $curnick = $self->{perlbot}{curnick};
+  my $curnick = $self->perlbot->curnick;
 
   if($text !~ /$curnick/) {
     if(int(rand(20)) == 0) {

@@ -29,7 +29,7 @@ sub nick {
   my $newnick = shift;
 
   if($newnick) {
-    $self->{perlbot}->nick($newnick);
+    $self->perlbot->nick($newnick);
   } else {
     $self->reply('You must specify a new nickname!');
   }
@@ -40,7 +40,7 @@ sub quit {
   my $user = shift;
   my $quitmsg = shift;
 
-  $self->{perlbot}->shutdown($quitmsg);
+  $self->perlbot->shutdown($quitmsg);
 }
 
 sub join {
@@ -51,8 +51,8 @@ sub join {
   $channel = normalize_channel($channel);
   my $chan = new Perlbot::Channel($channel, new Perlbot::Config());
   $chan->key($key);
-  $self->{perlbot}->channels->{$channel} = $chan;
-  $self->{perlbot}->join($chan);
+  $self->perlbot->channels->{$channel} = $chan;
+  $self->perlbot->join($chan);
 }
 
 sub part {
@@ -62,10 +62,9 @@ sub part {
 
   $channel = normalize_channel($channel);
 
-  if ($self->{perlbot}->get_channel($channel)) {
-    $self->{perlbot}->part($self->{perlbot}->get_channel($channel));
-    delete $self->{perlbot}->channels->{$channel};
-    $self->{perlbot}->lajsd;
+  if ($self->perlbot->get_channel($channel)) {
+    $self->perlbot->part($self->perlbot->get_channel($channel));
+    delete $self->perlbot->channels->{$channel};
   } else {
     $self->reply("I am not currently in $channel");
   }
@@ -78,7 +77,7 @@ sub cycle {
 
   $channel = normalize_channel($channel);
 
-  if ($self->{perlbot}->get_channel($channel)) {
+  if ($self->perlbot->get_channel($channel)) {
     $self->part($user, $channel);
     $self->join($user, $channel);
   } else {
@@ -93,7 +92,7 @@ sub say {
 
   $channel = normalize_channel($channel);
 
-  $self->{perlbot}->msg($channel, $text);
+  $self->perlbot->msg($channel, $text);
 }
 
 sub msg {
@@ -101,7 +100,7 @@ sub msg {
   my $user = shift;
   my ($target, $text) = split(' ', shift, 2);
 
-  $self->{perlbot}->msg($target, $text);
+  $self->perlbot->msg($target, $text);
 }
 
 sub op {
@@ -121,7 +120,7 @@ sub op {
     return;
   }
 
-  my $chan = $self->{perlbot}->get_channel($channel);
+  my $chan = $self->perlbot->get_channel($channel);
   if (!$chan) {
     $self->reply("No such channel: $channel");
     return;
@@ -130,7 +129,7 @@ sub op {
   if (! grep {$_ eq $user->name} @{$chan->ops}) {
     $self->reply("You are not a valid op for channel $channel");
   } else {
-    $self->{perlbot}->op($channel, $user->{curnick});
+    $self->perlbot->op($channel, $user->{curnick});
   }
 }
 

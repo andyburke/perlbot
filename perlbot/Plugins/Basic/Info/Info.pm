@@ -13,10 +13,8 @@ sub init {
   $self->want_fork(0);
 
   $self->hook('status', \&status);
-  $self->hook('plugins', \&listplugins); # backwards compat
   $self->hook('listplugins', \&listplugins);
   $self->hook('listchannels', \&listchannels);
-  $self->hook('listchans', \&listchannels); # back compat
   $self->hook('listusers', \&listusers);
 }
 
@@ -24,7 +22,7 @@ sub status {
   my $self = shift;
   my $user = shift;
 
-  my $uptime = time() - $self->{perlbot}->{starttime};
+  my $uptime = time() - $self->perlbot->{starttime};
   my $uptimedays = sprintf("%02d", $uptime / 86400);
   $uptime = $uptime % 86400;
   my $uptimehours = sprintf("%02d", $uptime / 3600);
@@ -35,9 +33,9 @@ sub status {
 
   $self->reply("Perlbot $Perlbot::VERSION / $Perlbot::AUTHORS");
   $self->reply("Uptime: ${uptimedays}d:${uptimehours}h:${uptimeminutes}m:${uptimeseconds}s");
-  $self->reply("Known users: " . keys(%{$self->{perlbot}->users}));
-  $self->reply("Channels active: " . keys(%{$self->{perlbot}->channels}));
-  $self->reply("Plugins active: " . @{$self->{perlbot}->plugins});
+  $self->reply("Known users: " . keys(%{$self->perlbot->users}));
+  $self->reply("Channels active: " . keys(%{$self->perlbot->channels}));
+  $self->reply("Plugins active: " . @{$self->perlbot->plugins});
 
 }
 
@@ -48,7 +46,7 @@ sub listplugins {
   my @plugins;
 
   if (!$text) {
-    foreach my $plugin (@{$self->{perlbot}->plugins}) {
+    foreach my $plugin (@{$self->perlbot->plugins}) {
       push(@plugins, $plugin->{name});
     }
     $self->reply('plugins: ' . join(' ', @plugins));
@@ -63,7 +61,7 @@ sub listchannels {
 
   my @channels;
 
-  foreach my $channel (keys(%{$self->{perlbot}->channels})) {
+  foreach my $channel (keys(%{$self->perlbot->channels})) {
     push(@channels, $channel);
   }
 
@@ -77,7 +75,7 @@ sub listusers {
 
   my @users;
 
-  foreach my $user (keys(%{$self->{perlbot}->users})) {
+  foreach my $user (keys(%{$self->perlbot->users})) {
     push(@users, $user);
   }
 

@@ -67,7 +67,7 @@ sub starttrivia {
   $self->{numquestions} = $numquestions;
   $self->reply("Starting a new trivia game of $numquestions questions!");
 
-  $self->{perlbot}{ircconn}->schedule(10, sub { $self->askquestion() });
+  $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
 }
 
 sub stoptrivia {
@@ -120,7 +120,7 @@ sub answer {
     }
 
     $self->{curquestion}++;
-    $self->{perlbot}{ircconn}->schedule(10, sub { $self->askquestion() });
+    $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
 
   }
 }
@@ -145,8 +145,8 @@ sub askquestion {
     $self->{answered} = 0;
     $self->reply("${curquestion}. [${category}] $question");
     $self->{askedtime} = time();
-    $self->{perlbot}{ircconn}->schedule(10, sub { $self->hint("$curquestion") });
-    $self->{perlbot}{ircconn}->schedule(30, sub { $self->notanswered("$curquestion") });
+    $self->perlbot->ircconn->schedule(10, sub { $self->hint("$curquestion") });
+    $self->perlbot->ircconn->schedule(30, sub { $self->notanswered("$curquestion") });
   } else {
     $self->reply("Game over.");
     $self->endofgame();
@@ -200,7 +200,7 @@ sub notanswered {
 
   $self->reply("The answer was: $answer");
   $self->{state} = 'playing';
-  $self->{perlbot}{ircconn}->schedule(10, sub { $self->askquestion() });
+  $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
   $self->{curquestion}++;
 
 }

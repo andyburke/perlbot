@@ -518,7 +518,8 @@ sub _dispatch {
       # child
       $coderef->($self, @params);
       $self->{perlbot}->empty_queue; # send all waiting events
-      $self->{perlbot}->disconnect;
+      $self->_shutdown();
+      $self->perlbot->shutdown();
     }
 
   } else {
@@ -530,7 +531,13 @@ sub _dispatch {
 
 sub shutdown {
   my $self = shift;
+}
 
+sub _shutdown {
+  my $self = shift;
+
+  if($self->config) { $self->config->save(); }
+  $self->shutdown();
 }
 
 

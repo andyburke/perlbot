@@ -19,7 +19,11 @@ sub nick {
   my $self = shift;
   my $user = shift;
 
-  $self->perlbot->reload_config();
+  if($self->perlbot->reload_config()) {
+    $self->reply('Reloaded config file!');
+  } else {
+    $self->reply_error('Could not reload config file!');
+  }
 }
 
 1;

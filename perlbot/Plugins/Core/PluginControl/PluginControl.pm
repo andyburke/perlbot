@@ -30,7 +30,7 @@ sub plugins {
       $self->reply('You need to specify a plugin to load!');
       return;
     }
-    if ($self->{perlbot}->load_plugin($param)) {
+    if ($self->perlbot->load_plugin($param)) {
       $self->reply("Successfully loaded plugin '$param'");
     } else {
       $self->reply("Couldn't load plugin '$param'");

@@ -7,7 +7,7 @@
 
 package Perlbot::Plugin::InfoBot;
 
-use Perlbot::Util;
+use Perlbot::Utils;
 use Perlbot::Plugin;
 @ISA = qw(Perlbot::Plugin);
 

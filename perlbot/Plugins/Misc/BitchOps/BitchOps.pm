@@ -36,19 +36,19 @@ sub modechange {
   foreach my $nick (keys(%modehash)) {
     my $validop = 0;
       
-    if($nick eq $self->{perlbot}{curnick}) { next; } #heh
+    if($nick eq $self->perlbot->curnick) { next; } #heh
 
     if($modehash{$nick} eq '+o') {
-      foreach my $user (values(%{$self->{perlbot}{users}})) {
+      foreach my $user (values(%{$self->perlbot->users})) {
         if(($user->curnick eq $nick)
-           && $self->{perlbot}{channels}{$channel}{ops}{$user->name}) {
+           && $self->perlbot->channels->$channel->is_op($user)) {
           $validop = 1;
           next;
         }
       }
     }
     if(!$validop) {
-      $self->{perlbot}->deop($channel, $nick);
+      $self->perlbot->deop($channel, $nick);
     }
   }
 }

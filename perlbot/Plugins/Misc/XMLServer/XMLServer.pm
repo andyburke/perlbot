@@ -37,7 +37,7 @@ sub init {
     $SIG{CHLD} = IGNORE; #sub { wait };
   } else {
 
-    $self->{perlbot}{ircconn}{_connected} = 0;
+    $self->perlbot->ircconn->{_connected} = 0;
 
     $srv->server_loop();
   }

@@ -20,15 +20,15 @@ sub ping {
   my $self = shift;
   my $event = shift;
 
-  $self->{perlbot}{ircconn}->ctcp_reply($event->nick, join (' ', ('PING', $event->args)));
+  $self->perlbot->ircconn->ctcp_reply($event->nick, join (' ', ('PING', $event->args)));
 }
 
 sub version {
   my $self = shift;
   my $event = shift;
 
-  $self->{perlbot}{ircconn}->ctcp_reply($event->nick,
-                                        "VERSION Perlbot version: $Perlbot::VERSION / by: $Perlbot::AUTHORS");
+  $self->perlbot->ircconn->ctcp_reply($event->nick,
+                                      "VERSION Perlbot version: $Perlbot::VERSION / by: $Perlbot::AUTHORS");
 }
 
 1;

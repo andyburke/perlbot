@@ -50,13 +50,13 @@ sub fserv {
     my $filenum = $args - 1; # real index
     if($self->{files}[$filenum]) {
       $self->reply('Beginning DCC SEND of ' . $self->{files}[$filenum]);
-      $self->{perlbot}->dcc_send($self->{lastnick},
-                                 File::Spec->catfile($self->{directory}, 'files', $self->{files}[$filenum]));
+      $self->perlbot->dcc_send($self->{lastnick},
+                             File::Spec->catfile($self->{directory}, 'files', $self->{files}[$filenum]));
     } else {
       $self->reply_error('No such file: ' . ++$filenum);
     }
   } elsif($command eq 'open') {
-    $self->{perlbot}->dcc_chat($self->{lastnick}, $self->{lasthost});
+    $self->perlbot->dcc_chat($self->{lastnick}, $self->{lasthost});
   } elsif($command eq '') {
     $self->reply_error('try: list, send');
   } else {

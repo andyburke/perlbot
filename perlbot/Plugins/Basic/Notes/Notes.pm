@@ -37,8 +37,8 @@ sub note {
      return;
   }
 
-  foreach my $tmpuser (keys(%{$self->{perlbot}{users}})) {
-    if($recipient eq $tmpuser || $recipient eq $self->{perlbot}{users}{$tmpuser}{curnick}) {
+  foreach my $tmpuser (keys(%{$self->perlbot->users})) {
+    if($recipient eq $tmpuser || $recipient eq $self->perlbot->users->{$tmpuser}->curnick) {
       $self->{notes}{$tmpuser} .= time() . ":::${sender}:::${note}::::";
       $self->reply("Note stored for $recipient");
       $self->{notified}{$tmpuser} = 0;
@@ -117,12 +117,12 @@ sub readnote {
 sub notify {
   my $self = shift;
   my $event = shift;
-  my $user = $self->{perlbot}->get_user($event->from);
+  my $user = $self->perlbot->get_user($event->from);
 
   if($user) {
     if(exists($self->{notified}{$user->name})) {
       if(!$self->{notified}{$user->name}) {
-        $self->{perlbot}->msg($user->curnick, 'You have notes stored for you!');
+        $self->perlbot->msg($user->curnick, 'You have notes stored for you!');
         $self->{notified}{$user->name} = 1;
       }
     }

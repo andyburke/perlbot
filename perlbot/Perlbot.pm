@@ -40,6 +40,67 @@ sub new {
   return $self;
 }
 
+sub starttime {
+  my $self = shift;
+  return $self->{starttime};
+}
+
+sub configfile {
+  my $self = shift;
+  my $filename = shift;
+
+  if($filename) {
+    $self->{configfile} = $filename;
+  }
+  return $self->{configfile};
+}
+
+sub config {
+  my ($self) = @_;
+  return $self->{config};
+}
+
+sub ircobject {
+  my $self = shift;
+  return $self->{ircobject};
+}
+
+sub ircconn {
+  my $self = shift;
+  return $self->{ircconn};
+}
+
+sub plugins {
+  my ($self) = @_;
+  return $self->{plugins};
+}
+
+sub handlers {
+  my $self = shift;
+  return $self->{handlers};
+}
+
+sub users {
+  my $self = shift;
+  return $self->{users};
+}
+
+sub channels {
+  my $self = shift;
+  return $self->{channels};
+}
+
+sub curnick {
+  my $self = shift;
+  return $self->{curnick};
+}
+
+sub masterpid {
+  my $self = shift;
+  return $self->{masterpid};
+}
+
+
 # starts everything rolling...
 sub start {
   my $self = shift;
@@ -97,7 +158,7 @@ sub shutdown {
   # we go through and call shutdown on each of our plugins
   my @plugins_copy = @{$self->plugins};
   foreach my $plugin (@plugins_copy) {
-    $plugin->shutdown;
+    $plugin->_shutdown;
   }
 
   # save out our in-memory config file
@@ -137,14 +198,6 @@ sub reload_config {
   print "*** RELOADING CONFIG ***\n" if $DEBUG;
   $self->config->load();
 }
-
-
-sub config {
-  my ($self) = @_;
-
-  return $self->{config};
-}
-
 
 # this steps through the config, creating objects when appropriate
 sub process_config {
@@ -264,13 +317,6 @@ sub connect {
   } else {
     return undef;
   }
-}
-
-
-sub plugins {
-  my ($self) = @_;
-
-  return $self->{plugins};
 }
 
 # loads all our plugins
@@ -661,19 +707,6 @@ sub dcc_chat {
 
   $self->{ircconn}->new_chat(1, $nick, $host);
 }
-
-
-sub users {
-  my $self = shift;
-  return $self->{users};
-}
-
-
-sub channels {
-  my $self = shift;
-  return $self->{channels};
-}
-
 
 sub get_channel {
   my ($self, $channel) = @_;
