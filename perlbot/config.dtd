@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!ELEMENT config (bot, server+, channel*, user*)>
+<!ELEMENT config (bot, webserver?, server+, channel*, user*)>
 <!ELEMENT bot (plugindir*, noload*, admin*, ignore*)>
   <!ATTLIST bot nick CDATA #REQUIRED>
   <!ATTLIST bot ircname CDATA "imabot">
@@ -22,6 +22,9 @@
 <!ELEMENT user (hostmask*)>
   <!ATTLIST user name CDATA #REQUIRED>
   <!ATTLIST user password CDATA #IMPLIED>
+<!ELEMENT webserver EMPTY>
+  <!ATTLIST webserver hostname CDATA "">
+  <!ATTLIST webserver port CDATA "9090">
 <!ELEMENT plugindir (#PCDATA)>
 <!ELEMENT noload (#PCDATA)>
 <!ELEMENT admin (#PCDATA)>
