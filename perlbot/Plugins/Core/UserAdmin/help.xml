@@ -1,4 +1,4 @@
 <help>
   <overview>Allows a bot admin to administrate users via irc</overview>
-  <command name="useradmin">useradmin [add|remove|hostmasks|addhostmask|delhostmask|password|addop] username [hostmask|password|channel]<br/>add - adds a user<br/>remove - removes a user<br/>hostmasks - lists a user's hostmasks<br/>addhostmask - adds a hostmasks to a user's list of hostmasks<br/>delhostmask - removes a hostmask from a user's list of hostmasks<br/>password - changes a user's password<br/>addop - adds a user as an op for a channel</command>
+  <command name="useradmin">useradmin [add|remove|hostmasks|addhostmask|delhostmask|password|addop|delop] username [hostmask|password|channel]<br/>add - adds a user<br/>remove - removes a user<br/>hostmasks - lists a user's hostmasks<br/>addhostmask - adds a hostmasks to a user's list of hostmasks<br/>delhostmask - removes a hostmask from a user's list of hostmasks<br/>password - changes a user's password<br/>addop - adds a user as an op for a channel</command>
 </help>

@@ -122,10 +122,41 @@ sub useradmin {
       $self->reply_error("No such channel: $channame");
       return;
     }
-    $channel->add_op($other_user);
-    $self->perlbot->config->save;
-    $self->reply("Added $username to the list of ops for $channame");
 
+    if ($channel->is_op($other_user)) {
+      $self->reply("$username is already an op for $channame");
+      return;
+    }
+    
+    if($channel->add_op($other_user)) {
+      $self->perlbot->config->save;
+      $self->reply("Added $username to the list of ops for $channame");
+    } else {
+      $self->reply("Could not add $username to the list of ops for $channame");
+    }
+
+  } elsif ($command eq 'delop') {
+    my $channame = Perlbot::Utils::normalize_channel($arguments);
+    if (!$channame || !$username) {
+      $self->reply_error('You must specify both a channel and a username!');
+      return;
+    }
+    my $channel = $self->perlbot->get_channel($channame);
+    if (!$channel) {
+      $self->reply_error("No such channel: $channame");
+      return;
+    }
+    if (!$channel->is_op($other_user)) {
+      $self->reply("$username is not an op for $channame");
+      return;
+    }
+
+    if($channel->remove_op($other_user)) {
+      $self->perlbot->config->save;
+      $self->reply("$username has been removed from the list of ops for $channame");
+    } else {
+      $self->reply("Could not remove $username from the list of ops for $channame");
+    }
   } else {
     $self->reply_error("Unknown command: $command");
     return;

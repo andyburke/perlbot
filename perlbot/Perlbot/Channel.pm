@@ -6,7 +6,7 @@ use strict;
 
 sub new {
   my $class = shift;
-  my ($name, $config) = @_;
+  my ($name, $config, $perlbot) = @_;
   my $singlelogfile = 0;
 
   if (lc($config->value(channel => $name => 'singlelogfile')) eq 'yes') {
@@ -18,6 +18,7 @@ sub new {
     name     => $name,
     log      => new Perlbot::Logs($config->value(bot => 'logdir'), $name, $singlelogfile),
     members  => {},
+    perlbot  => $perlbot
   };
 
   bless $self, $class;
@@ -40,6 +41,11 @@ sub config {
 sub name {
     my $self = shift;
     return $self->{name};
+}
+
+sub perlbot {
+  my $self = shift;
+  return $self->{perlbot};
 }
 
 sub flags {
@@ -135,6 +141,29 @@ sub add_op {
     push @{$self->config->value(channel => $self->name => 'op')}, $user->name;
     
   }
+}
+
+sub remove_op {
+  my $self = shift;
+  my $user = shift;
+  my $removed_count = 0;
+  
+  my $old_ops = $self->config->value(channel => $self->name => 'op');
+  $self->{config}->{_config}->{channel}->{$self->name}->{'op'} = [];
+  
+  if(defined($old_ops)) {
+    foreach my $old_op (@{$old_ops}) {
+      if($user->name eq $old_op) {
+        $removed_count++;
+        next;
+      }
+      
+      $self->add_op($self->perlbot->get_user($old_op));
+    }
+  }
+
+  return 1 if $removed_count;
+  return 0;
 }
 
 sub join {

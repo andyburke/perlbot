@@ -255,7 +255,7 @@ sub process_config {
     foreach my $channel (keys(%{$self->config->value('channel')})) {
       $channel = normalize_channel($channel);
       debug("process_config: loading channel '$channel'");
-      my $chan = new Perlbot::Channel($channel, $self->config);
+      my $chan = new Perlbot::Channel($channel, $self->config, $self);
       $self->channels->{$channel} = $chan;
     }
   }
