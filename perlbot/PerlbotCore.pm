@@ -853,7 +853,7 @@ sub on_ctcp_action {
 
   update_user($self, $event->nick, $event->userhost);
   if(exists($channels{to_channel($chan)})) {
-    $channels{to_channel($chan)}->log_write("$nick $text");
+    $channels{to_channel($chan)}->log_write("* $nick $text");
   }
 }
 
