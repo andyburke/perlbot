@@ -173,7 +173,7 @@ sub import_from_logs {
 
   $self->reply("Updating stats from logs...");
 
-  my $logdir = $self->perlbot->config->value(bot => 'logdir');
+  my $logdir = $self->perlbot->config->value(bot => 'logdir') || 'logs';
 
   foreach my $chan (keys(%{$self->{channels}})) {
     for(my $i=0; $i < 24; $i++) {
