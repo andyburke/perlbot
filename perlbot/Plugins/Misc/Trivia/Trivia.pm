@@ -8,7 +8,7 @@ use Time::HiRes qw(time);
 use DB_File;
 use String::Approx qw(amatch);
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.2.0';
 
 sub init {
   my $self = shift;
@@ -16,12 +16,15 @@ sub init {
   $self->want_fork(0);
   $self->want_msg(0);
 
-  $self->{pid} = $$;
-  
   $self->{state} = 'idle';
+
+  $self->{minquestionsanswered} = 25;
+
   $self->{question} = -1;
 
   $self->{questions} = {};
+
+  $self->{playing} = {};
 
   open(TRIVIA, File::Spec->catfile($self->{directory}, 'trivia'));
   my $i = 0;
@@ -32,17 +35,21 @@ sub init {
   }
   close(TRIVIA);
 
-  $self->{players} = {};
-  tie %{$self->{playersoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'playersoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+  $self->{score} = {};
+  $self->{answeredthisquestion} = {};
+
+  tie %{$self->{correctlyanswered}},  'DB_File', File::Spec->catfile($self->{directory}, 'correctlyanswereddb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+  tie %{$self->{totalanswered}},  'DB_File', File::Spec->catfile($self->{directory}, 'totalanswereddb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+  
 
   tie %{$self->{ranks}},  'DB_File', File::Spec->catfile($self->{directory}, 'ranksdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+  tie %{$self->{rank}}, 'DB_File', File::Spec->catfile($self->{directory}, 'rankdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
   $self->{askedtime} = 0;
   
-  $self->{usersfastest} = {};
-  tie %{$self->{usersfastestoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'usersfastetsoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+  $self->{fastest} = {};
+  tie %{$self->{fastestoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'fastetsoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
-  tie %{$self->{rank}}, 'DB_File', File::Spec->catfile($self->{directory}, 'rankdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
   $self->{curquestion} = 1;
   $self->{numquestions} = 0;
@@ -52,6 +59,7 @@ sub init {
   $self->hook('stoptrivia', \&stoptrivia);
   $self->hook('triviatop', \&triviatop);
   $self->hook('triviastats', \&triviastats);
+  $self->hook('playing', \&playing);
   $self->hook(\&answer);
 
 }
@@ -73,6 +81,7 @@ sub starttrivia {
 
   $self->{numquestions} = $numquestions;
   $self->reply("Starting a new trivia game of $numquestions questions!");
+  $self->reply("  To register to play in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "playing");
 
   $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
 }
@@ -92,9 +101,13 @@ sub answer {
   my $self = shift;
   my $user = shift;
   my $text = shift;
+  my $event = shift;
+
+  if(!defined($self->{playing}{$event->nick()})) {
+    return;
+  }
 
   my $nick;
-
 
   if($user) {
     $nick = $user->name();
@@ -105,6 +118,8 @@ sub answer {
   if($self->{state} ne 'asked' || $self->{answered}) {
     return;
   }
+
+  $self->{answeredthisquestion}{$nick} = 1;
 
   my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
 
@@ -120,15 +135,14 @@ sub answer {
     my $timediff = sprintf("%0.2f", time() - $self->{askedtime});
     $self->{answered} = 1;
     $self->{state} = 'answered';
-    $self->{players}{$nick}++;
-    $self->{playersoverall}{$nick}++;
-    if(!exists($self->{usersfastest}{$nick})) {
-      $self->{usersfastest}{$nick} = $timediff;
-      $self->{usersfastestoverall}{$nick} = $timediff;
+    $self->{score}{$nick}++;
+    $self->{correctlyanswered}{$nick}++;
+    if(!exists($self->{fastest}{$nick})) {
+      $self->{fastest}{$nick} = $timediff;
+      $self->{fastestoverall}{$nick} = $timediff;
     }
     
-    my @ranks = sort { $self->{playersoverall}{$b} <=> $self->{playersoverall}{$a} } keys(%{$self->{playersoverall}});
-
+    my @ranks = $self->rankplayers();
     my $oldrank = $self->{ranks}{$nick};
     
     my $rank = 1;
@@ -138,14 +152,15 @@ sub answer {
     }
 
     $rank = $self->{ranks}{$nick};
-    $self->reply("The answer was: $answer");
-    $self->reply("Winner: $nick  Time: $timediff (This Round: Fastest: $self->{usersfastest}{$nick} Wins: $self->{players}{$nick}) Overall: Fastest: $self->{usersfastestoverall}{$nick} Wins: $self->{playersoverall}{$nick} Rank: $rank");
 
-    if($timediff < $self->{usersfastest}{$nick}) {
-      $self->{usersfastest}{$nick} = $timediff;
+    $self->reply("The answer was: $answer");
+    $self->reply("Winner: $nick  Time: $timediff (This Round: Fastest: $self->{fastest}{$nick} Wins: $self->{score}{$nick}) Overall: Fastest: $self->{fastestoverall}{$nick} Wins: $self->{correctlyanswered}{$nick} Rank: $rank");
+
+    if($timediff < $self->{fastest}{$nick}) {
+      $self->{fastest}{$nick} = $timediff;
     }
-    if($timediff < $self->{usersfastestoverall}{$nick}) {
-      $self->{usersfastestoverall}{$nick} = $timediff;
+    if($timediff < $self->{fastestoverall}{$nick}) {
+      $self->{fastestoverall}{$nick} = $timediff;
       $self->reply("That's a new speed record for $nick!");
     }
     if(defined($oldrank) && $rank < $oldrank) {
@@ -158,6 +173,11 @@ sub answer {
     
     $self->{curquestion}++;
     $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });    
+
+    foreach my $person (keys(%{$self->{answeredthisquestion}})) {
+      $self->{totalanswered}{$person}++;
+      delete $self->{answeredthisquestion}{$person};
+    }
   }
 }
 
@@ -265,10 +285,12 @@ sub triviatop {
 
   if($num > 10) { $num = 10; }
 
-  my @ranks = sort { $self->{playersoverall}{$b} <=> $self->{playersoverall}{$a} } keys(%{$self->{playersoverall}});
+  $self->reply("Top $num trivia players are: (you must answer at least $self->{minquestionsanswered} questions to be ranked!)");
+
+  my @ranks = $self->rankplayers();
   my $rank = 1;
   foreach my $name (@ranks) {
-    $self->reply("$rank -- $name (Wins: $self->{playersoverall}{$name})");
+    $self->reply("$rank -- $name (Score: " . sprintf("%0.1f%", 100 * ($self->{correctlyanswered}{$name}/$self->{totalanswered}{$name})) . ")");
     $rank++;
     if($rank >= $num + 1) { last; }
   }
@@ -286,8 +308,8 @@ sub triviastats {
     return;
   }
 
-  if(defined($self->{playersoverall}{$nick})) {
-    my @ranks = sort { $self->{playersoverall}{$b} <=> $self->{playersoverall}{$a} } keys(%{$self->{playersoverall}});
+  if($self->{totalanswered}{$nick}) {
+    my @ranks = $self->rankplayers();
 
     my $rank = 1;
     foreach my $name (@ranks) {
@@ -295,18 +317,42 @@ sub triviastats {
       $rank++;
     }
 
-    $self->reply("$nick: Rank: $self->{ranks}{$nick} Wins: $self->{playersoverall}{$nick} Fastest: $self->{usersfastestoverall}{$nick}");
+    $self->reply("$nick: Rank: $self->{ranks}{$nick} Wins: $self->{correctlyanswered}{$nick} Answered: $self->{totalanswered}{$nick} Score: " . sprintf("%0.1f%", 100 * ($self->{correctlyanswered}{$nick}/$self->{totalanswered}{$nick})) . " Fastest: $self->{fastestoverall}{$nick}");
   }
 }
 
-sub check_pid {
+sub playing {
+  my $self = shift;
+  my $user = shift;
+  my $text = shift;
+  my $event = shift;
+  my $nick = $event->nick();
+
+  $self->{playing}{$nick} = 1;
+}
+
+sub rankplayers {
   my $self = shift;
 
-  if($self->{pid} != $$) {
-    return 0;
+  my @ranks = sort { $self->{correctlyanswered}{$b}/$self->{totalanswered}{$b} <=>
+                     $self->{correctlyanswered}{$a}/$self->{totalanswered}{$a} }
+                   $self->getqualifyingplayers();
+
+  return @ranks;
+}
+
+sub getqualifyingplayers {
+  my $self = shift;
+
+  my @players;
+
+  foreach my $player (keys(%{$self->{totalanswered}})) {
+    if($self->{totalanswered}{$player} >= $self->{minquestionsanswered}) {
+      push(@players, $player);
+    }
   }
 
-  return 1;
+  return @players;
 }
 
 1;
