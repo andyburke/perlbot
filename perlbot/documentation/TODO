@@ -33,6 +33,7 @@ for 2.0:
   disconnects (reconnecting to wrong place?), unless the BNC plugin
   can sufficiently deal with this via disconnect events...  Might
   be a fun plugin to write.
+- decide what to do with redir code in Chan.pm
 
 when we can:
 
