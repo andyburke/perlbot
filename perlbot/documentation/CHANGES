@@ -14,6 +14,7 @@ CHANGES:
 - Host plugin added: As mentioned above
 - PriceWatch plugin: Fixed to work with the new HTML on the site.
   Note that it now requires HTML::TableExtract.
+- Cal plugin added.  !cal displays a calendar for the current month.
 
 1.2.1 - documentation fixes and additions; logsearch CGIs
 - Added a readme to the miscscripts/ directory and cleaned up the comments
