@@ -144,7 +144,7 @@ sub search {
 
   my $channel = Perlbot::Utils::strip_channel($self->channel);
 
-  if(opendir(DIR, File::Spec->catfile($self->perlbot->config->get(bot => 'logdir'), $channel))) {
+  if(opendir(DIR, File::Spec->catfile($self->directory, $channel))) {
     my @tmp = readdir(DIR);
     my @files = sort(@tmp);
 
@@ -155,7 +155,7 @@ sub search {
       next if $file lt $initialdate_string;
       last if $file gt $finaldate_string;
 
-      CORE::open(FILE, File::Spec->catfile($self->perlbot->config->get(bot => 'logdir'), $channel, $file));
+      CORE::open(FILE, File::Spec->catfile($self->directory, $channel, $file));
       my @lines = <FILE>;
       CORE::close FILE;
 
