@@ -178,7 +178,7 @@ sub import_from_logs {
   foreach my $chan (keys(%{$self->{channels}})) {
     for(my $i=0; $i < 24; $i++) {
       my $hour = sprintf("%02d", $i);
-      $self->{channels}{$chan}{'hour' . $i} = 0;
+      $self->{channels}{$chan}{'hour' . $hour} = 0;
     }
   }
 
