@@ -872,6 +872,15 @@ sub mode {
   $self->{ircconn}->mode($channel, $modeline);
 }
 
+sub kick {
+  my $self = shift;
+  my $channel = shift;
+  my $nick = shift;
+  my $reason = shift;
+
+  $self->{ircconn}->kick($channel, $nick, $reason);
+}
+
 sub schedule {
   my $self = shift;
   my $time = shift;
