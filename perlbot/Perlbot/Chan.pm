@@ -16,7 +16,6 @@ sub new {
     logging  => $chanhash{'logging'}, 
     limit    => $chanhash{'limit'},
     ops      => {},
-    redirects => {},
     members  => {},
   };
     
@@ -82,11 +81,6 @@ sub is_member {
   }
 }
 
-sub redirects {
-    my $self = shift;
-    return $self->{redirects};
-}
-
 sub add_op {
     my $self = shift;
     my $user = shift;
@@ -96,36 +90,5 @@ sub add_op {
     # since it's in a scalar context, add_op returns the size of the array)
     return scalar(values(%{$self->{ops}}));
 }
-
-sub add_redir {
-    my $self = shift;
-    foreach(@_) {
-#	push @{$self->{redirects}}, normalize_channel($_);
-	${$self->{redirects}}{$_} = $_;
-
-    }
-}
-
-sub del_redir {
-    my $self = shift;
-    my $cur_redir = 0;
-
-    foreach my $deletion (@_) {
-	delete ${$self->{redirects}}{$deletion};
-    }
-}
-
-sub send_redirs {
-    my $self = shift;
-    my $priv_conn = shift;
-    my $nick = shift;
-    my $chan_or_nick;
-
-    foreach my $redir (values(%{$self->{redirects}})) {
-	$priv_conn->privmsg(normalize_channel($redir), "[$self->{name}] <$nick> @_");
-#	$priv_conn->privmsg($redir, "[$self->{name}] <$nick> @_");
-    }
-}
-
 
 1;

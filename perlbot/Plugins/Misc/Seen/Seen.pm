@@ -56,9 +56,6 @@ sub updater {
   my $self = shift;
   my $event = shift;
 
-  use Data::Dumper;
-  print Dumper($event);
-
   my $user = $self->{perlbot}->get_user($event->from());
 
   if($event->{type} eq 'public') {
