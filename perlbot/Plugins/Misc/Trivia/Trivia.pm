@@ -241,7 +241,7 @@ sub answer {
     
     my $perfrank = 1;
     foreach my $name (@perfranks) {
-      $self->{perfranks}{$name} = $perfrank;
+      $self->{performanceranks}{$name} = $perfrank;
       $perfrank++;
     }
 
