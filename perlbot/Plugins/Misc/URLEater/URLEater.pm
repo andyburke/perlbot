@@ -55,7 +55,7 @@ sub regurgitate {
   foreach my $storedurl (@{$self->{urls}}) {
     my ($channel, $nick, $time, $url) = split('::::', $storedurl);
     if($channel eq $chan) {
-      push(@reply, $url . ' -- ' . $nick . ' -- ' . localtime($time));
+      push(@reply, $url . ' -- ' . $nick); # . ' -- ' . localtime($time));
       $printed++;
     }
     if($printed >= $max) { last; }
