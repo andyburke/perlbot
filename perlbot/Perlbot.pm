@@ -210,7 +210,7 @@ sub connect {
     $i++;
   }
 
-  print "connect: onnected to server: $server\n" if $DEBUG;
+  print "connect: connected to server: $server\n" if $DEBUG;
 
   $self->{curnick} = $nick;
 
