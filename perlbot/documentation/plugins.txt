@@ -1,6 +1,14 @@
 Perlbot Plugins
 ===============
 
+Table of Contents
+-----------------
+
+1) Introduction and description of what a plugin is
+2) Layout of plugin directory
+3) Installing a plugin
+4) Disabling a plugin
+5) Dynamically loading a plugin
 
 
 1) Introduction and description of what a plugin is

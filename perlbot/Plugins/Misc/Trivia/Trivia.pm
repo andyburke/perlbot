@@ -7,13 +7,10 @@ use strict;
 use Time::HiRes qw(time);
 use DB_File;
 
+our $VERSION = '0.1.0';
+
 sub init {
   my $self = shift;
-
-  $self->author('Andrew Burke');
-  $self->contact('burke@bitflood.org');
-  $self->version('1.0.0');
-  $self->url('http://perlbot.sourceforge.net');
 
   $self->want_fork(0);
   $self->want_msg(0);

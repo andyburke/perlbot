@@ -7,13 +7,10 @@ use Perlbot::Utils;
 use RPC::XML::Server;
 use XML::Simple;
 
+our $VERSION = '0.1.0';
+
 sub init {
   my $self = shift;
-
-  $self->author('Andrew Burke');
-  $self->contact('burke@bitflood.org');
-  $self->version('1.0.0');
-  $self->url('http://perlbot.sourceforge.net');
 
   $self->{cfg} = read_generic_config('config');
 

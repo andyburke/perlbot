@@ -17,13 +17,10 @@ use Perlbot::Plugin;
 use POSIX;
 use strict;
 
+our $VERSION = '1.0.0';
+
 sub init {
   my $self = shift;
-
-  $self->author('Jeremy Muhlich');
-  $self->contact('jmuhlich@bitflood.org');
-  $self->version('1.0.0');
-  $self->url('http://perlbot.sourceforge.net');
 
   $self->hook('spell', \&spell);
 }
