@@ -272,7 +272,7 @@ sub triviastats {
   my $user = shift;
   my $text = shift;
 
-  my ($nick) = $text =~ /(\w+)/;
+  my $nick = $text;
 
   if(!defined($nick)) {
     $self->reply_error('You must specify a nick to get stats on!');
