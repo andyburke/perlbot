@@ -103,7 +103,7 @@ sub get_fm {
       exit 1;
     }
 
-    $msg = "GET /\n\n";
+    $msg = "GET /backend/recentnews.txt\n\n";
 
     if(!send(SOCK, $msg, 0)) {
       $conn->privmsg($who, "Could not send to $remote");
@@ -112,64 +112,57 @@ sub get_fm {
     }
 
     my $headline = '';
-    my $author = '';
+    my $link = '';
     my $date = '';
     my $formatteddate = '';
 
+    $conn->privmsg($who, "Freshmeat Headlines:");
+
     my $i = 1;
-    while (my $lala = <SOCK>) {
+    while ($i <= $max) {
 
-      if($headline eq '') {
-	($headline) = $lala =~ /.*?<B><FONT.*?>(.*?)<\/FONT><\/B>.*?/;
-      }
-      if($author eq '') {
-	($author) = $lala =~ /<SMALL><B><A HREF=.*?>(.*?)<\/A>/;
-      }
-      if($date eq '') {
-	($date) = $lala =~ /<SMALL>.*?<\/A> - (.*?)<\/B><\/SMALL>/;
-	my ($year) = $date =~ /.*?(\d\d\d\d).*?/;
-	my ($month) = $date =~ /.*?(January|February|March|April|May|June|July|August|September|October|November|December).*?/;
-	my ($day) = $date =~ /.*?(\d+)[th|st]/;
-	my ($time) = $date =~ /,\s*(\d+:\d+).*?/;
+      $headline = <SOCK>;
+      chomp $headline;
+      $headline =~ s/\(.*?\)$//;
 
-	$month =~ s/January/01/;
-	$month =~ s/Februaury/02/;
-	$month =~ s/March/03/;
-	$month =~ s/April/04/;
-	$month =~ s/May/05/;
-	$month =~ s/June/06/;
-	$month =~ s/July/07/;
-	$month =~ s/August/08/;
-	$month =~ s/September/09/;
-	$month =~ s/October/10/;
-	$month =~ s/November/11/;
-	$month =~ s/December/12/;
-	
-	$formatteddate = "$year/$month/$day $time";
-      }
-
-      my $header_printed = 0;
+      $date = <SOCK>;
+      chomp $date;
+      my ($year) = $date =~ /.*?(\d\d\d\d).*?/;
+      my ($month) = $date =~ /.*?(January|February|March|April|May|June|July|August|September|October|November|December).*?/;
+      my ($day) = $date =~ /.*?(\d+)[th|st]/;
+      my ($time) = $date =~ /.*?(\d+:\d+).*?/;
       
-      if(($headline ne '') && ($author ne '') && ($date ne '')) {
-	unless($header_printed) {
-	  $conn->privmsg($who, "Freshmeat Headlines:");
-	  $header_printed = 1;
-	}
+      $month =~ s/January/01/;
+      $month =~ s/Februaury/02/;
+      $month =~ s/March/03/;
+      $month =~ s/April/04/;
+      $month =~ s/May/05/;
+      $month =~ s/June/06/;
+      $month =~ s/July/07/;
+      $month =~ s/August/08/;
+      $month =~ s/September/09/;
+      $month =~ s/October/10/;
+      $month =~ s/November/11/;
+      $month =~ s/December/12/;
+      
+      $formatteddate = sprintf("%04d/%02d/%02d %s", $year, $month, $day, $time);
+
+      $link = <SOCK>;
+      chomp $link;
+
+      if(($headline ne '') && ($date ne '') && ($link ne '')) {
 
 	if($i > $max) { last; }
-	my $short_title = substr($headline, 0, 31);
-	my $short_author = substr($author, 0, 10);
-	my $output = sprintf("%32s / %10s / %16s\n", $short_title, $short_author, $formatteddate);
+	my $short_title = substr($headline, 0, 18);
+	my $output = sprintf("%18s / %16s / %s", $short_title, $formatteddate, $link);
 	$conn->privmsg($who, $output);
 
 	$headline = '';
-	$author = '';
+	$link = '';
 	$date = '';
 	$formatteddate = '';
-
-	$i++;
-	next;
       }
+      $i++;
     }
 
     close SOCK;
@@ -216,7 +209,7 @@ sub get_fm_search {
     # child
 
     my($remote,$port,$iaddr,$paddr,$proto,$line);
-    $remote = "core.freshmeat.net";
+    $remote = "freshmeat.net";
     $port = "80";
     
     if(!defined($iaddr = inet_aton($remote))) {
@@ -246,7 +239,7 @@ sub get_fm_search {
       exit 1;
     }
 
-    $msg = "GET /search.php3?query=$term\n\n";
+    $msg = "GET /$term\n\n";
 
     if(!send(SOCK, $msg, 0)) {
       $conn->privmsg($who, "Could not send to $remote");
