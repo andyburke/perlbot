@@ -21,6 +21,14 @@ sub init {
 
   $self->{chain} = new Algorithm::MarkovChain;
   $self->{symbols} = ();
+  $self->seed();
+
+  $self->hook(\&sodoit);
+
+}
+
+sub seed {
+  my $self = shift;
 
   if(-f File::Spec->catfile($self->{directory}, 'knowledge')) {
     open(KNOWLEDGE, File::Spec->catfile($self->{directory}, 'knowledge'));
@@ -39,6 +47,17 @@ sub init {
     return;
   }
 
+}  
+
+sub addline {
+  my $self = shift;
+  my $text = shift;
+
+  chomp $text;
+
+  open(KNOWLEDGE, '>>' . File::Spec->catfile($self->{directory}, 'knowledge'));
+  print KNOWLEDGE $text . "\n";
+  close(KNOWLEDGE);
 }
 
 sub sodoit {
@@ -50,11 +69,16 @@ sub sodoit {
 
   my $curnick = $self->perlbot->curnick;
 
+  my @words = split(' ', $text);
+  my $length = scalar @words;
+  $length = int($length * 1.5);
+  undef @words;
+
   if($text !~ /$curnick/) {
     $text =~ s/^.*?(?:,|:)\s*//;
 
     my $starttime = time();
-    my @response = $self->{chain}->spew(complete => $text, length => scalar split(' ', $text));
+    my @response = $self->{chain}->spew(complete => $text, length => $length);
     $reply = "@response";
     chomp $reply;
     $reply = $self->babel($reply);
@@ -81,7 +105,7 @@ sub sodoit {
     $text =~ s/$curnick/$theirnick/ig;
 
     my $starttime = time();
-    my @response = $self->{chain}->spew(complete => $text, length => scalar split(' ', $text));
+    my @response = $self->{chain}->spew(complete => $text, length => $length);
     $reply = "@response";
     chomp $reply;
     $reply = $self->babel($reply);
@@ -99,14 +123,8 @@ sub sodoit {
     }
   }
 
-  push(@{$self->{symbols}}, split(' ', $text));
-  $self->{chain}->seed(symbols => $self->{symbols});
-
-  open(KNOWLEDGE, '>' . File::Spec->catfile($self->{directory}, 'knowledge'));
-  foreach my $s (@{$self->{symbols}}) {
-    print KNOWLEDGE "$s\n";
-  }
-  close(KNOWLEDGE);
+  $self->addline($text);
+  $self->seed();
 }
 
 sub delay {
