@@ -354,7 +354,9 @@ sub load_all_plugins {
 
   my @plugins;
   my @plugins_found = $self->find_plugins;
-  my @noload = @{$self->config->value(bot => 'noload')} if defined($self->config->value(bot => 'noload'));
+  # FIXME: need config->value_array() or somesuch
+  my $noload_ref = $self->config->value(bot => 'noload');
+  my @noload = @{$noload_ref} if $noload_ref;
 
   # foreach plugin
   #   if it's listed in @noload
