@@ -37,6 +37,11 @@ sub AUTOLOAD : lvalue {
 
 # dummy subs, meant to be overridden
 
+sub log_event {
+  my $self = shift;
+  die(ref($self) . "::log_event not implemented!");
+}
+
 sub search {
   my $self = shift;
   die(ref($self) . "::search not implemented!");
