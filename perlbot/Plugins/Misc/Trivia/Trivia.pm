@@ -231,13 +231,10 @@ sub answer {
     $timerank = $self->{timeranks}{$nick};
 
     my $numanswerers = keys(%{$self->{playing}});
-    print "numanswerers: $numanswerers\n";
     if(!defined($self->{performanceoverall}{$nick})) {
       $self->{performanceoverall}{$nick} = 0;
     }
-    print "perf of $nick: $self->{performanceoverall}{$nick}\n";
     $self->{performanceoverall}{$nick} = $self->{performanceoverall}{$nick} + $numanswerers - 1;
-    print "perf of $nick: $self->{performanceoverall}{$nick}\n";
 
     my @perfranks = $self->rankplayersbyperformance($self->getqualifyingplayers());
     my $oldperfrank = $self->{performanceranks}{$nick};
@@ -593,7 +590,7 @@ sub rankplayersbyperformance {
   my $self = shift;
   my @players = @_;
 
-  my @ranks = sort { $self->{performanceoverall}{$b} <=> $self->{performaceoverall}{$a} }
+  my @ranks = sort { $self->{performanceoverall}{$b} <=> $self->{performanceoverall}{$a} }
                    @players;
 
   return @ranks;
@@ -609,8 +606,9 @@ sub getqualifyingplayers {
        defined($self->{correctlyanswered}{$player}) &&
        defined($self->{fastestoverall}{$player}) &&
        defined($self->score($player))) {
-      if(!defined($self->{performanceoverall}{$player}))
-          $self->{performanceoverall}{$player} = 0;
+      if(!defined($self->{performanceoverall}{$player})) {
+        $self->{performanceoverall}{$player} = 0;
+      }
       push(@players, $player);
     }
   }
