@@ -554,8 +554,14 @@ sub event_multiplexer {
 # removes all handlers and sends all waiting events, used prior to shutdown
 sub empty_queue {
   my ($self) = @_;
+  my $lines;
+
+  $lines = $self->{ircobject}->queue;
+  # abort if no lines in queue, or pacing not enabled
+  $lines and $self-{ircobject}->pacing or return;
 
   delete $self->{handlers};  # make sure no handlers are triggered while we do this
+  debug("empty_queue: outputing $lines events", 3);
   while ($self->{ircobject}->queue) {
     $self->{ircobject}->do_one_loop;
   }
