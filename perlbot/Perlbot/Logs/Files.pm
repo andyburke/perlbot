@@ -3,6 +3,7 @@ package Perlbot::Logs::Files;
 use strict;
 
 use Perlbot::Utils;
+use Perlbot::Logs::Event;
 
 use File::Spec;
 
@@ -91,55 +92,17 @@ sub close {
 
 sub log_event {
   my $self = shift;
-  my $event = shift;
-  my $time = time();
-  my ($sec,$min,$hour,$mday,$mon,$year) = localtime($time);
-
-  $year += 1900;
-  $mon += 1;
+  my $event = new Perlbot::Logs::Event(shift, $self->channel);
   
   if (! $self->file->opened) { $self->open(); } 
 
-  unless (Perlbot::Utils::perlbot_date_filename($time) eq
+  unless (Perlbot::Utils::perlbot_date_filename(time()) eq
           Perlbot::Utils::perlbot_date_filename($self->curtime)) {
     debug("Rolling log file", 2);
     $self->open();
   }
   
-  my $date = Perlbot::Utils::perlbot_date_string($time);
-
-  my $type = $event->type;
-  my $nick = $event->nick;
-
-  my $logentry = "$date ";
-
-  if($type eq 'public') {
-    $logentry .= "<$nick> " . $event->{args}[0];
-  } elsif($type eq 'caction') {
-    $logentry .= "* $nick " . $event->{args}[0];
-  } elsif($type eq 'join') {
-    $logentry .= "$nick (" . $event->userhost . ") joined " . $self->channel;
-  } elsif($type eq 'part') {
-    $logentry .= "$nick (" . $event->userhost . ") left " . $self->channel;
-  } elsif($type eq 'mode') {
-    $logentry .= '[MODE] ' . $nick . ' set mode: ' . join(' ', @{$event->{args}});
-  } elsif($type eq 'topic') {
-    $logentry .= "[TOPIC] $nick: " . $event->{args}[0];
-  } elsif($type eq 'nick') {
-    my $newnick = $event->{args}[0];
-    $logentry .= "[NICK] $nick changed nick to: $newnick";
-  } elsif($type eq 'quit') {
-    $logentry .= "[QUIT] $nick quit: " . $event->{args}[0];
-  } elsif($type eq 'kick') {
-    $logentry .= '[KICK] ' . $event->{to}[0] . ' was kicked by ' . $nick . ' (' . $event->{args}[1] . ')';
-  } else {
-    $logentry .= '[UNKNOWN EVENT]';
-    debug('Unknown event log attempt:', 3);
-    debug($event, 3);
-  }
-
-  $logentry =~ s/\n//g;
-  $self->file->print($logentry . "\n");
+  $self->file->print($event->as_string . "\n");
   $self->file->flush();
 }
 

@@ -5,6 +5,7 @@ use strict;
 use IO::File;
 use File::Spec;
 use XML::Simple;
+use Time::Local;
 use Carp;
 
 use vars qw(
@@ -19,7 +20,7 @@ require Exporter;
              &read_generic_config &write_generic_config
              &normalize_channel &strip_channel
              &validate_hostmask &hostmask_to_regexp
-             &perlbot_date_filename &perlbot_date_string
+             &perlbot_date_filename &perlbot_date_string &ctime_from_perlbot_date_string
              &exec_command
              &debug &set_debug
           );
@@ -221,5 +222,15 @@ sub perlbot_date_string {
   my ($sec, $min, $hour, $mday, $mon, $year) = localtime($ctime);
   return sprintf("%04d/%02d/%02d-%02d:%02d:%02d", $year+1900, $mon+1, $mday, $hour, $min, $sec);
 }
+
+sub ctime_from_perlbot_date_string {
+  my $datestring = shift;
+
+  my($year, $mon, $day, $hour, $min, $sec) =
+      $datestring =~ /^(\d\d\d\d)\/(\d\d)\/(\d\d)-(\d\d):(\d\d):(\d\d)/;
+
+  return timelocal($sec, $min, $hour, $day, $mon - 1, $year - 1900);
+}
+
 
 1;

@@ -3,6 +3,7 @@ package Perlbot::Plugin::Logger;
 use strict;
 use base qw(Perlbot::Plugin);
 use Perlbot;
+use Perlbot::Logs::Event;
 use Perlbot::Utils;
 use Perlbot::User;
 
@@ -32,7 +33,9 @@ sub init {
 sub log {
   my $self = shift;
   my $event = shift; 
-  my $channel = $event->{to}[0];
+  my $channel;
+  # stupid, stupid irc
+  $event->type eq 'kick' ? $channel = $event->{args}[0] : $channel = $event->{to}[0];
 
   # nick changes and quits are not associated with channels,
   # so we need to brutal force it
