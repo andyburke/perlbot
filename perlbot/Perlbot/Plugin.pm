@@ -267,6 +267,7 @@ sub _help {
   if($command eq $self->{name}) {
     if($self->{helpitems}{overview}[0]) {
       push(@result, @{$self->{helpitems}{overview}});
+      push(@result, 'Available commands:');
       push(@result, @{$self->{helpitems}{commandlist}});
     }
   } elsif($self->{helpitems}{command}{$command}) {
