@@ -40,7 +40,7 @@ sub logs {
 
   my $response = '<html><head><title>Perlbot Logs</title>';
  
-  if (lc($self->config->get(logserver => 'allowsearchengines')) eq 'yes') {
+  if (lc($self->config->get('allowsearchengines')) eq 'yes') {
      # don't bother adding the meta tag to disallow archiving
   } else {
     $response .= '<meta name="ROBOTS" content="NOINDEX, NOFOLLOW, NOARCHIVE" />';
@@ -261,7 +261,7 @@ sub logs {
 
   $response .= '</body></html>';
 
-  return ('text/html', $response, $self->config->get(logserver => 'authtyperequired'));
+  return ('text/html', $response, $self->config->get('authtyperequired'));
 }
 
 1;

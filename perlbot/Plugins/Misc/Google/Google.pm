@@ -6,6 +6,7 @@ package Perlbot::Plugin::Google;
 
 use strict;
 use Perlbot::Plugin;
+use Perlbot::Utils;
 use base qw(Perlbot::Plugin);
 
 use Net::Google;
@@ -23,7 +24,7 @@ sub google {
   my $user = shift;
   my $text = shift;
 
-  my $google = new Net::Google(key => $self->config->get(google => 'apikey'));
+  my $google = new Net::Google(key => $self->config->get('apikey'));
   my $search = $google->search();
 
   $search->query($text);
