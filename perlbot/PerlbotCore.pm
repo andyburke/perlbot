@@ -689,7 +689,7 @@ sub on_disconnect {
       if($self->connected()) {
 	return;
       }
-      if($i == @servers - 1) { $i = 0; next; }
+      if($i == @servers - 1) { last; }
     }
     
     print "Sleeping for 10 seconds...\n" if $debug;
