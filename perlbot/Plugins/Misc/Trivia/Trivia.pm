@@ -61,6 +61,7 @@ sub init {
   $self->hook('triviastats', \&triviastats);
   $self->hook('triviahelp', \&triviahelp);
   $self->hook('playing', \&playing);
+  $self->hook('stopplaying', \&stopplaying);
   $self->hook(\&answer);
 
 }
@@ -205,8 +206,6 @@ sub askquestion {
   } else {
     $self->reply("Game over.");
     $self->endofgame();
-    $self->{state} = 'idle';
-    $self->{curquestion} = 1;
   }
 }
 
@@ -259,10 +258,12 @@ sub endofgame {
   my $winner;
   my $winnerscore = -1;
 
+  my $questions = $self->{curquestion} - 1;
+
   foreach my $nick (keys(%{$self->{score}})) {
-    if($self->{score}{$nick} > $winnerscore) {
+    if(($self->{score}{$nick} / $questions) > $winnerscore) {
       $winner = $nick;
-      $winnerscore = $self->{score}{$nick};
+      $winnerscore = $self->{score}{$nick} / $questions;
     }
     $self->{score}{$nick} = 0; # reset wins
   }
@@ -273,11 +274,14 @@ sub endofgame {
 
   my $fastest = $self->{fastest}{$winner};
 
-  $self->reply("Trivia Winner for this round is: $winner with $winnerscore wins and a fastest time of $fastest!");
+  $self->reply("Trivia Winner for this round is: $winner with a score of " . sprintf("%0.1f%", 100 * $winnerscore) . " and a fastest time of $fastest!");
 
   foreach my $nick (keys(%{$self->{playing}})) {
     delete $self->{playing}{$nick};
   }
+
+  $self->{curquestion} = 1;
+  $self->{state} = 'idle';
 
 }
 
@@ -345,6 +349,16 @@ sub playing {
   my $nick = $event->nick();
 
   $self->{playing}{$nick} = 1;
+}
+
+sub playing {
+  my $self = shift;
+  my $user = shift;
+  my $text = shift;
+  my $event = shift;
+  my $nick = $event->nick();
+
+  delete $self->{playing}{$nick};
 }
 
 sub rankplayers {

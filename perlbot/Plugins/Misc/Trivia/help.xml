@@ -1,3 +1,15 @@
 <help>
   <overview>You must register to play in each round of trivia.  During a round you've registered for, your attempts at answering are recorded.  Your overall score is: (correctly answered / total answered).  Once you have submitted an answer to a question, additional submissions do not count as attempts.  Once a question has been answered correctly, no submissions are counted.</overview>
+  <command name="playing">Tells the bot you're playing in this round of trivia.</command>
+  <usage name="playing">playing</usage>
+  <command name="stopplaying">Tells the bot you want to stop playing in this round of trivia.</command>
+  <usage name="stopplaying">stopplaying</usage>
+  <command name="trivia">Starts a game of trivia.</command>
+  <usage name="trivia">trivia [number of questions]</usage>
+  <command name="stoptrivia">Stops a game of trivia.</command>
+  <usage name="stoptrivia">stoptrivia</usage>
+  <command name="triviatop">Prints out the top trivia players.</command>
+  <usage name="triviatop">triviatop [number of players to list, max of 10]</usage>
+  <command name="triviastats">Prints out stats on a given trivia player.</command>
+  <usage name="triviastats">triviastats playername</usage>
 </help>
