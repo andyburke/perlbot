@@ -153,7 +153,7 @@ sub answer {
     if(!defined($self->{fastest}{$nick})) {
       $self->{fastest}{$nick} = $timediff;
     }
-    if(!defined($self->{fastestoverall}{$nick} {
+    if(!defined($self->{fastestoverall}{$nick})) {
       $self->{fastestoverall}{$nick} = $timediff;
     }
     
