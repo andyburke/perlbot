@@ -140,4 +140,37 @@ sub as_string {
 
 }
 
+sub as_string_formatted {
+  my $self = shift;
+  my $format = shift;
+
+  my $date = perlbot_date_string($self->time);
+  my ($year, $mon, $day, $hour, $min, $sec) = $date =~ /(\d\d\d\d)\/(\d\d)\/(\d\d)-(\d\d)\:(\d\d)\:(\d\d)/;
+  my $channel = $self->channel || '';
+  my $type = uc($self->type) || '';
+  my $nick = $self->nick || '';
+  my $userhost = $self->userhost || '';
+  my $target = $self->target || '';
+  my $text = $self->text || '';
+
+  study $format;
+
+  $format =~ s/%time/$date/g;
+  $format =~ s/%year/$year/g;
+  $format =~ s/%mon/$mon/g;
+  $format =~ s/%day/$day/g;
+  $format =~ s/%hour/$hour/g;
+  $format =~ s/%min/$min/g;
+  $format =~ s/%sec/$sec/g;
+  $format =~ s/%channel/$channel/g;
+  $format =~ s/%type/$type/g;
+  $format =~ s/%nick/$nick/g;
+  $format =~ s/%userhost/$userhost/g;
+  $format =~ s/%target/$target/g;
+  $format =~ s/%text/$text/g;
+
+  return $format;
+}
+
+
 1;

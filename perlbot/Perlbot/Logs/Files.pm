@@ -93,7 +93,8 @@ sub close {
 sub log_event {
   my $self = shift;
   my $event = new Perlbot::Logs::Event(shift, $self->channel);
-  
+  my $base = '%hour:%min:%sec ';
+
   if (! $self->file->opened) { $self->open(); } 
 
   unless (Perlbot::Utils::perlbot_date_filename(time()) eq
@@ -102,7 +103,29 @@ sub log_event {
     $self->open();
   }
   
-  $self->file->print($event->as_string . "\n");
+
+#  $self->file->print($event->as_string . "\n");
+
+  if($event->type eq 'public') {
+    $self->file->print($event->as_string_formatted($base . '<%nick> %text') . "\n");
+  } elsif($event->type eq 'caction') {
+    $self->file->print($event->as_string_formatted($base . '* %nick %text') . "\n");
+  } elsif($event->type eq 'mode') {
+    $self->file->print($event->as_string_formatted($base . '%nick set mode: %text') . "\n");
+  } elsif($event->type eq 'topic') {
+    $self->file->print($event->as_string_formatted($base . '[%type] %nick: %text') . "\n");
+  } elsif($event->type eq 'nick') {
+    $self->file->print($event->as_string_formatted($base . '[%type] %nick changed nick to: %text') . "\n");
+  } elsif($event->type eq 'quit') {
+    $self->file->print($event->as_string_formatted($base . '[%type] %nick quit: %text') . "\n");
+  } elsif($event->type eq 'kick') {
+    $self->file->print($event->as_string_formatted($base . '[%type] %target was kicked by %nick') . "\n");
+  } elsif($event->type eq 'join') {
+    $self->file->print($event->as_string_formatted($base . '%nick (%userhost) joined %channel') . "\n");
+  } elsif($event->type eq 'part') {
+    $self->file->print($event->as_string_formatted($base . '%nick (%userhost) left %channel') . "\n");
+  }
+    
   $self->file->flush();
 }
 
