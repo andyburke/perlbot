@@ -79,10 +79,14 @@ sub hostmasks {
     return;
   }
 
-  foreach my $hostmask (@{$self->{perlbot}->config->value(user => $user->name => 'hostmask')}) {
-    $self->reply($hostmask);
+  if(!$self->{perlbot}->config->value(user => $user->name => 'hostmask')) {
+    $self->reply_error('No hostmasks specified!');
+    return;
+  } else {
+    foreach my $hostmask (@{$self->{perlbot}->config->value(user => $user->name => 'hostmask')}) {
+      $self->reply($hostmask);
+    }
   }
-
 }
 
 sub addhostmask {
