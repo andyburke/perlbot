@@ -169,6 +169,7 @@ sub logs {
       close(FILE);
       
       foreach (@lines) {
+        s/\&/\&amp\;/g;
         s/</\&lt\;/g;
         s/>/\&gt\;/g;
         s/(\&lt\;.*?\&gt\;)/<b>$1<\/b>/;
