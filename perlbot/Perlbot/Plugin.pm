@@ -450,8 +450,12 @@ sub _help {
     if($self->contact) { $infostring .= " <" . $self->contact . ">"; }
     if($self->url) { $infostring .= ", " . $self->url; }
     push(@result, $infostring);
-    if(defined($self->helpitems) && $self->helpitems->{overview}[0]) {
-      push(@result, @{$self->helpitems->{overview}});
+    if(defined($self->helpitems) && defined($self->helpitems->{overview}[0])) {
+      if(ref($self->helpitems->{overview}[0]) eq 'HASH') {
+        push(@result, @{$self->helpitems->{overview}[0]{content}});
+      } else {
+        push(@result, @{$self->helpitems->{overview}});
+      }
       if(keys(%{$self->helpitems->{command}})) {
         push(@result, 'Available commands:');
         push(@result, join(' ', keys(%{$self->helpitems->{command}})));

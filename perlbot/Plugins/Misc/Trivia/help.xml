@@ -1,5 +1,5 @@
 <help>
-  <overview>Hosts a trivia game. You must opt-in to play. Don't guess randomly; you are penalized for guesses. Various statistics and rankings are calculated and stored. See the full documentation for more -- ask a bot admin for it.</overview>
+  <overview>Hosts a trivia game. You must opt-in to play. Don't guess randomly; you are penalized for guesses. Various statistics and rankings are calculated and stored.<br/>Percentage Rankings:<br/>  This is a ranking based on the percentage of questions a person has answered correctly.<br/>Wins Rankings:<br/>  This is a ranking based on the number of times a person has won.<br/>Time Rankings:<br/>  This ranking is by the lowest time it has taken a person to answer.<br/>Performance Rankings:<br/>  This is a ranking based on the average number of people a given person beats per question.  For example, playing in a game of 10 people, every time you win your average will be helped more than playing in a game of 2 people. </overview>
   <command name="playing">Tells the bot you're playing in this round of trivia.</command>
   <usage name="playing">playing</usage>
   <command name="stopplaying">Tells the bot you want to stop playing in this round of trivia.</command>

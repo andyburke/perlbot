@@ -61,6 +61,9 @@ sub init {
   $self->{fastest} = {};
   tie %{$self->{fastestoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'fastestoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
+  $self->{beaten} = {};
+  tie %{$self->{beatenoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'beatenoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+
   $self->{performance} = {};
   tie %{$self->{performanceoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'performanceoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
@@ -76,7 +79,18 @@ sub init {
   $self->hook('playing', \&playing);
   $self->hook('stopplaying', \&stopplaying);
   $self->hook('notplaying', \&stopplaying);
+  $self->hook('update', \&update);
   $self->hook(\&answer);
+
+}
+
+sub update {
+  my $self = shift;
+
+  foreach my $nick (keys(%{$self->{performanceoverall}})) {
+    $self->{beatenoverall}{$nick} = $self->{performanceoverall}{$nick};
+    $self->{performanceoverall}{$nick} = $self->{beatenoverall}{$nick} / $self->{totalanswered}{$nick};
+  }
 
 }
 
@@ -190,20 +204,39 @@ sub answer {
   if($right == $numwords) { $correct = 1; }
 
   if($correct) {
+    my $numanswerers = keys(%{$self->{playing}});
+    my $keepstats = 0;
+    my $speedrecord = 0;
+    if($numanswerers > 1) { $keepstats = 1; }
     my $timediff = sprintf("%0.2f", time() - $self->{askedtime});
     $self->{answered} = 1;
     $self->{state} = 'answered';
     $self->{score}{$nick}++;
-    $self->{correctlyanswered}{$nick}++;
+
+    foreach my $person (keys(%{$self->{answeredthisquestion}})) {
+      $self->{totalanswered}{$person}++ if $keepstats;
+      delete $self->{answeredthisquestion}{$person};
+    }
+
+    if($timediff < $self->{fastest}{$nick}) {
+      $self->{fastest}{$nick} = $timediff;
+    }
+    if($timediff < $self->{fastestoverall}{$nick} && $keepstats) {
+      $self->{fastestoverall}{$nick} = $timediff;
+      $speedrecord = 1;
+    }
+
+    if($keepstats) { 
+      $self->{correctlyanswered}{$nick}++;
+      $self->{beatenoverall}{$nick} = $self->{beatenoverall}{$nick} + $numanswerers - 1;
+      $self->{performanceoverall}{$nick} = $self->{beatenoverall}{$nick} / $self->{totalanswered}{$nick};
+    }
+
     if(!defined($self->{fastest}{$nick})) {
       $self->{fastest}{$nick} = $timediff;
     }
-    if(!defined($self->{fastestoverall}{$nick})) {
+    if(!defined($self->{fastestoverall}{$nick}) && $keepstats) {
       $self->{fastestoverall}{$nick} = $timediff;
-    }
-    foreach my $person (keys(%{$self->{answeredthisquestion}})) {
-      $self->{totalanswered}{$person}++;
-      delete $self->{answeredthisquestion}{$person};
     }
     
     my @percentageranks = $self->rankplayersbypercentage($self->getqualifyingplayers());
@@ -239,11 +272,9 @@ sub answer {
 
     $timerank = $self->{timeranks}{$nick};
 
-    my $numanswerers = keys(%{$self->{playing}});
     if(!defined($self->{performanceoverall}{$nick})) {
       $self->{performanceoverall}{$nick} = 0;
     }
-    $self->{performanceoverall}{$nick} = $self->{performanceoverall}{$nick} + $numanswerers - 1;
 
     my @perfranks = $self->rankplayersbyperformance($self->getqualifyingplayers());
     my $oldperfrank = $self->{performanceranks}{$nick};
@@ -256,16 +287,11 @@ sub answer {
 
     $perfrank = $self->{performanceranks}{$nick};
 
-
     $self->reply("The answer was: $answer");
     $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} %R:$percentagerank WR:$winsrank TR:$timerank PR:$perfrank");
     $self->reply("        This round: FT:$self->{fastest}{$nick} S:" . sprintf("%0.1f", 100 * ($self->{score}{$nick} / $self->{answeredthisround}{$nick})) . "% W:$self->{score}{$nick} A:$self->{answeredthisround}{$nick}");
 
-    if($timediff < $self->{fastest}{$nick}) {
-      $self->{fastest}{$nick} = $timediff;
-    }
-    if($timediff < $self->{fastestoverall}{$nick}) {
-      $self->{fastestoverall}{$nick} = $timediff;
+    if($speedrecord) {
       $self->reply("That's a new speed record for $nick!");
     }
 
@@ -434,9 +460,9 @@ sub triviatop {
 
   if($num > 20) { $num = 20; }
 
-  $self->reply("Top $num trivia players are: (you must answer at least $self->{minquestionsanswered} questions to be ranked!)");
+  push(@response, "Top $num trivia players are: (you must answer at least $self->{minquestionsanswered} questions to be ranked!)");
   my $headers = sprintf("%-19s", '% Rankings:') . sprintf("%-19s", 'Wins Rankings:') . sprintf("%-19s", 'Time Rankings:') . sprintf("%-19s", 'Performance Rankings:');
-  $self->reply($headers);
+  push(@response, $headers);
 
   my @ranks = $self->rankplayersbypercentage($self->getqualifyingplayers());
   my $rank = 1;
@@ -449,8 +475,8 @@ sub triviatop {
   @ranks = $self->rankplayersbywins($self->getqualifyingplayers());
   $rank = 1;
   foreach my $name (@ranks) {
-    if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-19s", sprintf("%-3s", $rank) . sprintf("%-8s", substr($name, 0, 8)) . "(" . $self->{correctlyanswered}{$name} . ")");
+    if($response[$rank + 1]) {
+      $response[$rank + 1] = $response[$rank + 1] . sprintf("%-19s", sprintf("%-3s", $rank) . sprintf("%-8s", substr($name, 0, 8)) . "(" . $self->{correctlyanswered}{$name} . ")");
       $rank++;
       if($rank >= $num + 1) { last; }
     }
@@ -459,8 +485,8 @@ sub triviatop {
   @ranks = $self->rankplayersbytime($self->getqualifyingplayers());
   $rank = 1;
   foreach my $name (@ranks) {
-    if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-19s", sprintf("%-3s", $rank) . sprintf("%-8s", substr($name, 0, 8)) . "(" . $self->{fastestoverall}{$name} . ")");
+    if($response[$rank + 1]) {
+      $response[$rank + 1] = $response[$rank + 1] . sprintf("%-19s", sprintf("%-3s", $rank) . sprintf("%-8s", substr($name, 0, 8)) . "(" . $self->{fastestoverall}{$name} . ")");
       $rank++;
       if($rank >= $num + 1) { last; }
     }
@@ -469,8 +495,8 @@ sub triviatop {
   @ranks = $self->rankplayersbyperformance($self->getqualifyingplayers());
   $rank = 1;
   foreach my $name (@ranks) {
-    if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-19s", sprintf("%-3s", $rank) . sprintf("%-8s", substr($name, 0, 8)) . "(" . sprintf("%d", $self->{performanceoverall}{$name}) . ")");
+    if($response[$rank + 1]) {
+      $response[$rank + 1] = $response[$rank + 1] . sprintf("%-19s", sprintf("%-3s", $rank) . sprintf("%-8s", substr($name, 0, 8)) . "(" . sprintf("%0.2f", $self->{performanceoverall}{$name}) . ")");
       $rank++;
       if($rank >= $num + 1) { last; }
     }
