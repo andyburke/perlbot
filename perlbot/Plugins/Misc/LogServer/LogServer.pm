@@ -24,7 +24,7 @@ sub init {
   $self->want_msg(0);
   $self->want_public(0);
 
-  $self->{logdir} = $self->perlbot->config->value(bot => 'logdir');
+  $self->{logdir} = $self->perlbot->config->value(bot => 'logdir') || 'logs';
 
   $self->hook_web('logs', \&logs, 'Channel Logs');
 }
