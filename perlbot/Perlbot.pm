@@ -425,7 +425,7 @@ sub find_plugins {
       # success!
       debug("find_plugins: Found '$plugin'");
       push @found_plugins, $plugin;
-      push @INC, $dir;
+      if(!grep(/$dir/, @INC)) { push @INC, $dir; }
     }
     closedir(PDH);
   }
