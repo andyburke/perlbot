@@ -20,7 +20,7 @@ require Exporter;
              $DEBUG
              &read_generic_config &write_generic_config
              &normalize_channel &strip_channel
-             &validate_hostmask
+             &validate_hostmask &hostmask_to_regexp
              &exec_command
           );
 
@@ -86,6 +86,51 @@ sub validate_hostmask {
   }
   return 1;
 }
+
+
+# Converts an RFC 1459 IRC hostmask (with * as a glob wildchar) into a
+# regular expression.
+# params:
+#   $hostmask : hostmask to convert
+# returns:
+#   A regular expression representation of $hostmask
+sub hostmask_to_regexp {
+  my ($hostmask) = @_;
+
+  # split hostmask into nick and userhost, since the rules differ
+  my ($nick, $userhost) = $hostmask =~ /^(.*)!(.*)$/;
+
+  # Substitutions to take a standard IRC hostmask and convert it to
+  #   a regexp.  I thought this was pretty clever...  :)
+
+  # {}| are really the lowercase equivalents of []\  (Don't ask me... read RFC1459)
+  # The result of this is that { is equivalent to [ in a nick, etc.
+  # I couldn't do a direct substitution for each of these.  There would
+  #   be problems with the inserted ] and \ chars (used to define the
+  #   character classes on the right side of the s///) being picked up
+  #   by the second and third s/// expressions.  The solution was to
+  #   substitute a character that would never be found in a real hostmask
+  #   in a first pass, and convert those characters to the correct
+  #   regexp in a second pass.
+  # First pass: convert each instance of a char (upper or lower) to some
+  #   'impossible' character.  (ascii 01, 02, and 03)
+  $nick =~ s/[{[]/\01/g;
+  $nick =~ s/[}\]]/\02/g;
+  $nick =~ s/[|\\]/\03/g;
+  # Second pass: convert each impossible char to the appropriate regexp
+  $nick =~ s/\01/[{[]/g;
+  $nick =~ s/\02/[}\\]]/g;
+  $nick =~ s/\03/[|\\\\]/g;
+
+  $userhost =~ s/([[\]{}|\\])/\\$1/g; # escape \[]{} only in userhost
+
+  $hostmask = "$nick!$userhost";      # recombine
+  $hostmask =~ s/([().?^\$])/\\$1/g;  # escape ().?^$
+  $hostmask =~ s/\*/.*/g;             # translate wildchar "*" to regexp equivalent ".*"
+
+  return $hostmask;
+}
+
 
 sub exec_command {
   my $command = shift;

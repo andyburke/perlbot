@@ -55,7 +55,7 @@ sub start {
       or die "No bot section in config file '$self->{configfile}'\n";
   $self->config->value('server')
       or die "No servers specified in config file '$self->{configfile}'\n";
-  
+
   # here we loop over our defined servers attempting to connect.  we pause
   # after trying all the servers, before trying the first one again.
   my $i = 0;
@@ -125,8 +125,8 @@ sub process_config {
 
   # make sure our users and channels are wiped, this is for when
   # we try to do config reloading.
-  $self->{users} = undef;
-  $self->{channels} = undef;
+  $self->{users} = {};
+  $self->{channels} = {};
 
   # if there are users defined
   #   foreach user
@@ -138,17 +138,7 @@ sub process_config {
   if ($self->config->value('user')) {
     foreach my $user (keys(%{$self->config->value('user')})) {
       print "process_config: loading user '$user'\n" if $DEBUG;
-      $self->{users}{$user} =
-          new Perlbot::User($user,
-                            $self->config->value(user => $user => 'flags'),
-                            $self->config->value(user => $user => 'password'),
-                            @{$self->config->value(user => $user => 'hostmask')});
-      foreach my $admin (@{$self->config->value(bot => 'admin')}) {
-        if($admin eq $user) {
-          print "process_config: $admin  is an admin\n" if $DEBUG;
-          $self->{users}{$user}->admin(1);
-        }
-      }
+      $self->users->{$user} = new Perlbot::User($user, $self->config);
     }
   }
 
@@ -158,24 +148,13 @@ sub process_config {
   #     foreach op listed in the config
   #       add them as an op if they exist as a user
   #     put the channel into the bot object
-  
-  if ($self->config->value('channel')) {  
+
+  if ($self->config->value('channel')) {
     foreach my $channel (keys(%{$self->config->value('channel')})) {
+      $channel = normalize_channel($channel);
       print "process_config: loading channel '$channel'\n" if $DEBUG;
-      my $chan =
-          new Perlbot::Chan(name    => normalize_channel($channel),
-                            flags   => $self->config->value(channel => $channel => 'flags'),
-                            key     => $self->config->value(channel => $channel => 'key'),
-                            logging => $self->config->value(channel => $channel => 'logging'),
-                            logdir  => $self->config->value(bot => 'logdir'));
-      
-      foreach my $op (@{$self->config->value(channel => $channel => 'op')}) {
-        $op or next;
-        $chan->add_op($op) if (exists($self->{users}{$op}));
-      }
-
-      $self->{channels}{$channel} = $chan;
-
+      my $chan = new Perlbot::Chan($channel, $self->config);
+      $self->channels->{$channel} = $chan;
     }
   }
 }
@@ -472,11 +451,16 @@ sub empty_queue {
   }
 }
 
-# takes a hostmask and returns a user if one exists that matches
+# takes a username or hostmask and returns a user if one exists that matches
 sub get_user {
   my $self = shift;
-  my $hostmask = shift;
+  my $param = shift;
   my @tempusers;
+
+  # first check to see if $param matches a username
+  if (exists $self->users->{$param}) {
+    return $self->users->{$param};
+  }
 
   # foreach user
   #   foreach of their configured hostmasks
@@ -484,9 +468,10 @@ sub get_user {
   #       push them onto the list of matching users
   #       go back to the foreach user loop
 
-  foreach my $user (values(%{$self->{users}})) {
-    foreach my $tempmask (@{$user->{hostmasks}}) {
-      if($hostmask =~ /^$tempmask$/i) {
+  foreach my $user (values %{$self->users}) {
+    foreach my $tempmask (@{$user->hostmasks}) {
+      $regex = hostmask_to_regexp($tempmask);
+      if ($param =~ /^$regex$/i) {
         push(@tempusers, $user);
         last;
       }
@@ -499,10 +484,10 @@ sub get_user {
   #   print out some debugging to alert the admin
   # return nothing, ie: if we got here, there's no matching user
 
-  if(@tempusers == 1) {
+  if (@tempusers == 1) {
     return $tempusers[0];
-  } elsif(@tempusers > 1) {
-    if($DEBUG) {
+  } elsif (@tempusers > 1) {
+    if ($DEBUG) {
       print "Multiple users matched $hostmask !\n"; print Dumper(@tempusers);
     }
   }
@@ -555,7 +540,7 @@ sub join {
   # if logging for this channel is on
   #   open the logfile
 
-  if($channel->{logging} eq 'yes') {
+  if ($channel->logging eq 'yes') {
     $channel->{log}->open();
   }
 
@@ -565,20 +550,20 @@ sub join {
   #   just join the channel
   # call a names event so we can later populate the channel's member list
 
-  if($channel->{key}) {
-    $self->{ircconn}->join($channel->{name}, $channel->{key});
+  if ($channel->key) {
+    $self->{ircconn}->join($channel->name, $channel->key);
   } else {
-    $self->{ircconn}->join($channel->{name});
+    $self->{ircconn}->join($channel->name);
   }
-  $self->{ircconn}->names($channel->{name});
+  $self->{ircconn}->names($channel->name);
 }
 
 sub part {
   my $self = shift;
   my $channel = shift;
 
-  $self->{ircconn}->part($channel->{name});
-  if($channel->{log}) {
+  $self->{ircconn}->part($channel->name);
+  if ($channel->{log}) {
     $channel->{log}->close();
   }
 }
@@ -621,7 +606,7 @@ sub dcc_send {
   my $filename = shift;
 
   $self->{ircconn}->new_send($nick, $filename);
-} 
+}
 
 sub dcc_chat {
   my $self = shift;
@@ -630,5 +615,30 @@ sub dcc_chat {
 
   $self->{ircconn}->new_chat(1, $nick, $host);
 }
+
+
+sub users {
+  my $self = shift;
+  return $self->{users};
+}
+
+
+sub channels {
+  my $self = shift;
+  return $self->{channels};
+}
+
+
+sub get_channel {
+  my ($self, $channel) = @_;
+
+  $channel = normalize_channel($channel);
+  if (exists $self->channels->{$channel}) {
+    return $self->channels->{$channel};
+  } else {
+    return undef;
+  }
+}
+
 
 1;

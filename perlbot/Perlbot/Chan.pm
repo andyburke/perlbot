@@ -6,51 +6,64 @@ use strict;
 
 sub new {
   my $class = shift;
-  my (%chanhash) = @_;
+  my ($name, $config) = @_;
 
   my $self = {
-    name     => $chanhash{'name'},
-    flags    => $chanhash{'flags'},
-    key      => $chanhash{'key'},
-    log      => new Perlbot::Logs($chanhash{'logdir'}, $chanhash{'name'}),
-    logging  => $chanhash{'logging'}, 
-    limit    => $chanhash{'limit'},
-    ops      => {},
+    config   => $config,
+    name     => $name,
+    log      => new Perlbot::Logs($config->value(bot => 'logdir'), $name),
     members  => {},
   };
-    
+
   bless $self, $class;
   return $self;
 }
 
 sub log_write {
     my $self = shift;
-    if($self->{logging} eq 'yes') {
+    if ($self->logging eq 'yes') {
 	$self->{log}->write(@_);
     }
 }
 
+sub config {
+  my $self = shift;
+  return $self->{config};
+}
+
+# name is read-only!
 sub name {
     my $self = shift;
-    $self->{name} = shift if @_;
     return $self->{name};
 }
 
 sub flags {
     my $self = shift;
-    $self->{flags} = shift if @_;
-    return $self->{flags};
+    $self->config->value(channel => $self->name => 'flags') = shift if @_;
+    return $self->config->value(channel => $self->name => 'flags');
+}
+
+sub key {
+    my $self = shift;
+    $self->config->value(channel => $self->name => 'key') = shift if @_;
+    return $self->config->value(channel => $self->name => 'key');
 }
 
 sub logging {
     my $self = shift;
-    $self->{logging} = shift if @_;
-    return $self->{logging};
+    $self->config->value(channel => $self->name => 'logging') = shift if @_;
+    return $self->config->value(channel => $self->name => 'logging');
+}
+
+sub limit {
+    my $self = shift;
+    $self->config->value(channel => $self->name => 'limit') = shift if @_;
+    return $self->config->value(channel => $self->name => 'limit');
 }
 
 sub ops {
     my $self = shift;
-    return $self->{ops};
+    return $self->config->value(channel => $self->name => 'op');
 }
 
 sub add_member {
@@ -65,7 +78,7 @@ sub remove_member {
   my $self = shift;
   my $nick = shift;
 
-  if(exists($self->{memebers}{$nick})) {
+  if (exists($self->{members}{$nick})) {
     delete $self->{members}{$nick};
   }
 }
@@ -74,7 +87,7 @@ sub is_member {
   my $self = shift;
   my $nick = shift;
 
-  if($self->{members}{$nick}) {
+  if ($self->{members}{$nick}) {
     return 1;
   } else {
     return 0;
@@ -85,10 +98,10 @@ sub add_op {
     my $self = shift;
     my $user = shift;
 
-    $self->{ops}{$user} = 1;
-    # return the current number of ops (values() returns an array, but
-    # since it's in a scalar context, add_op returns the size of the array)
-    return scalar(values(%{$self->{ops}}));
+    defined $user or return;
+    if (! grep {$_ eq $user} @{$self->ops}) {
+      push @{$self->config->value(channel => $self->name => 'op')}, $user;
+    }
 }
 
 1;

@@ -49,30 +49,10 @@ sub join {
   my ($channel, $key) = split(' ', shift, 2);
 
   $channel = normalize_channel($channel);
-  my $config = $self->{perlbot}->config;
-
-  if ($self->{perlbot}->config->value(channel => $channel)) {
-
-    my $chan = new Perlbot::Chan(name    => $channel,
-                                 flags   => $config->value(channel => $channel => 'flags'),
-                                 key     => $config->value(channel => $channel => 'key'),
-                                 logging => $config->value(channel => $channel => 'logging'),
-                                 logdir  => $config->value(bot => 'logdir'));
-    foreach my $op (@{$config->value(channel => $channel => 'op')}) {
-      $chan->add_op($op) if exists $self->{perlbot}{users}{$op};
-    }
-
-    $self->{perlbot}{channels}{$chan->{name}} = $chan;
-    $self->{perlbot}->join($chan);
-    
-  } else {
-
-    my $chan = new Perlbot::Chan(name => normalize_channel($channel), key => $key);
-                        
-    $self->{perlbot}{channels}{$chan->{name}} = $chan;
-    $self->{perlbot}->join($chan);
-
-  }
+  my $chan = new Perlbot::Chan($channel, $self->{perlbot}->config);
+  $chan->key($key);
+  $self->{perlbot}->channels->{$channel} = $chan;
+  $self->{perlbot}->join($chan);
 }
 
 sub part {
@@ -82,9 +62,9 @@ sub part {
 
   $channel = normalize_channel($channel);
 
-  if ($self->{perlbot}{channels}{$channel}) {
-    $self->{perlbot}->part($self->{perlbot}{channels}{$channel});
-    delete $self->{perlbot}{channels}{$channel};
+  if ($self->{perlbot}->get_channel($channel)) {
+    $self->{perlbot}->part($self->{perlbot}->get_channel($channel));
+    delete $self->{perlbot}->channels->{$channel};
   } else {
     $self->reply("I am not currently in $channel");
   }
@@ -97,7 +77,7 @@ sub cycle {
 
   $channel = normalize_channel($channel);
 
-  if ($self->{perlbot}{channels}{$channel}) {
+  if ($self->{perlbot}->get_channel($channel)) {
     $self->part($user, $channel);
     $self->join($user, $channel);
   } else {
@@ -105,7 +85,7 @@ sub cycle {
   }
 }
 
-sub say { 
+sub say {
   my $self = shift;
   my $user = shift;
   my ($channel, $text) = split(' ', shift, 2);
@@ -140,12 +120,13 @@ sub op {
     return;
   }
 
-  if (!$self->{perlbot}{channels}{$channel}) {
+  my $chan = $self->{perlbot}->get_channel($channel);
+  if (!$chan) {
     $self->reply("No such channel: $channel");
     return;
   }
 
-  if (!exists($self->{perlbot}{channels}{$channel}{ops}{$user->name})) {
+  if (! grep {$_ eq $user->name} @{$chan->ops}) {
     $self->reply("You are not a valid op for channel $channel");
   } else {
     $self->{perlbot}->op($channel, $user->{curnick});

@@ -31,33 +31,30 @@ sub init {
 
 sub update {
   my $self = shift;
-  my $event = shift; 
+  my $event = shift;
 
   my $userhost = $event->from;
   my $type = $event->type;
   my $nick = $event->nick;
   my $channel = normalize_channel($event->{to}[0]);
+  my $chan = $self->{perlbot}->get_channel($channel);
   my $text = $event->{args}[0];
   my $user = $self->{perlbot}->get_user($userhost);
 
-  if($type eq 'join') {
-    if($self->{perlbot}{channels}{$channel}) {
-      $self->{perlbot}{channels}{$channel}->add_member($nick);
-    }
+  if ($type eq 'join' and $chan) {
+    $chan->add_member($nick);
   }
 
-  if($type eq 'part') {
-    if($self->{perlbot}{channels}{$channel}) {
-      $self->{perlbot}{channels}{$channel}->remove_member($nick);
-    }
+  if ($type eq 'part' and $chan) {
+    $chan->remove_member($nick);
   }
 
-  if($type eq 'quit') {
+  if ($type eq 'quit') {
     $self->{lastquit} = $nick;
   }
 
-  if($type eq 'nick') {
-    foreach my $chan (values(%{$self->{perlbot}{channels}})) {
+  if ($type eq 'nick') {
+    foreach my $chan (values(%{$self->{perlbot}->channels})) {
       if($chan->is_member($nick)) {
         $chan->remove_member($nick);
         $chan->add_member($event->{args}[0]);
@@ -65,32 +62,32 @@ sub update {
     }
   }
 
-  if($type eq 'kick') {
-    my $chan = normalize_channel($event->{args}[0]);
-    if($self->{perlbot}{channels}{$chan}) {
-      $self->{perlbot}{channels}{$chan}->remove_member($nick);
+  if ($type eq 'kick') {
+    my $chan = $self->{perlbot}->get_channel($event->{args}[0]);
+    if ($channel) {
+      $channel->remove_member($nick);
     }
   }
 
-  if($type eq 'namreply') {
-    my $chan = normalize_channel($event->{args}[2]);
+  if ($type eq 'namreply') {
+    my $chan = $self->{perlbot}->get_channel($event->{args}[2]);
     my $nickstring = $event->{args}[3];
     $nickstring =~ s/\@//g;
     my @nicks = split(' ', $nickstring);
-    if($self->{perlbot}{channels}{$chan}) {
+    if ($chan) {
       foreach my $nick (@nicks) {
-        $self->{perlbot}{channels}{$chan}->add_member($nick);
+        $chan->add_member($nick);
       }
     }
   }
 
-  if($self->{lastquit}) {
-    foreach my $channel (keys(%{$self->{perlbot}{channels}})) {
-      $self->{perlbot}{channels}{$channel}->remove_member($nick);
+  if ($self->{lastquit}) {
+    foreach my $channel (values(%{$self->{perlbot}->channels})) {
+      $channel->remove_member($nick);
     }
   }
 
-  if($user) {
+  if ($user) {
     $user->curnick($nick);
   }
 

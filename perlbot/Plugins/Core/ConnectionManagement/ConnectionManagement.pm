@@ -30,7 +30,7 @@ sub join_channels {
   print "joining channels\n" if $DEBUG;
 
   foreach my $channel (values(%{$self->{perlbot}->{channels}})) {
-    print "Joining $channel->{name}\n" if $DEBUG;
+    print "Joining ".$channel->name."\n" if $DEBUG;
     $self->{perlbot}->join($channel);
     $self->{perlbot}->whois($channel);
   }
@@ -76,4 +76,3 @@ sub cycle_nick {
 }
 
 1;
-

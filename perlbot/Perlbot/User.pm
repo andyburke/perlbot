@@ -6,46 +6,31 @@ use Perlbot::Utils;
 
 sub new {
     my $class = shift;
-    my ($nick, $flags, $password) = (shift, shift, shift);
-    my @hostmasks = @_;
-    my $curnick = $nick; #for now...
+    my ($nick, $config) = @_;
+    my $self =
+      {
+       config     => $config,
+       name	  => $nick,
+       curnick    => $nick,
+       curchans   => [],
+       lastnick   => undef,
 
-    my $self = {
-	name	   => $nick,
-	nick       => $nick,
-	curnick    => $curnick,
-	curchans   => [],
-	hostmasks  => [],
-        admin      => 0,
-	lastnick   => undef,
-
-	realname   => '',
-	workphone  => '',
-	homephone  => '',
-	email      => '',
-	location   => '',
-	mailaddr   => '',
-
-	password   => $password,
-	allowed    => {}
-
-	};
+       allowed    => {}
+      };
 
     bless $self, $class;
-    $self->hostmasks(@hostmasks);
     return $self;
 }
 
-sub name {
+sub config {
   my $self = shift;
-  $self->{name} = shift if @_;
-  return $self->{name};
+  return $self->{config};
 }
 
-sub nick {
-    my $self = shift;
-    $self->{nick} = shift if @_;
-    return $self->{nick};
+# name is read-only!
+sub name {
+  my $self = shift;
+  return $self->{name};
 }
 
 sub curnick {
@@ -54,76 +39,58 @@ sub curnick {
     return $self->{curnick};
 }
 
-sub hostmasks {
-    my $self = shift;
-    my @hostmasks = @_;
-
-    $self or return undef;
-
-    @hostmasks or return undef;
-
-    foreach my $hostmask (@hostmasks) {
-        # make sure the hostmask is OK before adding it
-	if (!validate_hostmask($hostmask)) {
-          print "User '$self->{name}': refusing to add invalid hostmask: $hostmask\n" if $DEBUG;
-          return;
-        }
-
-        # Substitutions to take a standard IRC hostmask and convert it to
-        #   a regexp.  I thought this was pretty clever...  :)
-
-        # split hostmask into nick and userhost, since the rules differ
-        my ($nick, $userhost) = $hostmask =~ /^(.*)!(.*)$/;
-
-        # {}| are really the lowercase equivalents of []\  (Don't ask me... read RFC1459) 
-        # The result of this is that { is equivalent to [ in a nick, etc.
-        # I couldn't do a direct substitution for each of these.  There would
-        #   be problems with the inserted ] and \ chars (used to define the
-        #   character classes on the right side of the s///) being picked up
-        #   by the second and third s/// expressions.  The solution was to
-        #   substitute a character that would never be found in a real hostmask
-        #   in a first pass, and convert those characters to the correct
-        #   regexp in a second pass.
-        # First pass: convert each instance of a char (upper or lower) to some
-        #   'impossible' character.  (ascii 01, 02, and 03)
-        $nick =~ s/[{[]/\01/g;
-        $nick =~ s/[}\]]/\02/g;
-        $nick =~ s/[|\\]/\03/g;
-        # Second pass: convert each impossible char to the appropriate regexp
-        $nick =~ s/\01/[{[]/g;
-        $nick =~ s/\02/[}\\]]/g;
-        $nick =~ s/\03/[|\\\\]/g;
-
-        $userhost =~ s/([[\]{}|\\])/\\$1/g; # escape \[]{} only in userhost
-
-        $hostmask = "$nick!$userhost";      # recombine
-        $hostmask =~ s/([().?^\$])/\\$1/g;  # escape ().?^$
-        $hostmask =~ s/\*/.*/g;             # translate wildchar "*" to regexp equivalent ".*"
-
-        if(!grep { /^\Q$hostmask\E$/ } @{$self->{hostmasks}}) { # don't add duplicates
-          push @{$self->{hostmasks}}, $hostmask;
-        }
-    }
-
-    return $self->{hostmasks};
-}
-
 sub admin {
   my $self = shift;
-  $self->{admin} = shift if @_;
-  return $self->{admin};
+
+  # if the arrayref is undefined, create it
+  if (!$self->config->value(bot => 'admin')) {
+    $self->config->value('bot', 0)->{admin} = [];
+  }
+  # insert/remove username from admins hash as requested
+  if (@_) {
+    my $want_admin = shift(@_);
+    if ($want_admin and !$self->admin) {
+      push @{$self->config->value(bot => 'admin')}, $self->name;
+    } else {
+      my $admins = $self->config->value(bot => 'admin');
+      @$admins = grep {$_ ne $self->name} @$admins;
+    }
+  }
+  return grep({$_ eq $self->name} @{$self->config->value(bot => 'admin')}) ? 1 : 0;
 }
 
-sub is_admin {
-  my $self = shift;
-  return $self->admin();
-}
 
 sub password {
-    my $self = shift;
-    $self->{password} = shift if @_;
-    return $self->{password};
+  my $self = shift;
+  $self->config->value(user => $self->name => 'password') = shift if @_;
+  return $self->config->value(user => $self->name => 'password');
 }
+
+
+sub add_hostmask {
+  my ($self, $hostmask) = @_;
+
+  validate_hostmask($hostmask) or return;
+  push @{$self->hostmasks}, $hostmask;
+}
+
+
+sub del_hostmask {
+  my ($self, $hostmask) = @_;
+
+  my $hostmasks = $self->hostmasks;
+  @$hostmasks = grep {$_ ne $hostmask} @$hostmasks;
+}
+
+
+sub hostmasks {
+  my $self = shift;
+  if (!$self->config->value(user => $self->name => 'hostmask')) {
+    $self->config->value(user => $self->name)->{hostmask} = [];
+  }
+  return $self->config->value(user => $self->name => 'hostmask');
+}
+
 
 sub update_channels {
   my $self = shift;
@@ -137,5 +104,6 @@ sub update_channels {
     push @{$self->{curchans}}, $chan;
   }
 }
-    
+
+
 1;
