@@ -459,6 +459,13 @@ sub nick {
   return $self->{curnick};
 }
 
+sub whois {
+  my $self = shift;
+  my $target = shift;
+
+  $self->{ircconn}->whois($target);
+}
+
 sub dcc_send {
   my $self = shift;
   my $nick = shift;

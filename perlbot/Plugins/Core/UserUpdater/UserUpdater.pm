@@ -10,6 +10,8 @@ use Perlbot::Plugin;
 sub init {
   my $self = shift;
 
+  $self->{lastquit};
+
   $self->want_fork(0);
 
   $self->hook_event('public', \&update);
@@ -21,7 +23,7 @@ sub init {
   $self->hook_event('nick', \&update);
   $self->hook_event('quit', \&update);
   $self->hook_event('kick', \&update);
-
+  $self->hook_event('namreply', \&update);
 
 }
 
@@ -52,6 +54,10 @@ sub update {
     }
   }
 
+  if($type eq 'quit') {
+    $self->{lastquit} = $nick;
+  }
+
   if($type eq 'nick') {
     foreach my $chan (values(%{$self->{perlbot}{channels}})) {
       if($chan->is_member($nick)) {
@@ -77,6 +83,12 @@ sub update {
       foreach my $nick (@nicks) {
         $self->{perlbot}{channels}{$chan}->add_member($nick);
       }
+    }
+  }
+
+  if($self->{lastquit}) {
+    foreach my $channel (keys(%{$self->{perlbot}{channels}})) {
+      $self->{perlbot}{channels}{$channel}->remove_member($nick);
     }
   }
 

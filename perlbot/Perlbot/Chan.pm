@@ -66,7 +66,9 @@ sub remove_member {
   my $self = shift;
   my $nick = shift;
 
-  delete $self->{members}{$nick};
+  if(exists($self->{memebers}{$nick})) {
+    delete $self->{members}{$nick};
+  }
 }
 
 sub is_member {
