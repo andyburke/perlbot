@@ -1,5 +1,7 @@
 package Perlbot;
 
+use 5.8.0;
+
 use strict;
 require Net::IRC;
 use Data::Dumper;
@@ -287,7 +289,7 @@ sub connect {
     $localaddr ||= '';
     $username ||= '';
     $ssl ||= 0;
-    #$pacing || = 0;
+    $pacing ||= 0;
 
     debug("attempting to connect to server $index: $server");
 
@@ -585,17 +587,17 @@ sub event_multiplexer {
   #   else
   #     do nothing
 
-  debug("Got event '" . $event->type . "'", 3);
+  debug("Got event '" . $event->type . "'", 4);
   foreach my $plugin (keys(%{$self->handlers->{$event->type}})) {
     if (exists($self->handlers->{$event->type}{$plugin})) {
-      debug("  -> dispatching to '$plugin'", 3);
+      debug("  -> dispatching to '$plugin'", 5);
       my $handler = $self->handlers->{$event->type}{$plugin};
       &$handler($event, $user, $text);
     } else {
       # If we get here, we must have already processed an unload
       # request for this plugin in the core handler, so we need
       # to be careful to skip it here!
-      debug("  -> '$plugin' unloaded -- skipping", 3);
+      debug("  -> '$plugin' unloaded -- skipping", 5);
     }
   }
 
@@ -604,7 +606,7 @@ sub event_multiplexer {
 sub webserver_add_handler {
   my $self = shift;
 
-  debug("adding handler: " . join(', ', @_), 3);
+  debug("adding handler: " . join(', ', @_), 4);
 
   if (!$self->webserver) {
     # start up the webserver
@@ -632,7 +634,7 @@ sub webserver_remove_all_handlers {
   my $self = shift;
   my $ret;
 
-  debug("removing plugin handlers: " . join(', ', @_), 3);
+  debug("removing plugin handlers: " . join(', ', @_), 4);
 
   if (!$self->webserver) {
     return undef;
@@ -648,7 +650,7 @@ sub webserver_remove_all_handlers {
     $self->webserver->shutdown();
     $self->webserver = undef;
   } else {
-    debug("Still $num_hooks web hooks left", 3);
+    debug("Still $num_hooks web hooks left", 4);
   }
 
   return $ret;
@@ -657,13 +659,10 @@ sub webserver_remove_all_handlers {
 # removes all handlers and sends all waiting events, used prior to shutdown
 sub empty_queue {
   my ($self) = @_;
-  my $lines;
 
-  $lines = $self->ircobject->queue;
-  # abort if no lines in queue, or pacing not enabled
-  $lines and $self->ircobject->pacing or return;
-
-  debug("emptyqueue: outputing $lines events", 3);
+  debug("outputing " . $self->ircobject->queue . " events...", 3);
+  use Data::Dumper;
+  print Dumper $self->ircobject->queue;
   while ($self->ircobject->queue) {
     $self->ircobject->do_one_loop;
   }
