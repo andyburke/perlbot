@@ -1,25 +1,34 @@
 TODO:
 
-for 2.0:
+for 2.0 (i.e. ASAP):
+
+- Plugin::property probably won't set the value if the value evaluates as false
+  ('', 0, undef...).
+- Write a script to generate a list of plugins and their help.xml overview
+  sections, and include the output of the script in documentation/ and on the
+  webpage.
+- check that values in Weather plugin are numeric before multiplying (lots
+  of warnings without this check)
+- clean up code, make -w clean, etc.
+- User and Chan objects should know how to build a skeleton version of
+  themselves in the config if their entry doesn't already exist
+- join/part should use dummy config objects
+
+
+for 2.2:
 
 - output buffering
-- clean up code, make -w clean, etc.
 - move all code that touches Net::IRC stuff into Perlbot.pm and write
   accessor methods (for example, ConnectionManagement currently bangs on
   $perlbot->{ircconn})
 - add character-counting to max-output functionality in case of very long
   lines (1 line = 80 chars?)
-- check that values in Weather plugin are numeric before multiplying (lots
-  of warnings without this check)
-- User and Chan objects should know how to build a skeleton version of
-  themselves in the config if their entry doesn't already exist
-- join/part should use dummy config objects
 - see if anyone else has written something like our Config.  if so, look
   into using it.  if not, perhaps generalize our code and publish
   separately.
+- profile code, look for candidates for optimization (no need to rush this)
 - caching hostmasks for use by get_user - may help performance issues, but
   do those issues even exist?
-- profile code, look for candidates for optimization (no need to rush this)
 
 
 

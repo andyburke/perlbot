@@ -1,5 +1,41 @@
 CHANGES:
 
+1.9.2 - more bugfixes and cleanups, some new plugins
+- Ident username now configurable
+- Passwords now MD5 crypted, but "legacy" crypt()ed passwords are also
+  supported transparently.  Some groundwork has been laid for a more
+  flexible authorization system.
+- Config and config-sample are now config.xml and config-sample.xml
+- Sigterm now handled gracefully (basically the same as sigint)
+- Improved debug messages
+- You may now have a single logfile per channel if you like, configurable
+  via the "singlelogfile" attribute of channel objects.  The old behavior of
+  one file for each day remains the default.
+- nickappend now defaults to "_" (single underscore)
+- !quit now replies "Quitting..." to give some positive feedback
+- !debug command added to change the debug level on the fly
+- Per-plugin info.xml added, with author, contact and url fields.  This
+  information is returned as part of the top-level help text for each
+  plugin.
+- Plugin unload/load now works (!unloadplugin and !loadplugin)
+- Trivia plugin added - runs trivia games and keeps many statistics
+- URLEater plugin added - keeps a list of the last URLs said in the channel.
+  !urls will list them (max of 10).
+- BitchOps typo fixed.  Random errors in BitchOps.pm and certain other
+  strange behavior should no longer occur.
+- Logserver logs now display "hot" URL links (clickable)
+- Outlander is somewhat less talkative now, and translates through English
+  as well now (bugfix).
+- Weather output made nicer and more compact
+- Plugins with config.xml files now have config-sample.xml files instead,
+  just like the main bot, so CVS doesn't interfere with your real config
+  files.
+- Sample initscript now handles the typical usage of symlinking something
+  like S97botname to the initscript itself, by stripping the prefix part
+  before the botname.
+- hook() with just a single coderef parameter will now hook on every line
+- All hooks now additionally get the irc event as the last argument
+
 1.9.1 - fixes and cleanups
 - DTD fixed in the sample config
 - Typo fixes in Plugin.pm
