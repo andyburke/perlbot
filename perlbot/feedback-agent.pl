@@ -17,19 +17,22 @@ print <<EOG;
 
 Welcome to the Perlbot Feedback Agent!
 
-This software allows the Perlbot developers to gather information
-which can help us better meet the needs of our users.
+This software  allows the  Perlbot developers  to gather information  which can
+help us better meet your needs.
 
-This software will not report any sensitive information!  It is
-solely intended to report information which can be used for
-statistical and development purposes.
+Don't  worry, we are  not gathering  any sensitive  information!  This  tool is
+solely intended  to report  information which can  be used  for statistical and
+development purposes,  such as your perl version and how  many users you expect 
+to have.
 
-You will be able to view and approve the information being sent
-before it is reported.
+Some data  will be  gathered automatically,  and you  will also be  asked a few
+brief questions.  You will be able to review and approve all information before
+it is reported.
 
-Some of the information will be gathered automatically, but you
-will be asked a few questions.  This should only take a moment.
+You may press ctrl-c at any time to abort without sending any data.
 
+--------------------------------------
+(please press Enter after all answers)
 
 EOG
 
@@ -52,62 +55,34 @@ if ($@) {
   $perlbotversion = $Perlbot::VERSION;
 }
 
-my $firsttime;
-while($firsttime ne 'y' && $firsttime ne 'n') {
-  print "Is this your first time running perlbot? [y/n] ";
-  $firsttime = lc(<STDIN>);
-  chomp $firsttime;
-}
+my $firsttime   = prompt("Is this your first time running perlbot? [y/n] ",
+                         '^[yn]$', 1);
   
-my $docshelpful;
-while($docshelpful ne 'y' && $docshelpful ne 'n' && $docshelpful ne 's') {
-  print "Was the included documentation (the manual, the FAQ, etc.) helpful? [y/n/s(omewhat)] ";
-  $docshelpful = lc(<STDIN>);
-  chomp $docshelpful;
-}
+my $docshelpful = prompt("Did you find the manual and the FAQ helpful?".
+                           " [y/n/s(omewhat)] ",
+                         '^[yns]$', 1);
 
-my $docsimprovement;
-if($docshelpful eq 'n' || $docshelpful eq 's') {
-  print "Please type in a brief, single line of text telling us how you feel the documentation could be improved: ";
-  $docsimprovement = <STDIN>;
-  chomp $docsimprovement;
-}
+my $docsimprove = prompt("Please type in a brief, single line of text".
+                           " telling us how you feel\nthe documentation".
+                           " could be improved (if at all):\n> ");
 
-my $numchannels;
-while($numchannels !~ /^\d+$/) {
-  print "How many channels will this perlbot be used in? (estimate): ";
-  $numchannels = <STDIN>;
-  chomp $numchannels;
-}
+my $numchannels = prompt("In roughly how many channels will this perlbot".
+                           " be used? ",
+                         '^\d+$');
 
-my $numusers;
-while($numusers !~ /^\d+$/) {
-  print "How many users will this perlbot have? (estimate): ";
-  $numusers = <STDIN>;
-  chomp $numusers;
-}
+my $numusers    = prompt("About how many users will this perlbot have? ",
+                         '^\d+$');
 
-my $load;
-while($load ne 'l' && $load ne 'm' && $load ne 'h') {
-  print "What will the load on this bot be like? (estimate) [l(ight)/m(oderate)/h(eavy)] ";
-  $load = lc(<STDIN>);
-  chomp $load;
-}
+my $load        = prompt("What do you expect the load on this bot to be?".
+                           " [l(ight)/m(oderate)/h(eavy)] ",
+                         '^[lmh]$', 1);
 
-my $usingwebserver;
-while($usingwebserver ne 'y' && $usingwebserver ne 'n') {
-  print "Will you be using the integrated webserver? [y/n] ";
-  $usingwebserver = lc(<STDIN>);
-  chomp $usingwebserver;
-}
+my $webserver   = prompt("Will you be using the integrated webserver?".
+                           " [y/n/m(aybe)] ",
+                         '^[ynm]$', 1);
 
-my $mostdesired;
-print "What is your most desired future feature and/or plugin?: ";
-my $mostdesired = <STDIN>;
-chomp $mostdesired;
-
-
-
+my $mostdesired = prompt("What is your most desired future feature and/or".
+                           " plugin?\n(answer on one line only)\n> ");
 
 
 ######################
@@ -126,35 +101,37 @@ if($userid != -1) {
 print "------------------------------------\n";
 print "First time user: $firsttime\n";
 print "Documentation helpful: $docshelpful\n";
-if($docshelpful eq 'n' || $docshelpful eq 's') {
-  print "  Suggestions on improving documentation:\n";
-  print "     $docsimprovement\n\n";
-}
+print "Suggestions on improving documentation:\n";
+print "  $docsimprove\n\n";
 print "Estimated Channels: $numchannels\n";
 print "Estimated Users: $numusers\n";
 print "Estimated Load: $load\n";
-print "Using Integrated Webserver: $usingwebserver\n";
+print "Using Integrated Webserver: $webserver\n";
 print "Most desired feature/plugin:\n";
 print "  $mostdesired\n\n";
 
-my $xml = "<perlbot-feedback os=\"$os\" perlbotversion=\"$perlbotversion\" perlversion=\"$perlversion\" netircversion=\"$netircversion\" firsttimeuser=\"$firsttime\" docshelpful=\"$docshelpful\" docsimprovement=\"$docsimprovement\" channels=\"$numchannels\" users=\"$numusers\" load=\"$load\" usingwebserver=\"$usingwebserver\" mostdesired=\"$mostdesired\" />";
-
-my $viewxml;
-while($viewxml ne 'y' && $viewxml ne 'n') {
-  print "Would you like to view the xml output that will be submitted? [y/n] ";
-  $viewxml = lc(<STDIN>);
-  chomp $viewxml;
+foreach my $value ($os, $docsimprove, $mostdesired) {
+  $value =~ s/&/&amp;/g;
+  $value =~ s/"/&quot;/g;
+  $value =~ s/</&lt;/g;
+  $value =~ s/>/&gt;/g;
 }
+
+my $xml = qq{<?xml version="1.0"?>\n<perlbot-feedback os="$os" perlbotversion="$perlbotversion" perlversion="$perlversion" netircversion="$netircversion" firsttimeuser="$firsttime" docshelpful="$docshelpful" docsimprovement="$docsimprove" channels="$numchannels" users="$numusers" load="$load" usingwebserver="$webserver" mostdesired="$mostdesired" />};
+
+my $viewxml = prompt("Would you like to view the xml output that will be".
+                       " submitted? [y/n] ",
+                     '^[yn]$', 1);
 
 if($viewxml eq 'y') {
   print "\n\n" . $xml . "\n\n";
 }
 
-my $send;
-while($send ne 'y' && $send ne 'n') {
-  print "All data ready, send to perlbot developers? [y/n] ";
-  $send = lc(<STDIN>);
-  chomp $send;
+my $send = prompt("All data ready, send to perlbot developers? [y/n]",
+                  '^[yn]$', 1);
+if ($send eq 'n') {
+  print "\n\nABORTED\n";
+  exit;
 }
 
 my($remote,$port,$iaddr,$paddr,$proto,$line);
@@ -218,10 +195,23 @@ close(USERID);
 print "All data sent, thank you for helping us meet the needs of perlbot users!\n";
 
 
+sub prompt {
+  my ($message, $regex, $force_lc) = @_;
 
+  # check regex validity (on an empty string just in case?)
+  eval "'' =~ /$regex/";
+  if ($@) {
+    warn "prompt: invalid regex: $regex";
+  }
 
+  my $line;
+  do {
+    print $message;
+    $line = <STDIN>;
+    chomp $line;
+    $line = lc($line) if $force_lc;
+  } while ($line !~ /$regex/);
 
-
-
-
-
+  print "\n";
+  return $line;
+}
