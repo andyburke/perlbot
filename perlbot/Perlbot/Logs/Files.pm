@@ -245,6 +245,7 @@ sub search {
   my $type = $args->{type};
   my $initialdate = $args->{initialdate} || 1;
   my $finaldate = $args->{finaldate} || time();
+  my $boolean = $args->{boolean} || 0;
 
   my @result;
   my $resultcount = 0;
@@ -285,6 +286,7 @@ sub search {
       if ($add_to_result) {
         push(@result, $line);
         $resultcount++;
+        last FILE if $boolean;
       }
       last FILE if defined($maxresults) and $resultcount >= $maxresults;
     }
@@ -292,7 +294,11 @@ sub search {
     CORE::close FILE;
  }
 
-  return @result;
+  if(wantarray()) {
+    return @result;
+  } else {
+    return $resultcount;
+  }
 }
 
 sub initial_entry_time {
