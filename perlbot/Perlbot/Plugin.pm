@@ -316,11 +316,17 @@ sub _help {
   if($command eq $self->{name}) {
     if($self->{helpitems}{overview}[0]) {
       push(@result, @{$self->{helpitems}{overview}});
-      push(@result, 'Available commands:');
-      push(@result, join(' ', keys(%{$self->{helpitems}{command}})));
+      if(keys(%{$self->{helpitems}{command}})) {
+        push(@result, 'Available commands:');
+        push(@result, join(' ', keys(%{$self->{helpitems}{command}})));
+      }
     }
   } elsif($self->{helpitems}{command}{$command}) {
-    push(@result, @{$self->{helpitems}{command}{$command}{content}});
+    if(ref($self->{helpitems}{command}{$command}{content}) eq 'ARRAY') {
+      push(@result, @{$self->{helpitems}{command}{$command}{content}});
+    } else {
+      push(@result, $self->{helpitems}{command}{$command}{content});
+    }
   }
 
   return @result;
