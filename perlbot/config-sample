@@ -15,12 +15,15 @@
        logdir="./logs"
        crashlogdir="./"
        commandprefix="!">
-    <plugindir>./core</plugindir>
-    <plugindir>./plugins</plugindir>
+    <plugindir>Plugins/Core</plugindir>
+    <plugindir>Plugins/Basic</plugindir>
+    <plugindir>Plugins/Misc</plugindir>
     <noload>MegaHal</noload>
     <noload>Guile</noload>
-    <noload>Babelfish</noload>
+    <noload>Outlander</noload>
     <noload>Test</noload>
+    <noload>XMLServer</noload>
+    <noload>XMLClient</noload>
     <admin>someone</admin>
     <ignore>*!*someannoyinguser@*.some.host.com</ignore>
   </bot>
