@@ -49,6 +49,8 @@ sub regurgitate {
   my ($max) = $text =~ /(\d+)/;
   $max ||= 5;
 
+  if($max > 10) { $max = 10; }
+
   my $printed = 0;
   my @reply;
 
