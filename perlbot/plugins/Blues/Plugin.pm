@@ -20,7 +20,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!bluesnews/ || $args =~ /^!blues/) {
+  if($args =~ /^${pluginchar}bluesnews/ || $args =~ /^${pluginchar}blues/) {
     get_bluesnews($conn, $event, $event->{to}[0]);
   }
 }
@@ -32,7 +32,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^!bluesnews/ || $args =~/^!blues/) {
+  if($args =~ /^${pluginchar}bluesnews/ || $args =~/^${pluginchar}blues/) {
     get_bluesnews($conn, $event, $event->nick);
   }
 }
@@ -46,8 +46,8 @@ sub get_bluesnews {
 
 
   ($max = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-  $max =~ s/^!bluesnews//;
-  $max =~ s/^!blues//; 
+  $max =~ s/^${pluginchar}bluesnews//;
+  $max =~ s/^${pluginchar}blues//; 
   $max =~ s/\s+(\d+)\s*.*/\1/;
 
   if($max eq '' || $max < 1) { $max = 5; }
@@ -98,7 +98,7 @@ sub get_bluesnews {
       exit 1;
     }
 
-    $msg = "GET /news/news.shtml\n\n";
+    $msg = "GET /\n\n";
     
     if(!send(SOCK, $msg, 0)) {
       $conn->privmsg($who, "Could not send to $remote");
@@ -110,43 +110,30 @@ sub get_bluesnews {
 
     my $i = 0;
 
-    my $date = '';
+    while ((my $input = <SOCK>) && ( $i < $max)) {
+      if( $input =~ m#<doghdl.*?>(.*?)</doghdl></a></a></strong></font><font.*?>&nbsp; \[(\d+:\d+ \w\w \w+) \(.*?\) (\w+) (\d+),# ) {
+        print "[BLUES] MATCHED: $input\n" if $debug;
+        my ($headline, $date) = ($1, "$3/$4 $2");
+        print "[BLUES] EXTRACTED: $headline|$date\n" if $debug;
 
-    while ((my $input = <SOCK>) &&( $i < $max)) {
-	if( $input =~ m#^.*?face=\"Arial, Helvetica\"><strong>#){
-	    ($date) = $input =~ m#^.*?face=\"Arial, Helvetica\"><strong>(.*?)<#;
-	    $date =~ s/January/1/;
-	    $date =~ s/Febuary/2/;
-	    $date =~ s/March/3/;
-	    $date =~ s/April/4/;
-	    $date =~ s/May/5/;
-	    $date =~ s/June/6/;
-	    $date =~ s/July/7/;
-	    $date =~ s/August\s/8\//;
-	    $date =~ s/September/9/;
-	    $date =~ s/October/10/;
-	    $date =~ s/November/11/;
-	    $date =~ s/December/12/;
-	    
-	    $date =~ s/Saturday//;
-	    $date =~ s/Friday//;
-	    $date =~ s/Thursday//;
-	    $date =~ s/Wednesday//;
-	    $date =~ s/Tuesday//;
-	    $date =~ s/Monday//;
-	    $date =~ s/Sunday//;
+        $date =~ s/January/1/;
+        $date =~ s/Febuary/2/;
+        $date =~ s/March/3/;
+        $date =~ s/April/4/;
+        $date =~ s/May/5/;
+        $date =~ s/June/6/;
+        $date =~ s/July/7/;
+        $date =~ s/August/8/;
+        $date =~ s/September/9/;
+        $date =~ s/October/10/;
+        $date =~ s/November/11/;
+        $date =~ s/December/12/;
 
-	    $date =~ s/,.*//;
-	}
-	if ($input =~ /face=\"Verdana, Arial, Helvetica\"><strong><a name=/){
-	    $input =~ s/^.*<a name=//;
-	    $input =~ s/^.*\">//;
-	    $conn->privmsg($who, "   $date : $input");
-	    $i++;
-	}
+        $conn->privmsg($who, "   $date : $headline");
+        $i++;
+      }
     }
-  
-    
+
     $conn->{_connected} = 0;
     exit 0;
   }
