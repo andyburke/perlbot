@@ -16,22 +16,27 @@ sub new {
   my $configfile = shift; $configfile ||= './config';
 
   my $self = {
-    starttime => time(),
-    configfile => $configfile,
-    config => undef,
-    ircobject => undef,
-    ircconn => undef,
-    msg_queue => [],
-    empty_queue => 1,
-    plugins => [],
-    handlers => {},
-    users => {},
-    channels => {},
-    curnick => '',
-    masterpid => $$,
+    starttime => time(),       # bot startup time, used for uptime
+    configfile => $configfile, # bot's config filename
+    config => undef,           # bot's config object reference
+    ircobject => undef,        # bot's irc object
+    ircconn => undef,          # bot's irc connection
+    msg_queue => [],           # for output buffering, eventually
+    empty_queue => 1,          # more output buffering
+    plugins => [],             # all the plugin references
+    handlers => {},            # all the handlers per event type and plugin
+    users => {},               # all our users
+    channels => {},            # all the channels
+    curnick => '',             # the bot's current nick
+    masterpid => $$,           # the bot's master pid
   };
 
   bless $self, $class;
+
+  # here we hook up signals to their handlers
+  # INT shuts the bot down
+  # HUP reloads the config
+  # DIE will give us a dump of what happened into the crashlog
 
   $SIG{INT} = sub { $self->shutdown('ctrl-c from console') };
   $SIG{HUP} = sub { $self->reload_config };
@@ -39,6 +44,8 @@ sub new {
 
   return $self;
 }
+
+# The following are all just accessor functions into the bot object
 
 sub starttime {
   my $self = shift;
@@ -191,10 +198,11 @@ sub sigdie_handler {
   }
 }
 
-
 sub reload_config {
   my $self = shift;
 
+  # pretty simple, just overwrites our in-memory config with one
+  # from disk
   debug("*** RELOADING CONFIG ***");
   $self->config->load();
 }
