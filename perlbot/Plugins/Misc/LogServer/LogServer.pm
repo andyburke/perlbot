@@ -20,7 +20,7 @@ use Date::Manip;
 
 use CGI qw(:standard);
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.3.1';
 
 sub init {
   my $self = shift;
@@ -149,25 +149,10 @@ sub logserver {
                                                                                  . $options->{day}
                                                                                  . "-23:59:59",'%s')});
 
-      my @loglines;
-      while(my $event = shift @events) {
-        push(@loglines, $event->as_string());
+      foreach my $event (@events) {
+        $response .= $self->event_as_html_string($event);
       }
 
-      foreach (@loglines) {
-        s/\&/\&amp\;/g;
-        s/</\&lt\;/g;
-        s/>/\&gt\;/g;
-        s/(\&lt\;.*?\&gt\;)/<b>$1<\/b>/;
-        s|^(\d+/\d+/\d+-\d+:\d+:\d+) \* (\w+) (.*)|$1 * <b>$2</b> $3|;
-        s|^(\d+/\d+/\d+-\d+:\d+:\d+\s)(.*? joined \#.*?$)|$1<font color=\"blue\">$2</font>|;
-        s|^(\d+/\d+/\d+-\d+:\d+:\d+\s)(.*? left \#.*?$)|$1<font color=\"blue\">$2</font>|;
-        s|^(\d+/\d+/\d+-\d+:\d+:\d+\s)(\[.*?\])|$1<font color=\"red\">$2</font>|;
-        s|(\d+/\d+/\d+-\d+\:\d+:\d+)|<a name=\"$1\">$1</a>|;
-        s#(\w+://.*?|www\d*\..*?|ftp\d*\..*?|web\d*\..*?)(\s+|'|,|$)#<a href="$1">$1</a>$2#;
-        $response .= "<tt>$_</tt><br>";
-      }
-      
       return $self->std_response($response);
     }
 
@@ -298,8 +283,6 @@ sub logserver {
                                       $initialmin,
                                       $initialsec);
 
-      print $initialdatestring . "\n";
-
       my $finalyear = $options->{finalyear};
       my $finalmonth = $options->{finalmonth};
       my $finalday = $options->{finalday};
@@ -314,14 +297,8 @@ sub logserver {
                                       $finalmin,
                                       $finalsec);
 
-      print $finaldatestring . "\n";
-
       my $initialdate = Date::Manip::UnixDate($initialdatestring,'%s');
       my $finaldate = Date::Manip::UnixDate($finaldatestring,'%s');
-
-      print localtime($initialdate) . "\n";
-      print localtime($finaldate) . "\n";
-
 
       my $nick = $options->{nick};
       my $type = $options->{type}; if($type eq 'all') { $type = undef; };
@@ -332,28 +309,54 @@ sub logserver {
                                             nick => $nick,
                                             type => $type });
 
-      my @loglines;
-      while(my $event = shift @events) {
-        push(@loglines, $event->as_string());
-      }
-      
-      foreach (@loglines) {
-        s/\&/\&amp\;/g;
-        s/</\&lt\;/g;
-        s/>/\&gt\;/g;
-        s/(\&lt\;.*?\&gt\;)/<b>$1<\/b>/;
-        s|^(\d+/\d+/\d+-\d+:\d+:\d+) \* (\w+) (.*)|$1 * <b>$2</b> $3|;
-        s|^(\d+/\d+/\d+-\d+:\d+:\d+\s)(.*? joined \#.*?$)|$1<font color=\"blue\">$2</font>|;
-        s|^(\d+/\d+/\d+-\d+:\d+:\d+\s)(.*? left \#.*?$)|$1<font color=\"blue\">$2</font>|;
-        s|^(\d+/\d+/\d+-\d+:\d+:\d+\s)(\[.*?\])|$1<font color=\"red\">$2</font>|;
-        s|(\d+/\d+/\d+-\d+\:\d+:\d+)|<a name=\"$1\">$1</a>|;
-        s#(\w+://.*?|www\d*\..*?|ftp\d*\..*?|web\d*\..*?)(\s+|'|,|$)#<a href="$1">$1</a>$2#;
-        $response .= "<tt>$_</tt><br>";
+      foreach my $event (@events) {
+        $response .= $self->event_as_html_string($event);
       }
 
       return $self->std_response($response);
     }                       
   }          
+}
+
+sub event_as_html_string {
+  my $self = shift;
+  my $event = shift;
+
+  my $type = $event->type;
+
+  my $format_string = '<tt><a name="%timestamp">%hour:%min:%sec</a> ';
+
+  if($type eq 'public') {
+    $format_string .= '&lt;%nick&gt; %text';
+  } elsif($type eq 'caction') {
+    $format_string .= '* %nick %text';
+  } elsif($type eq 'mode') {
+    $format_string .= '%nick set mode: %text';
+  } elsif($type eq 'topic') {
+    $format_string .= '<font color="red">[%type] %nick: %text</font>';
+  } elsif($type eq 'nick') {
+    $format_string .= '<font color="red">[%type] %nick changed nick to: %nick</font>';
+  } elsif($type eq 'quit') {
+    $format_string .= '<font color="red">[%type] %nick quit: %text</font>';
+  } elsif($type eq 'kick') {
+    $format_string .= '<font color="red">[%type] %target was kicked by %nick (%text)</font>';
+  } elsif($type eq 'join') {
+    $format_string .= '<font color="blue">%nick (%userhost) joined %channel</font>';
+  } elsif($type eq 'part') {
+    $format_string .= '<font color="blue">%nick (%userhost) left %channel</font>';
+  }
+
+  $format_string .= '</tt><br>';
+
+  my $result =
+      $event->as_string_formatted($format_string,
+                                  [ 'html',
+                                    sub {
+                                      s#(\w+://.*?|www\d*\..*?|ftp\d*\..*?|web\d*\..*?)(\s+|'|,|$)#<a href="$1">$1</a>$2#g;
+                                    }
+                                    ]);
+  
+  return $result;
 }
 
 sub std_response {

@@ -119,3 +119,8 @@ object, accessible via $self->config .  This code would return
 If you really, REALLY need to look at the rest of the config, you may access
 $self->perlbot->config to get at the entire thing, but PLEASE make sure this
 is what you want/need to do.
+
+IRC Events
+----------
+
+Talk about as_formatted_string and how it can take an array of filters here.
