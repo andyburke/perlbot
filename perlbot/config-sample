@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE config SYSTEM "config.perlbot.dtd">
+<!DOCTYPE config SYSTEM "config.dtd">
 <config>
   <channel name="#perlbot"
            flags="+t-ns"

@@ -499,7 +499,7 @@ sub _process { # _process to stay out of people's way
 
   foreach my $addressed_command_hook (keys(%{$self->{addressed_command_hooks}})) {
     my $nick = $self->perlbot->curnick;
-    my $regexp = $nick . '(?:,|:|\.|\s)*' . $addressed_command_hook . '(?:\s+|$)';
+    my $regexp = $nick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/${regexp}//i;
@@ -567,7 +567,7 @@ sub _process { # _process to stay out of people's way
 
   foreach my $addressed_command_admin_hook (keys(%{$self->{addressed_command_admin_hooks}})) {
     my $nick = $self->perlbot->curnick;
-    my $regexp = $nick . '(?:,|:|\.|\s)*' . $addressed_command_admin_hook . '(?:\s+|$)';
+    my $regexp = $nick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_admin_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       if($user && $user->is_admin()) {
         my $texttocallwith = $text;
@@ -602,7 +602,7 @@ sub _process { # _process to stay out of people's way
 
   foreach my $addressed_command_advanced_hook (keys(%{$self->{addressed_command_advanced_hooks}})) {
     my $nick = $self->perlbot->curnick;
-    my $regexp = $nick . '(?:,|:|\.|\s)*' . $addressed_command_advanced_hook . '(?:\s+|$)';
+    my $regexp = $nick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_advanced_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/${regexp}//i;

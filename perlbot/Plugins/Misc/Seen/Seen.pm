@@ -33,7 +33,7 @@ sub seen {
   my $user = shift;
   my $name = shift;
 
-  ($name) = split(' ', $name);
+  ($name) = split(' ', lc($name));
 
   if(defined($self->{seen}{$name})) {
     my ($lastseentime, $type, $lasttext) = split(':', $self->{seen}{$name}, 3);
@@ -111,7 +111,7 @@ sub seen {
 sub updater {
   my $self = shift;
   my $event = shift;
-  my $nick = $event->nick;
+  my $nick = lc($event->nick);
 
   my $user = $self->perlbot->get_user($event->from());
 
