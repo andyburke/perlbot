@@ -3,13 +3,13 @@
   <command name="nick">Changes the bot's nick.</command>
   <usage name="nick">nick newnick</usage>
   <command name="quit">Causes the bot to quit irc.</command>
-  <usage name="quit">quit [quit message]</command>
+  <usage name="quit">quit [quit message]</usage>
   <command name="join">Causes the bot to join a channel.</command>
   <usage name="join">join #channelname</usage>
   <command name="part">Causes the bot to part a channel.</command>
   <usage name="part">part #channelname</usage>
   <command name="cycle">Causes the bot to cycle (part and rejoin) a channel.</command>
-  <usage name="cycle">cycle #channelname</cycle>
+  <usage name="cycle">cycle #channelname</usage>
   <command name="say">Causes the bot to say something to the specified channel.</command>
   <usage name="say">say #channelname some text to say</usage>
   <command name="msg">Causes the bot to send a message to the specified nickname.</command>
