@@ -78,7 +78,8 @@ my %config_handlers =
    user => sub {
      my $name = $_[0]->{name}[0] if $_[0]->{name}[0];
      my $flags = join('',@{$_[0]->{flag}}) if $_[0]->{flag};
-     my @new_hostmasks = @{@_[0]->{hostmask}} if @{@_[0]->{hostmask}};
+     my @new_hostmasks;
+     if(@_[0]->{hostmask}) { @new_hostmasks = @{@_[0]->{hostmask}}; }
      $users{$name} = new User($name, $flags, @new_hostmasks);
      if($users{$name}) {
        $users{$name}->{password} = $_[0]->{password}[0] if $_[0]->{password}[0];
@@ -185,9 +186,9 @@ my %command_handlers =
 
      $conn->privmsg($from, "Perlbot $VERSION / $AUTHORS");
      $conn->privmsg($from, "Uptime: ${uptimedays}d:${uptimehours}h:${uptimeminutes}m:${uptimeseconds}s");
+     $conn->privmsg($from, "Known users: " . keys(%users));
      $conn->privmsg($from, "Channels active: " . keys(%channels));
      $conn->privmsg($from, "Plugins active: " . @plugins);
-     $conn->privmsg($from, "Plugins loaded: " . join(' ', 'Core', @plugins[1..$#plugins]));
    },
    nick => sub {
      my ($conn, $from, $userhost) = (shift, shift, shift);	
@@ -312,6 +313,9 @@ my %command_handlers =
      notify_users($conn, 'logging', "$from requested $chan LOGGING $logging");
      if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
        if ($channels{$chan}) {
+         if(!$logging) {
+           $conn->privmsg($from, "Logging for channel $chan is: " . $channels{$chan}->logging());
+         }
          if($logging eq 'yes' or $logging eq 'no') {
            $channels{$chan}->logging("$logging");
          }
@@ -350,8 +354,9 @@ my %command_handlers =
    reload => sub {
      my ($conn, $from, $userhost) = (shift, shift, shift);
      notify_users($conn, 'reload', "$from requested RELOAD");
-     if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {	     
+     if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
        &parse_main_config;
+       $conn->privmsg($from, "Reloaded");
      } else {
        $conn->privmsg($from, "You are not an owner.");
      }
