@@ -74,7 +74,6 @@ sub hostmasks {
         # Substitutions to take a standard IRC hostmask and convert it to
         #   a regexp.  I thought this was pretty clever...  :)
 
-        print "$hostmask\n";
         # split hostmask into nick and userhost, since the rules differ
         my ($nick, $userhost) = $hostmask =~ /^(.*)!(.*)$/;
 
@@ -102,8 +101,6 @@ sub hostmasks {
         $hostmask = "$nick!$userhost";      # recombine
         $hostmask =~ s/([().?^\$])/\\$1/g;  # escape ().?^$
         $hostmask =~ s/\*/.*/g;             # translate wildchar "*" to regexp equivalent ".*"
-
-	print "FINAL:  $hostmask\n\n";
 
         if(!grep { /^\Q$hostmask\E$/ } @{$self->{hostmasks}}) { # don't add duplicates
           push @{$self->{hostmasks}}, $hostmask;
