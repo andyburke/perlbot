@@ -1,0 +1,64 @@
+	body {
+                font: Arial, Helvetica, sans-serif;
+		color: black; 
+		background: #FFFFFF;
+	}
+
+	a {
+		font-weight: bold;
+	}
+
+	a:link {
+		color: #404040;
+		text-decoration: none;
+		border-bottom: 1px dotted;
+	} 
+
+	a:visited {
+		color: #202020;
+		border-bottom: 1px dotted;
+		text-decoration: none;
+	}
+ 
+	a:active {
+		color: #505050;
+	}
+
+	a:hover {
+		color: #454545;
+		border-bottom: 1px dotted;
+	}
+
+	input,select {
+		font-size: 10px;
+                border: 1px solid;
+	}
+
+	.title	{ 
+		font-size: 14px; 
+		font-weight: bold;
+	}			
+		
+	.date	{ 
+		font-size: 14px;
+		font-weight: bold; 
+		border-bottom: 1px solid;
+	}			
+
+        .dateheader {
+                font-size: 14px;
+                font-weight: bold;
+                border-bottom: 1px solid;
+                width: 95%;
+        }
+
+        .block {
+                background: #E9E9E9;
+                border: 1px solid;
+        }
+
+        .subtleblock {
+                background: #F9F9F9;
+                border: 1px solid;
+                margin: 10px;
+        }

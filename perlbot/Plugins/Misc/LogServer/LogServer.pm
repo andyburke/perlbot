@@ -52,6 +52,7 @@ sub logserver {
     $response .= '<meta name="ROBOTS" content="NOINDEX, NOFOLLOW, NOARCHIVE" />';
   }
 
+  $response .= '<link rel="stylesheet" href="/perlbot.css" type="text/css" />';
   $response .= '</head><body><center><h1>Perlbot Logs</h1></center><hr>';
         
   my ($command, $options_string) = $arguments =~ /^(.*?)\?(.*)$/;
@@ -117,10 +118,11 @@ sub logserver {
         $month = sprintf("%02d", $month);
         my $cal = HTML::CalendarMonth->new(year => $year, month => $month);
         foreach my $day ($cal->days()) {
+          my $padded_day = sprintf("%02d", $day);
           $cal->item($day)->wrap_content(HTML::Element->new('a',
                                                             href => "/logserver/display?channel="
                                                             . $options->{channel}
-                                                            . "&year=${year}&month=${month}&day=${day}"));
+                                                            . "&year=${year}&month=${month}&day=${padded_day}"));
         }
         $response .= $cal->as_HTML();
         $response .= "</td>\n";
@@ -339,16 +341,12 @@ sub logserver {
           $day = $event_day;
           $datestring = "$year.$month.$day";
 
-          $response .= "<p>
-                        <div style=\"
-                          width: 100%;
-                          border-bottom: 1px dotted;
-                          \">
-                        <a style=\"text-decoration: none; color: black; border-bottom: 1px dotted;\" href=\"/logserver/display?channel=$channel_name&year=$year&month=$month&day=$day\">$datestring</a></div><br/>";
+          $response .= "<p class=\"dateheader\">
+                        <a style=\"text-decoration: none; color: black; border-bottom: 1px dotted;\" href=\"/logserver/display?channel=$channel_name&year=$year&month=$month&day=$day\">$datestring</a><p class=\"block\">";
         }
 
         my $event_string .= $self->event_as_html_string($event);
-        $event_string =~ s/<a name=\"(.*?)\">/<a style=\"text-decoration: none; color: black; border-bottom: 1px dotted;\" href=\"\/logserver\/display\?channel=$channel_name&year=$year&month=$month&day=$day\#$1\">/;
+        $event_string =~ s/<a name=\"(.*?)\">/<a href=\"\/logserver\/display\?channel=$channel_name&year=$year&month=$month&day=$day\#$1\">/;
         $response .= $event_string . "\n";
       }
 

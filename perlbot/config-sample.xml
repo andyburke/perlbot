@@ -46,6 +46,7 @@
     <plugindir>Plugins/Core</plugindir>
     <plugindir>Plugins/Basic</plugindir>
     <plugindir>Plugins/Misc</plugindir>
+    <plugindir>Plugins/Web</plugindir>
     <noload>MegaHal</noload>
     <noload>Guile</noload>
     <noload>Outlander</noload>
