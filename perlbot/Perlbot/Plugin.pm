@@ -27,8 +27,7 @@ sub new {
   $self->perlbot = $perlbot;
   $self->directory = $directory;
 
-  $self->config = new Perlbot::PluginConfig($self->name,
-                                            $self->perlbot->config->filename);
+  $self->config = new Perlbot::PluginConfig($self->name, $self->perlbot->config);
 
   $self->helpitems = $self->_read_help();
   $self->infoitems = $self->_read_info();

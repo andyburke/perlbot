@@ -3,20 +3,25 @@ package Perlbot::PluginConfig;
 
 # This package subclasses Perlbot::Config, and simply overrides _value
 # to provide a Plugin object "rooted" at a given plugin's tree in the
-# config.
+# config.  It also changes the constructor param list slightly.
 
 use strict;
 use base qw(Perlbot::Config);
 use fields qw(plugin_name);
 
 
+# Constructor expects the plugin's name, the "parent" config to tie this
+# one to, and an optional readonly flag.  The readonly flag will be
+# forced to true if the parent config is already readonly.
 sub new {
   my $class = shift;
-  my ($plugin_name, $filename, $readonly) = (@_);
+  my ($plugin_name, $config, $readonly) = (@_);
 
   my $self = fields::new($class);
   $self->{plugin_name} = $plugin_name;
-  $self->SUPER::new($filename, $readonly);
+  $self->SUPER::new(undef, $config->readonly || $readonly);
+  $self->filename = $config->filename;
+  $self->config = $config->config;
 
   return $self;
 }
@@ -32,4 +37,3 @@ sub _value : lvalue {
 
 
 1;
-
