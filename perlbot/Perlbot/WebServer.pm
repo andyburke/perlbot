@@ -16,6 +16,7 @@ sub new {
   my $self = {
     _server => undef,
     perlbot => $perlbot,
+    hooks => {}
       };
 
   bless $self, $class;
@@ -90,14 +91,21 @@ sub connection {
 
     while (my $request = $connection->get_request) {
       if ($request->method eq 'GET') {
-        my $data = {};
+        my ($garbage, $dispatch, @args) = split('/', $request->url->path());
 
-        my $response_xml = qq{<?xml version="1.0"?>\n};
-        $response_xml .= XMLout($data, rootname => 'perlbot');
+        if(exists($self->{hooks}{$dispatch})) {
+          my $coderef = $self->{hooks}{$dispatch};
+          my ($contenttype, $content) = $coderef->(@args);
 
-        $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
-                                                     HTTP::Headers->new(Content_Type => 'text/xml;'),
-                                                       $response_xml));
+          if($contenttype && $content) {
+            $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
+                                                         HTTP::Headers->new(Content_Type => $contenttype),
+                                                           $content));
+          } else {
+            print "error!\n";
+          }
+
+        }
       }
     }
     $connection->close;
@@ -106,5 +114,24 @@ sub connection {
   }
 }
 
+sub hook {
+  my $self = shift;
+  my $hook = shift;
+  my $coderef = shift;
+
+  $self->{hooks}{$hook} = $coderef;
+}
+
 
 1;
+
+
+
+
+
+
+
+
+
+
+

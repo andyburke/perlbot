@@ -81,6 +81,11 @@ sub ircconn {
   return $self->{ircconn};
 }
 
+sub webserver {
+  my $self = shift;
+  return $self->{webserver};
+}
+
 sub plugins {
   my ($self) = @_;
   return $self->{plugins};

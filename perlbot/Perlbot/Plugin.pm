@@ -324,6 +324,14 @@ sub hook_addressed_command_advanced {
   $self->{addressed_command_advanced_hooks}{$hook} = $call;
 }
 
+sub hook_web {
+  my $self = shift;
+  my $hook = shift;
+  my $call = shift;
+
+  $self->perlbot->webserver->hook($hook, $call);
+}
+
 # send a reply to the bot's last contact via the correct path (msg, public, etc.)
 # can take an array of lines to send
 sub reply {
