@@ -448,11 +448,12 @@ sub load_plugin {
     return 0;
   }
 
-  # see if our plugin needs to put shit in the main config
+  # see if the plugin needs to put stuff in the main config
+  $self->config->exists('plugin') or $self->config->hash_initialize('plugin');
   $self->config->exists(plugin => $plugin) or $self->config->hash_initialize(plugin => $plugin);
   $pluginref->set_initial_config_values() or $self->config->hash_delete(plugin => $plugin);
 
-  # call init on our plugin
+  # call init on the plugin
   $pluginref->init;
   # push it into the bot's internal list
   push @{$self->plugins}, $pluginref;
