@@ -10,15 +10,10 @@ use vars qw($AUTOLOAD %FIELDS);
 use fields qw(filename readonly config slaves);
 
 sub new {
-  my $class = shift;
+  my $self = shift;
   my ($filename, $readonly) = (@_);
 
-  my Perlbot::Config $self;
-  if (ref $class) {
-    $self = $class;
-  } else {
-    $self = fields::new($class);
-  }
+  $self = fields::new($self) if !ref $self;
 
   $self->filename = $filename;
   $self->readonly = $readonly ? 1 : undef;
@@ -45,11 +40,11 @@ sub AUTOLOAD : lvalue {
 
   $field =~ s/.*:://;
 
-  if(!exists($FIELDS{$field})) {
-    return;
-  }
-
   debug("Got call for field: $field", 15);
+
+  if(!exists($FIELDS{$field})) {
+    die "AUTOLOAD: no such method/field '$field'";
+  }
 
   $self->{$field};
 }
@@ -174,15 +169,6 @@ sub _value : lvalue {
   $$ref;
 }
 
-# XXX: temporary stub until ->value calls are removed from the codebase
-sub value {
-  my $self = shift;
-
-  my ($package, $filename, $line) = caller();
-  debug("deprecated method called at $filename:$line");
-  $self->_value(@_);
-}
-
 sub exists {
   my $self = shift;
 
@@ -281,6 +267,10 @@ sub hash_delete {
   delete $hashref->{$key};
 }
 
+
+# AUTOLOAD has problems otherwise.  :)
+sub DESTROY {
+}
 
 
 1;
