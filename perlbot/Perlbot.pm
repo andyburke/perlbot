@@ -8,6 +8,7 @@ use Perlbot::Utils;
 use Perlbot::Config;
 use Perlbot::User;
 use Perlbot::Channel;
+use Perlbot::WebServer;
 
 $VERSION = '1.9.3';
 $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
@@ -24,6 +25,7 @@ sub new {
     ircconn => undef,          # bot's irc connection
     msg_queue => [],           # for output buffering, eventually
     empty_queue => 1,          # more output buffering
+    webserver => undef,        # the bot's built-in webserver
     plugins => [],             # all the plugin references
     handlers => {},            # all the handlers per event type and plugin
     users => {},               # all our users
@@ -146,6 +148,12 @@ sub start {
       sleep 5;
     }
   }
+
+  print "Starting WebServer\n";
+
+  # we need to start our webserver
+  $self->{webserver} = new Perlbot::WebServer($self);
+  $self->{webserver}->start() or print "Could not start internal WebServer!\n";
 
   # once we've connected, we load our plugins
   $self->load_all_plugins;

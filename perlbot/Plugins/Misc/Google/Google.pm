@@ -39,3 +39,5 @@ sub google {
     $self->reply("$text: " . $data->URL());
   }
 }
+
+1;
