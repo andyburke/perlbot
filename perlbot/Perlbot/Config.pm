@@ -7,18 +7,23 @@ use XML::Simple;
 use Perlbot::Utils;
 
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(_filename _readonly _config _slaves);
+use fields qw(filename readonly config slaves);
 
 sub new {
   my $class = shift;
   my ($filename, $readonly) = (@_);
 
-  my $self = fields::new($class);
+  my Perlbot::Config $self;
+  if (ref $class) {
+    $self = $class;
+  } else {
+    $self = fields::new($class);
+  }
 
-  $self->_filename = $filename;
-  $self->_readonly = $readonly ? 1 : undef;
-  $self->_config = {};
-  $self->_slaves = [];
+  $self->filename = $filename;
+  $self->readonly = $readonly ? 1 : undef;
+  $self->config = {};
+  $self->slaves = [];
 
   # if we didn't get a filename, just send back a config object
   # otherwise
@@ -52,19 +57,19 @@ sub AUTOLOAD : lvalue {
 sub load {
   my ($self) = @_;
 
-  return $self->_config = read_generic_config($self->_filename);
+  return $self->config = read_generic_config($self->filename);
 }
 
 
 sub save {
   my ($self) = @_;
 
-  debug("attempting to save " . $self->{_filename} . " ...");
-  if ($self->_readonly) {
+  debug("attempting to save " . $self->filename . " ...");
+  if ($self->readonly) {
     debug("  Config object is read-only; aborting");
     return 0;
   }
-  my $ret = write_generic_config($self->_filename, $self->_config);
+  my $ret = write_generic_config($self->filename, $self->config);
   debug($ret ? "  success" : "  failure");
   return $ret;
 }
@@ -104,9 +109,9 @@ sub _value : lvalue {
   debug(join('=>', @keys), 9);
 
   # $current is a "pointer", iterated down the tree
-  $current = $self->_config;
+  $current = $self->config;
   # $ref is a reference to whatever $current is storing
-  $ref = \$self->_config;
+  $ref = \$self->config;
 
   # loop over the list of keys we got
   while (defined ($key = shift @keys)) {
@@ -279,4 +284,3 @@ sub hash_delete {
 
 
 1;
-
