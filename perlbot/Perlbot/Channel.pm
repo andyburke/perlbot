@@ -22,19 +22,22 @@ sub new {
 
   # TODO: make 'logtype' use defaults system
   my $logtype = $self->config->exists(channel => $self->name => 'logtype') ?
-    $self->config->get(channel => $self->name => 'logtype') : 'FlatFile';
+    $self->config->get(channel => $self->name => 'logtype') : 'Files';
   $logtype =~ /^\w+(::\w+)*$/ or die "Channel $name: Invalid logtype '$logtype'";
   debug("loading Logs package '$logtype'");
+
   # try to import the requested Logs package
   eval "
     local \$SIG{__DIE__}='DEFAULT';
     require Perlbot::Logs::${logtype};
   ";
+
   # check for package load error
   if ($@) {
     debug("  failed to load '$logtype': $@");
     return undef;
   }
+
   # try to construct the Logs object
   $self->logs = eval "
     local \$SIG{__DIE__}='DEFAULT';
