@@ -34,12 +34,15 @@ Table of Contents
 ================
 
   - Net::IRC (http://www.perl.com/CPAN/modules/by-module/Net/)
-    -> Make sure you check back here periodically for new versions.  This
+    -> Make sure you check back there periodically for new versions.  This
        package is still sort of in development, and we're not afraid to
        make use of features in the newest version.  Bugfixes here are
        important too.
+    -> === IMPORTANT IMPORTANT IMPORTANT ===
+       Net::ICQ 0.70 appears to be buggy, so stick with 0.63 for now.
+
   - Plugins may have their own requirements, and we trust plugin authors
-    to put that in their documentation...
+    to put that in their documentation.
 
 
 2.0 Installation
@@ -53,8 +56,6 @@ Table of Contents
   System-wide use isn't possible just yet, but we're working towards
   that in future versions.
 
-  Of course, if you're reading this, you're a step ahead of the game...
-
 
 3.0 Settings
 ============
@@ -63,19 +64,23 @@ Table of Contents
   configure your perlbot.  It makes it nearly impossible to screw up
   your config file due to bad syntax.  Many of the problems that users
   have emailed us about are syntax errors and such that would have been
-  solved had they used gperlbotcfg.
+  solved had they used gperlbotcfg.  gperlbotcfg does require the GTK
+  module for perl, so make sure you install that.
 
   But if you want to edit your config by hand or can't run gperlbotcfg:
 
-  You should edit perlbot-<version>/config to suit your needs.  The
-  syntax should be obvious from looking at the sample config file, but
-  here's a quick overview.  The config file consists of "objects" that
-  look similar to C++ code (but don't get scared :).  Each object begins
-  with the name of the "class" of the object (what type of thing it
-  represents) and a "{" character ON THE SAME LINE.  Then there are rows,
-  where each row begins with the name of a field of that class, and ends
-  with the value for that field.  After all the fields, there is a "}" on
-  a line by itself.  Here's an example for a user object:
+  You should create and edit perlbot-<version>/config to suit your needs.  
+  The syntax should be obvious from looking at the config-sample file,
+  but here's a quick overview.  The config file consists of "objects"
+  that look similar to C++ code (but don't get scared :).  Each object
+  begins with the name of the "class" of the object (what type of thing
+  it represents) and a "{" character ON THE SAME LINE.  Then there are
+  rows, where each row begins with the name of a field of that class, and
+  ends with the value for that field.  After all the fields, there is a
+  "}" on a line by itself.  (Some of you might be thinking "this should
+  really be XML!"  You would be correct. :)
+
+  Here's an example for a user object:
 
   user {
     name       jimmy
@@ -87,7 +92,7 @@ Table of Contents
   out however you want.  You can insert a comment by placing a # at the
   beginning (and only the beginning!) of a line.
 
-  The rest of section 3 details the different classes that a plain perlbot
+  The rest of section 3 details the different classes that the base perlbot
   will recognize, and the fields of those classes.  The first line in each
   subsection is the name of the class.  Below that are any notes about
   the class, followed by each field in the class (preceeded by a "-") and
@@ -152,12 +157,10 @@ Table of Contents
 
     - name      - this is an internal value used by the bot. in other words
 	          the owner/user need only worry that it is unique among
-                  all the servers that are listed.  a good naming scheme
-                  would be to choose a name of "some-company" for a server
-                  with the address irc.some-company.net.
+                  all the servers that are listed.
 
-    - addr      - this sets the address of the server, it can be an IP or a
-	          qualified machine name. (1.2.3.4 or irc.foo.com)
+    - addr      - this sets the address of the server, it can be an IP
+                  address or a domain name. (1.2.3.4 or irc.foo.com)
 
     - port      - this sets the port that the bot will try to connect to
 	          the server on.  The default is 6667.
@@ -172,8 +175,8 @@ Table of Contents
                   extra punctuation like trailing _ or ` characters.
 
     - flag      - This sets a flag for the user.  The flags are:
-	            - w - specifies the user as an owner of the bot
-                          (lets them execute priviledged commands)
+	            w - specifies the user as an owner of the bot
+                        (lets them execute priviledged commands)
 
     - hostmask  - This sets a hostmask for the user, which is how they
 		  are recognized.  Be mindful of your users' hostmasks,
@@ -187,6 +190,7 @@ Table of Contents
 		      hostmask *!*@*                         # BAD hostmask
 		      hostmask ircnick*!blah@abc.foobar.com  # good hostmask
 		      hostmask billy*!billy*@*.blahblah.com  # this is decent
+                      hostmask lamer!lamer@*.aol.com         # not good
 		      ...
 		    }
 
@@ -320,12 +324,11 @@ commands.txt in its subdirectory as well.
 
     Thanks to Cougar for getting us going on this stuff...
 
-    Get MacPerl from www.macperl.com.  As of perlbot 1.1.9, the base
-    perlbot stuff should be fairly happy working with MacPerl.  However,
-    you won't be able to take advantage of much of the cool functionality
-    provided by some of the plugins.  Our suggestion?  Run an OS that has
-    the infrastructure necessary to support fork().
-    But if you insist:
+    Get MacPerl from www.macperl.com.  The base perlbot stuff should be
+    fairly happy working with MacPerl.  However, you won't be able to take
+    advantage of much of the cool functionality provided by some of the
+    plugins.  Our suggestion?  Run an OS that has the infrastructure
+    necessary to support fork().  But if you insist:
 
     First, change bot.logdir and bot.plugindir as follows.  This is
     necessary because of the way MacOS handles relative paths.  These
@@ -342,9 +345,9 @@ commands.txt in its subdirectory as well.
       }
 
     There is one other thing you'll have to do, which is disable the
-    plugins that don't work under MacPerl.  As of this writing (1.2.0) the
-    following plugins should work under MacPerl (or any other non-unix OS
-    or Perl port, including win32):
+    plugins that don't work under MacPerl.  The following plugins should
+    work under MacPerl (or any other non-unix OS or Perl port, including
+    win32):
 
       Foo
       Protection
@@ -364,33 +367,18 @@ commands.txt in its subdirectory as well.
     (and the ones that require a unix system for other reasons), because
     if they are ever triggered, your bot will simply quit.  So for all the
     plugins that aren't in the "approved" list above, you will need to
-    add a bot.noload setting for each one.  As of version 1.2.1, here are
-    the lines you'll need:
+    add a bot.noload setting for each one.  So your bot section will have
+    a lot of lines like:
 
       bot {
         ...
-	noload		MegaHal
-	noload		Stock
-	noload		Whois
-	noload		Guile
-	noload		LogSearch
-	noload		Linuxtoday
-	noload		Blues
-	noload		Traceroute
-	noload		Slashdot
-	noload		AVNews
-	noload		AVDemos
-	noload		KnowledgeBase
-	noload		Math
-	noload		Dictionary
-	noload		Define
-	noload		Perldoc
-	noload		PriceWatch
-	noload		NSLookup
-	noload		Weather
-	noload		Freshmeat
-	noload		SpelCheck
+        noload     MegaHal
+        noload     Stock
+        noload     Whois
+        ...
       }
+
+    etc. etc. for all the "non-approved" plugins.
 
     The other option is to simply delete the non-functional plugins
     from your hard drive.  To delete a plugin, simply delete the directory
@@ -421,5 +409,5 @@ commands.txt in its subdirectory as well.
 
     You can still use the #join command to tell the bot to join channels.
     All you lose by not having an MOTD is the ability to have the bot
-    automatically join the channels you have configured it for when it
-    connects to the IRC server.
+    automatically join its channels when it connects to the IRC server.
+
