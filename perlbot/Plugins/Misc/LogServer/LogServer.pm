@@ -274,6 +274,8 @@ sub logserver {
       $response .= "<input type=\"submit\" name=\"submit\" />";
       $response .= "</form>";
 
+      $response .= "<font size=\"-1\" color=\"red\">* Note that search speed is often dependent on many factors, including the amount of data logged and the log facility the bot administrator has chosen.  Please allow ample time for the search to complete.</font>";
+
       return $self->std_response($response);
       
     } else {
