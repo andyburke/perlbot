@@ -13,14 +13,11 @@ use File::Spec;
 use Perlbot;
 use Net::IRC::DCC;
 
+our $VERSION = '1.0.0';
+
 sub init {
   my $self = shift;
   
-  $self->author('Andrew Burke');
-  $self->contact('burke@bitflood.org');
-  $self->version('1.0.0');
-  $self->url('http://perlbot.sourceforge.net');
-
   opendir(FILEDIR, File::Spec->catfile($self->{directory}, 'files'));
   @{$self->{files}} = grep { $_ !~ /^\.\.*/ } readdir(FILEDIR);
   close FILEDIR;
