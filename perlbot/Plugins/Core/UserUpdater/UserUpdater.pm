@@ -64,8 +64,8 @@ sub update {
 
   if ($type eq 'kick') {
     my $chan = $self->{perlbot}->get_channel($event->{args}[0]);
-    if ($channel) {
-      $channel->remove_member($nick);
+    if ($chan) {
+      $chan->remove_member($nick);
     }
   }
 
