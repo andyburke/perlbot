@@ -49,17 +49,18 @@ sub weather {
     my $visibility = $report->{visb};
     my $visibilitym = sprintf("%d", $visibility * 1.6);
     
-    $self->reply("Location: $city, $state $zip");
-    $self->reply("  Currently: $conditions");
-    $self->reply("  Temperature: ${tempf}F (${tempc}C)");
-    $self->reply("  Heat Index \"Feels Like\": ${heatindexf}F (${heatindexc}C)");
-    $self->reply("  Wind: $wind (${windm}Kph)");
-    $self->reply("  Dewpoint: ${dewpointf}F (${dewpointc}C) Humidity: ${humidity}% Barometer: ${barometer}in (${barometerm}cm)");
+    my @reply;
+
+    push(@reply, "Location: $city, $state $zip");
+    push(@reply, "  Currently: $conditions  Temp:  ${tempf}F (${tempc}C)  Heat Index: ${heatindexf}F (${heatindexc}C)");
+    push(@reply, "  Dewpoint: ${dewpointf}F (${dewpointc}C)  Humidity: ${humidity}%  Barometer: ${barometer}in (${barometerm}cm)");
     if($visibility =~ /\d+/) {
-      $self->reply("  Visibility: ${visibility}Mi (${visibilitym}Km)");
+      push(@reply, "  Wind: $wind (${windm}Kph)  Visibility: ${visibility}Mi (${visibilitym}Km)");
     } else {
-      $self->reply("  Visibility: $visibility");
+      push(@reply, "  Wind: $wind (${windm}Kph)  Visibility: $visibility");
     }
+
+    $self->reply(@reply);
   }
 }
 1;
