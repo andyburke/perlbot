@@ -40,9 +40,9 @@ sub listplugins {
 
   if (!$text) {
     foreach my $plugin (@{$self->perlbot->plugins}) {
-      push(@plugins, $plugin->{name});
+      push(@plugins, $plugin->name);
     }
-    $self->reply('plugins: ' . join(' ', @plugins));
+    $self->reply('plugins: ' . join(' ', sort(@plugins)));
     return;
   }
 }
