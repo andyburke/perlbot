@@ -11,11 +11,6 @@ use base qw(Perlbot::Logs);
 use vars qw($AUTOLOAD %FIELDS);
 use fields qw(channel curtime file);
 
-# note: This used to be called 'Log' instead of 'Logs', but when we put
-# perlbot into CVS, Log created problems with keyword substitution.
-# So it's called Logs now.
-# Actually now it's called LogFile.
-# Really, it's now totally different.
 
 sub new {
   my ($class, $perlbot, $channel) = @_;
@@ -37,11 +32,11 @@ sub AUTOLOAD : lvalue {
 
   $field =~ s/.*:://;
 
-  if(!exists($FIELDS{$field})) {
-    return;
-  }
-
   debug("Got call for field: $field", 15);
+
+  if(!exists($FIELDS{$field})) {
+    die "AUTOLOAD: no such method/field '$field'";
+  }
 
   $self->{$field};
 }
@@ -52,7 +47,8 @@ sub update_date {
   $self->curtime = time();
 }
 
-# *class* function to get the logdir from a config, with a default of 'logs'
+# *CLASS* function to get the logdir from a config, with a default of 'logs'
+# Do not call this as an object method, it will not work.  It's just a function.
 sub directory_from_config {
   my $config = shift;
 
@@ -63,7 +59,7 @@ sub directory_from_config {
 sub directory {
   my $self = shift;
  
-  return $self->directory_from_config($self->perlbot->config);
+  directory_from_config($self->perlbot->config);
 }
 
 sub open {
