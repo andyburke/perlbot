@@ -74,8 +74,6 @@ sub lookup {
        # Send stderr to stdout, so the bot will report errors back to the user
        open (STDERR, ">&STDOUT") or die "Can't dup stdout: $!\n";
        exec 'host', split(' ', $in) or die "Can't exec host: $!\n";
-       $conn->{_connected} = 0;
-       exit 0;
     }
 
     chomp @text;
