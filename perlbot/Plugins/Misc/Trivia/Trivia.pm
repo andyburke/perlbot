@@ -354,7 +354,7 @@ sub triviatop {
   if($num > 10) { $num = 10; }
 
   $self->reply("Top $num trivia players are: (you must answer at least $self->{minquestionsanswered} questions to be ranked!)");
-  my $headers = sprintf("%-18s", '% Rankings:') . sprintf("%-18s", 'Wins Rankings:') . sprintf("%-18s", 'Time Rankings:') . sprintf("%-18s", 'Voodoo Rankings:');
+  my $headers = sprintf("%-18s", '% Rankings:') . sprintf("%-18s", 'Wins Rankings:') . sprintf("%-18s", 'Time Rankings:') . sprintf("%-18s", 'W x % Rankings:');
   $self->reply($headers);
 
   my @ranks = $self->rankplayersbypercentage();
