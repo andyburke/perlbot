@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin provides acces to the Perlbot Help System</overview>
+  <command name="help">Usage: help (command or plugin name)</command>
+</help>

@@ -1,0 +1,8 @@
+<help>
+  <overview>This plugin provides authentication services for Perlbot</overview>
+  <command name="auth">Authenticates a user with the bot<br/>Usage: auth username password</command>
+  <command name="password">Changes a user's password<br/>Usage: password newpassword</command>
+  <command name="hostmasks">Lists a user's configured hostmasks<br/>Usage: hostmasks</command>
+  <command name="addhostmask">Adds a hostmask to the user's list of authorized hostmasks<br/>Usage: addhostmask hostmasks</command>
+  <command name="delhostmask">Deletes a hostmask from the user's list of authorized hostmasks<br/>Usage: delhostmask hostmask</command>
+</help>
