@@ -54,7 +54,7 @@ sub sodoit {
     $text =~ s/^.*?(?:,|:)\s*//;
 
     my $starttime = time();
-    my @response = $self->{chain}->spew(complete => $text, length => length($text)/2);
+    my @response = $self->{chain}->spew(complete => $text, length => scalar split(' ', $text));
     $reply = "@response";
     chomp $reply;
     $reply = $self->babel($reply);
@@ -81,7 +81,7 @@ sub sodoit {
     $text =~ s/$curnick/$theirnick/ig;
 
     my $starttime = time();
-    my @response = $self->{chain}->spew(complete => $text, length => length($text)/2);
+    my @response = $self->{chain}->spew(complete => $text, length => scalar split(' ', $text));
     $reply = "@response";
     chomp $reply;
     $reply = $self->babel($reply);
