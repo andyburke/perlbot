@@ -52,25 +52,29 @@ sub load_db {
   my $total = 0;
   my $collisions = 0;
 
-  open(DBFILE, "<$db") or die "Couldn't open $db\n";
+  if(-d $db) {
+    return;
+  } else {
+    open(DBFILE, "<$db") or die "Couldn't open $db\n";
 
-  while(my $line = <DBFILE>) {
-    chomp $line;
-    if(!$line) { next; }
+    while(my $line = <DBFILE>) {
+      chomp $line;
+      if(!$line) { next; }
 
-    if($line =~ /^#.*/) {
-      next;
-    }
+      if($line =~ /^#.*/) {
+        next;
+      }
 
-    if($line =~ /^.*?=>.*?/) {
-      my ($term, $def) = ($line =~ /^\s*(.*?)\s*=>\s*(.*?)\s*$/);
+      if($line =~ /^.*?=>.*?/) {
+        my ($term, $def) = ($line =~ /^\s*(.*?)\s*=>\s*(.*?)\s*$/);
 #      $def =~ s/<reply>.*?,\s*//;
-      if($self->{facts}{lc($term)}) { $collisions++; }
-      $self->{facts}{lc($term)} = $def;
-      $good++;
-    }
+        if($self->{facts}{lc($term)}) { $collisions++; }
+        $self->{facts}{lc($term)} = $def;
+        $good++;
+      }
 
-    $total++;   
+      $total++;   
+    }
   }
 
   if($Perlbot::DEBUG) {
