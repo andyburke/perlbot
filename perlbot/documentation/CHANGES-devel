@@ -4,6 +4,7 @@ CHANGES:
 - DTD fixed in the sample config
 - Typo fixes in Plugin.pm
 - Can specify a config file on the command line now
+- Perlbot::start() now does print-and-exit instead of die
 - Added a bot.localaddr option for people with either multiple network
   interfaces
 - Finished up the conversion to debug()
