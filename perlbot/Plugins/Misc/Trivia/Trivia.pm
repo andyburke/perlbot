@@ -424,13 +424,13 @@ sub triviatop {
   if($num > 10) { $num = 10; }
 
   $self->reply("Top $num trivia players are: (you must answer at least $self->{minquestionsanswered} questions to be ranked!)");
-  my $headers = sprintf("%-18s", '% Rankings:') . sprintf("%-18s", 'Wins Rankings:') . sprintf("%-18s", 'Time Rankings:') . sprintf("%-18s", 'Performance Rankings:');
+  my $headers = sprintf("%-19s", '% Rankings:') . sprintf("%-19s", 'Wins Rankings:') . sprintf("%-19s", 'Time Rankings:') . sprintf("%-19s", 'Performance Rankings:');
   $self->reply($headers);
 
   my @ranks = $self->rankplayersbypercentage($self->getqualifyingplayers());
   my $rank = 1;
   foreach my $name (@ranks) {
-    push(@response, sprintf("%-18s", "$rank " . sprintf("%-8s", $name) . "(" . $self->score($name) . "%)"));
+    push(@response, sprintf("%-19s", sprintf("%-3s", $rank) . sprintf("%-8s", substr($name, 0, 8)) . "(" . $self->score($name) . "%)"));
     $rank++;
     if($rank >= $num + 1) { last; }
   }
@@ -439,7 +439,7 @@ sub triviatop {
   $rank = 1;
   foreach my $name (@ranks) {
     if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-18s", "$rank " . sprintf("%-8s", $name) . "(" . $self->{correctlyanswered}{$name} . ")");
+      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-19s", sprintf("%-3s", $rank) . sprintf("%-8s", substr($name, 0, 8)) . "(" . $self->{correctlyanswered}{$name} . ")");
       $rank++;
       if($rank >= $num + 1) { last; }
     }
@@ -449,7 +449,7 @@ sub triviatop {
   $rank = 1;
   foreach my $name (@ranks) {
     if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-18s", "$rank " . sprintf("%-8s", $name) . "(" . $self->{fastestoverall}{$name} . ")");
+      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-19s", sprintf("%-3s", $rank) . sprintf("%-8s", substr($name, 0, 8)) . "(" . $self->{fastestoverall}{$name} . ")");
       $rank++;
       if($rank >= $num + 1) { last; }
     }
@@ -459,7 +459,7 @@ sub triviatop {
   $rank = 1;
   foreach my $name (@ranks) {
     if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-18s", "$rank " . sprintf("%-8s", $name) . "(" . sprintf("%d", $self->{performanceoverall}{$name}) . ")");
+      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-19s", sprintf("%-3s", $rank) . sprintf("%-8s", substr($name, 0, 8)) . "(" . sprintf("%d", $self->{performanceoverall}{$name}) . ")");
       $rank++;
       if($rank >= $num + 1) { last; }
     }
