@@ -109,6 +109,9 @@ sub addhostmask {
   } elsif (!$self->{perlbot}->config->value(user => $user->{name})) {
     $self->reply_error("Your user object doesn't exist, that is bad... contact your bot admin");
   } else {
+    if(!$self->{perlbot}->config->value(user => $user->{name} => 'hostmask')) {
+      $self->{perlbot}->config->value(user => $user->{name} => 'hostmask') = [];
+    }
     push(@{$self->{perlbot}->config->value(user => $user->{name} => 'hostmask')}, $hostmask);
     $self->{perlbot}->config->save;
     $user->hostmasks($hostmask);
