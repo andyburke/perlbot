@@ -19,6 +19,7 @@ use HTTP::Response;
 use HTTP::Headers;
 use HTTP::Status;
 use XML::Simple;
+use Data::Dumper;
 
 our $VERSION = '1.0.0';
 
@@ -35,14 +36,21 @@ sub init {
   }
   $self->{_server} = $server;
 
-  my $select = new IO::Select($server);
+  my $select = IO::Select->new($server);
   $self->{_select} = $select;
 
   $self->want_msg(0);
+  $self->want_fork(0);
 
-  $self->hook_event('topic', sub { $self->set_topic });
-  $self->hook(sub { $self->set_lastline });
+  $self->hook_event('topic', \&set_topic);
+  $self->hook_event('liststart', \&set_topic);
+  $self->hook_event('list', \&set_topic);
+  $self->hook_event('listend', \&set_topic);
+  $self->hook(\&set_lastline);
 
+  $self->{_topic_cache} = {};
+
+  $self->perlbot->ircconn->list;
   $self->timer;
 }
 
@@ -82,7 +90,7 @@ sub handle_request {
         my $data = {};
 
         foreach my $channel (values %{$self->perlbot->channels}) {
-          $chan_data = {name => $channel->name};
+          $chan_data = {name => $channel->name, topic => $self->{_topic_cache}{$channel->name}};
           push @{$data->{channel}}, $chan_data;
         }
 
@@ -104,11 +112,17 @@ sub handle_request {
 
 sub set_topic {
   my $self = shift;
+  my ($event) = @_;
+
+  my @args = $event->args;
+  $self->{_topic_cache}{$args[1]} = $args[2];
+  print Dumper $self->{_topic_cache};
 }
 
 
 sub set_lastline {
   my $self = shift;
+  my ($event) = @_;
 }
 
 
