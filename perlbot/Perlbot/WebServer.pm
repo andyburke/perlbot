@@ -34,7 +34,7 @@ sub AUTOLOAD : lvalue {
   $field =~ s/.*:://;
 
   if(!exists($FIELDS{$field})) {
-    return;
+    die "AUTOLOAD: no such method/field '$field'";
   }
 
   debug("Got call for field: $field", 15);
