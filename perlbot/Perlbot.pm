@@ -34,7 +34,7 @@ sub new {
   $self->handlers_backup = undef;
   $self->users = {};
   $self->channels = {};
-  $self->curnick = {};
+  $self->curnick = '';
   $self->masterpid = $$;
 
 #  my $self = {
@@ -244,9 +244,11 @@ sub connect {
 
   my $server;
   my $port;
+  my $password;
   my $nick;
   my $ircname;
   my $localaddr;
+  my $username;
 
   my $handlers;
 
@@ -266,13 +268,13 @@ sub connect {
   #   set our ircconn object to the new one
 
   if ($self->config->exists(server => $index)) {
-    my $server    = $self->config->get(server => $index => 'address'); # or die ("Server $i has no address specified\n");
-    my $port      = $self->config->get(server => $index => 'port');
-    my $password  = $self->config->get(server => $index => 'password');
-    my $nick      = $self->config->get(bot => 'nick');
-    my $ircname   = $self->config->get(bot => 'ircname');
-    my $localaddr = $self->config->get(bot => 'localaddr');
-    my $username  = $self->config->get(bot => 'username');
+    $server    = $self->config->get(server => $index => 'address');
+    $port      = $self->config->get(server => $index => 'port');
+    $password  = $self->config->get(server => $index => 'password');
+    $nick      = $self->config->get(bot => 'nick');
+    $ircname   = $self->config->get(bot => 'ircname');
+    $localaddr = $self->config->get(bot => 'localaddr');
+    $username  = $self->config->get(bot => 'username');
 
     $port ||= 6667;
     $password ||= '';
