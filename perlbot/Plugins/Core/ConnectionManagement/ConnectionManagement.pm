@@ -9,7 +9,7 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_fork(0);
+#  $self->want_fork(0);
 
   $self->hook_event('endofmotd', \&join_channels);
   $self->hook_event('nomotd', \&join_channels);

@@ -11,6 +11,8 @@ use strict;
 use vars qw($AUTOLOAD %FIELDS);
 use fields qw(name perlbot directory config helpitems infoitems hooks lastcontact lastnick lasthost behaviors);
 
+use Perlbot::Plugin::Hook;
+
 use Perlbot::Utils;
 use Perlbot::PluginConfig;
 use File::Spec;
@@ -37,8 +39,6 @@ sub new {
   $self->lastcontact = '';
   $self->lastnick = '';
   $self->lasthost = '';
-
-  $self->behaviors = {};
 
   return $self;
 }
@@ -100,23 +100,41 @@ sub set_initial_config_values {
 
 sub hook {
   my $self = shift;
-  my $hook = shift;
-  my $call = shift;
 
-  # if they pass just a coderef, treat it like they passed an
-  # empty/undef hook and then the coderef.  i.e.,
-  #   hook(\&code) is equivalent to hook(undef, \&code)
-  if (ref($hook) eq 'CODE' and !defined($call)) {
-    $call = $hook;
-    $hook = undef;
+  my $trigger;
+  my $coderef;
+  my $authtype;
+  my $eventtypes;
+  my $attributes;
+
+
+  if(@_ > 2) {
+    debug("Extraneous arguments!");
+    debug(@_);
+    die("Extraneous arguments passed to Perlbot::Plugin::hook!");
   }
 
-  if (defined($hook) and length($hook) > 0) {
-    $self->hook_commandprefix($hook, $call);
-    $self->hook_addressed_command($hook, $call);
+  if(@_ == 2) {
+    $trigger = shift;
+    $coderef = shift;
   } else {
-    $self->hook_regular_expression('.', $call);
+    my $args = shift;
+
+    if(ref($args) ne 'HASH') {
+      debug("Got something not a hashref!");
+      die("Got a piece of shit you suck at coding.");
+    }
+
+    $trigger = $args->{trigger};
+    $coderef = $args->{coderef};
+    $authtype = $args->{authtype};
+    $eventtypes = $args->{eventtypes};
+    $attributes = $args->{attributes};
+
   }
+      
+  my $hook = new Perlbot::Plugin::Hook($trigger, $coderef, $authtype, $eventtypes, $attributes);
+  push(@{$self->hooks}, $hook);
 }
 
 sub hook_web {

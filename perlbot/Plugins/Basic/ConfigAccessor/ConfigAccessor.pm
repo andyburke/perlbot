@@ -9,8 +9,8 @@ our $VERSION = '0.0.1';
 sub init {
   my $self = shift;
 
-  $self->want_public(0);
-  $self->want_fork(0);
+#  $self->want_public(0);
+#  $self->want_fork(0);
 
   $self->hook_admin('config', \&configaccessor);
 }

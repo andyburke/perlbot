@@ -11,8 +11,8 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_public(0);
-  $self->want_fork(0);
+#  $self->want_public(0);
+#  $self->want_fork(0);
 
   $self->hook_advanced('auth', \&auth);
   $self->hook('password', \&password);

@@ -15,7 +15,7 @@ sub init {
 
   $self->{redirs} = {};
 
-  $self->want_fork(0);
+#  $self->want_fork(0);
 
   $self->hook_admin('redir', \&adminredirs);
   $self->hook_event('public', \&redir);

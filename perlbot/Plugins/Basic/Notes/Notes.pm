@@ -11,8 +11,8 @@ our $VERSION = '2.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_public(0);
-  $self->want_fork(0);
+#  $self->want_public(0);
+#  $self->want_fork(0);
 
   tie %{$self->{notes}},  'DB_File', File::Spec->catfile($self->{directory}, 'notesdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
   tie %{$self->{notified}},  'DB_File', File::Spec->catfile($self->{directory}, 'notifieddb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
