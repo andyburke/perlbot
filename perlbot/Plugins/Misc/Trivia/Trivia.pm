@@ -37,6 +37,7 @@ sub init {
 
   $self->{score} = {};
   $self->{answeredthisquestion} = {};
+  $self->{answeredthisround} = {};
 
   tie %{$self->{correctlyanswered}},  'DB_File', File::Spec->catfile($self->{directory}, 'correctlyanswereddb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
   tie %{$self->{totalanswered}},  'DB_File', File::Spec->catfile($self->{directory}, 'totalanswereddb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
@@ -127,8 +128,12 @@ sub answer {
     return;
   }
 
+  if(!defined($self->{answeredthisquestion}{$nick})) {
+    if(!defined($self->{answeredthisround}{$nick})) { $self->{answeredthisround}{$nick} = 0; }
+    $self->{answeredthisround}{$nick}++;
+  }
   $self->{answeredthisquestion}{$nick} = 1;
-
+  
   my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
 
   my $correct = 0;
@@ -174,7 +179,7 @@ sub answer {
 
     $self->reply("The answer was: $answer");
     $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} PR:$percentagerank WR:$winsrank");
-    $self->reply("        This round: FT:$self->{fastest}{$nick} S:" . sprintf("%0.1f", 100 * ($self->{score}{$nick} / $self->{curquestion})) . "% W:$self->{score}{$nick}");
+    $self->reply("        This round: FT:$self->{fastest}{$nick} S:" . sprintf("%0.1f", 100 * ($self->{score}{$nick} / $self->{answeredthisround}{$nick})) . "% W:$self->{score}{$nick} A:$self->{answeredthisround}{$nick}");
 
     if($timediff < $self->{fastest}{$nick}) {
       $self->{fastest}{$nick} = $timediff;
@@ -284,14 +289,10 @@ sub endofgame {
   my $winner;
   my $winnerscore = -1;
 
-  my $questions = $self->{curquestion} - 1;
-
-  if($questions == 0) { return; }
-
   foreach my $nick (keys(%{$self->{score}})) {
-    if(($self->{score}{$nick} / $questions) > $winnerscore) {
+    if(($self->{score}{$nick} / $self->{answeredthisround}{$nick}) > $winnerscore) {
       $winner = $nick;
-      $winnerscore = $self->{score}{$nick} / $questions;
+      $winnerscore = $self->{score}{$nick} / $self->{answeredthisround}{$nick};
     }
     $self->{score}{$nick} = 0; # reset wins
   }
@@ -306,6 +307,10 @@ sub endofgame {
 
   foreach my $nick (keys(%{$self->{playing}})) {
     delete $self->{playing}{$nick};
+  }
+
+  foreach my $nick (keys(%{$self->{answeredthisround}})) {
+    delete $self->{answeredthisround}{$nick};
   }
 
   $self->{curquestion} = 1;
