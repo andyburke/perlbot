@@ -64,8 +64,17 @@ sub stats {
       foreach my $member (keys(%{$channel->{members}})) {
         $response .= "<li>$member";
       }
-      $response .= "</ul></td></tr></table></tr>";
+      $response .= "</ul></td></tr>";
+      $response .= "<tr><th colspan=2>Status:</th></tr><tr><td colspan=2>";
+      $response .= "<ul>";
+      $response .= "<li>Logging: " . $channel->logging();
+      $response .= "<li>Limit: " . $channel->limit();
+      $response .= "<li>Default Flags: " . $channel->flags();
+      $response .= "</ul></td></tr>";
+
+      $response .= "</table></tr>";
     }
+
 
     $response .= "</table></body></html>";
 

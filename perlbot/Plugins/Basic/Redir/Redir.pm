@@ -26,16 +26,19 @@ sub adminredirs {
 
   my ($command, $source, $dest) = split(' ', $text, 3);
 
-  if(!$command || !$source || !$dest) {
-    $self->reply('You must specify a command, source and a destination channel!');
-    return;
-  }
-
   if(lc($command) eq 'add') {    
+    if(!defined($source) || !defined($dest)) {
+      $self->reply_error("You must specify a source and a destination channel!");
+      return;
+    }
     push(@{$self->{redirs}{normalize_channel($source)}}, normalize_channel($dest));
     $self->reply("Added a redirect from $source to $dest");
     return;
   } elsif(lc($command) eq 'del') {
+    if(!defined($source) || !defined($dest)) {
+      $self->reply_error("You must specify a source and a destination channel!");
+      return;
+    }
     if($self->{redirs}{normalize_channel($source)}) {
       @{$self->{redirs}{normalize_channel($source)}} =
             grep { $_ ne $dest } @{$self->{redirs}{normalize_channel($source)}};
@@ -46,6 +49,10 @@ sub adminredirs {
       return;
     }
   } elsif(lc($command) eq 'list') {
+    if(keys(%{$self->{redirs}}) == 0) {
+      $self->reply_error("No current channel redirections!");
+      return;
+    }
     foreach my $src (keys(%{$self->{redirs}})) {
       $self->reply("$src -> " . $self->{redirs}{$src});
     }
