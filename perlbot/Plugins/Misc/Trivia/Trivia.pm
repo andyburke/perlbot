@@ -41,9 +41,10 @@ sub init {
   tie %{$self->{correctlyanswered}},  'DB_File', File::Spec->catfile($self->{directory}, 'correctlyanswereddb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
   tie %{$self->{totalanswered}},  'DB_File', File::Spec->catfile($self->{directory}, 'totalanswereddb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
   
-
-  tie %{$self->{ranks}},  'DB_File', File::Spec->catfile($self->{directory}, 'ranksdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
-  tie %{$self->{rank}}, 'DB_File', File::Spec->catfile($self->{directory}, 'rankdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+  $self->{percentageranks} = {};
+  $self->{winsranks} = {};
+  $self->{percentagerank} = {};
+  $self->{winsrank} = {};
 
   $self->{askedtime} = 0;
   
@@ -149,19 +150,30 @@ sub answer {
       $self->{fastestoverall}{$nick} = $timediff;
     }
     
-    my @ranks = $self->rankplayers();
-    my $oldrank = $self->{ranks}{$nick};
+    my @percentageranks = $self->rankplayersbypercentage();
+    my $oldpercentagerank = $self->{percentageranks}{$nick};
     
-    my $rank = 1;
-    foreach my $name (@ranks) {
-      $self->{ranks}{$name} = $rank;
-      $rank++;
+    my $percentagerank = 1;
+    foreach my $name (@percentageranks) {
+      $self->{percentageranks}{$name} = $percentagerank;
+      $percentagerank++;
     }
 
-    $rank = $self->{ranks}{$nick};
+    $percentagerank = $self->{percentageranks}{$nick};
+
+    my @winsranks = $self->rankplayersbywins();
+    my $oldwinsrank = $self->{winsranks}{$nick};
+    
+    my $winsrank = 1;
+    foreach my $name (@winsranks) {
+      $self->{winsranks}{$name} = $winsrank;
+      $winsrank++;
+    }
+
+    $winsrank = $self->{winsranks}{$nick};
 
     $self->reply("The answer was: $answer");
-    $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} R:$rank");
+    $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} PR:$percentagerank WR:$winsrank");
     $self->reply("        This round: FT:$self->{fastest}{$nick} S:" . sprintf("%0.1f", 100 * ($self->{score}{$nick} / $self->{curquestion})) . "% W:$self->{score}{$nick}");
 
     if($timediff < $self->{fastest}{$nick}) {
@@ -171,11 +183,19 @@ sub answer {
       $self->{fastestoverall}{$nick} = $timediff;
       $self->reply("That's a new speed record for $nick!");
     }
-    if(defined($oldrank) && $rank < $oldrank) {
-      $self->reply("$nick has moved up in the standings from $oldrank to $rank!!");
+
+    if(defined($oldpercentagerank) && $percentagerank < $oldpercentagerank) {
+      $self->reply("$nick has moved up in the percentage standings from $oldpercentagerank to $percentagerank!!");
     }
-    if(defined($oldrank) && $rank > $oldrank) {
-      $self->reply("Sad day, $nick has dropped from $oldrank to $rank...");
+    if(defined($oldpercentagerank) && $percentagerank > $oldpercentagerank) {
+      $self->reply("Sad day, $nick has dropped from $oldpercentagerank to $percentagerank in the percentage standings...");
+    }
+
+    if(defined($oldwinsrank) && $winsrank < $winsrank) {
+      $self->reply("$nick has moved up in the overall wins standings from $oldwinsrank to $winsrank!!");
+    }
+    if(defined($oldwinsrank) && $winsrank > $oldwinsrank) {
+      $self->reply("Sad day, $nick has dropped from $oldwinsrank to $winsrank in the overall wins standings...");
     }
     
     
@@ -342,15 +362,30 @@ sub triviastats {
   }
 
   if($self->{totalanswered}{$nick}) {
-    my @ranks = $self->rankplayers();
 
-    my $rank = 1;
-    foreach my $name (@ranks) {
-      $self->{ranks}{$name} = $rank;
-      $rank++;
+    my @percentageranks = $self->rankplayersbypercentage();
+    my $oldpercentagerank = $self->{percentageranks}{$nick};
+    
+    my $percentagerank = 1;
+    foreach my $name (@percentageranks) {
+      $self->{percentageranks}{$name} = $percentagerank;
+      $percentagerank++;
     }
 
-    $self->reply("$nick: Rank: $self->{ranks}{$nick} Wins: $self->{correctlyanswered}{$nick} Answered: $self->{totalanswered}{$nick} Score: " . $self->score($nick) . " Fastest: $self->{fastestoverall}{$nick}");
+    $percentagerank = $self->{percentageranks}{$nick};
+
+    my @winsranks = $self->rankplayersbywins();
+    my $oldwinsrank = $self->{winsranks}{$nick};
+    
+    my $winsrank = 1;
+    foreach my $name (@winsranks) {
+      $self->{winsranks}{$name} = $winsrank;
+      $winsrank++;
+    }
+
+    $winsrank = $self->{winsranks}{$nick};
+
+    $self->reply("$nick: % Rank: $percentagerank  Wins Rank: $winsrank  Wins: $self->{correctlyanswered}{$nick}  Answered: $self->{totalanswered}{$nick}  Score: " . $self->score($nick) . "%  Fastest: $self->{fastestoverall}{$nick}");
   }
 }
 
