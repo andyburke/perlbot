@@ -79,18 +79,7 @@ sub init {
   $self->hook('playing', \&playing);
   $self->hook('stopplaying', \&stopplaying);
   $self->hook('notplaying', \&stopplaying);
-  $self->hook('update', \&update);
   $self->hook(\&answer);
-
-}
-
-sub update {
-  my $self = shift;
-
-  foreach my $nick (keys(%{$self->{performanceoverall}})) {
-    $self->{beatenoverall}{$nick} = $self->{performanceoverall}{$nick};
-    $self->{performanceoverall}{$nick} = $self->{beatenoverall}{$nick} / $self->{totalanswered}{$nick};
-  }
 
 }
 
