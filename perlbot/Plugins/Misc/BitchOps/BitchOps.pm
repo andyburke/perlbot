@@ -20,8 +20,8 @@ sub init {
 sub modechange {
   my $self = shift;
   my $event = shift;
-  my $modeline = shift @{$event->{args}};
-  my @nicks = @{$event->{args}}; pop @nicks; # stupid irc
+  my ($modeline, @nicks) = $event->args();
+  pop @nicks; # stupid irc
   my $channel = normalize_channel($event->{to}[0]);
 
   if($modeline !~ /o/) { return; }
