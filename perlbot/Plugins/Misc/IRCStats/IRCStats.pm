@@ -65,24 +65,35 @@ sub ircstats {
     
     $response .= "<p>Channel statistics for #$chan";
     
-    $response .= "<p><center><table width=80% height=220 border=0><tr><th colspan=24>Hourly Traffic</th></tr>";
+    $response .= "<p><center><table width=80% height=120 border=0><tr height=10><th colspan=24>Hourly Traffic</th></tr>";
     
-    $response .= "<tr>";
+    $response .= "<tr height=100>";
     
     my $totallines = 0;
     foreach my $hour (keys(%{$self->{channels}{$chan}})) {
       $totallines += $self->{channels}{$chan}{$hour};
     }
+
+    my $highest_percentage = 0;
+    for(my $hour = 0; $hour < 24; $hour++) {
+      my $percentage;
+      if(exists($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)})) {
+        $percentage = sprintf("%0.0f", 100 * ($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)} / $totallines));
+        if($percentage > $highest_percentage) { $highest_percentage = $percentage; }
+      }
+    }
+
+    my $normalization_factor = 100 / $highest_percentage;
     
     for(my $hour = 0; $hour < 24; $hour++) {
       my $percentage = 0;
       if(exists($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)})) {
         $percentage = sprintf("%0.0f", 100 * ($self->{channels}{$chan}{'hour' . sprintf("%02d", $hour)} / $totallines));
       }
-      $response .= "<td width=4% valign=bottom align=middle><img src=\"/ircstats/pixel.jpg\" height=" . (2 * $percentage) . " width=12></td>";
+      $response .= "<td width=4% valign=bottom align=middle><img src=\"/ircstats/pixel.jpg\" height=" . ($normalization_factor * $percentage) . " width=12></td>";
     }
 
-    $response .= "</tr><tr>";
+    $response .= "</tr><tr height=10>";
 
     for(my $hour = 0; $hour < 24; $hour++) {
       $response .= "<td width=4% align=middle><font size=-1>" . sprintf("%02d", $hour) . "<br>";
