@@ -293,7 +293,7 @@ sub connect {
   
   # if our connection exists and it's actually connected
   #   if we had a backup of our handlers, jam it into this ircconn
-  #   set out curnick appropriately
+  #   set our curnick appropriately
   #   ignore any hostmasks specified in the config
   #   return the connection
   # else fail
@@ -302,6 +302,7 @@ sub connect {
     debug("connect: connected to server: $server");
 
     if(defined($self->handlers_backup)) {
+      debug("reusing old handlers for new connection", 5);
       $self->ircconn->{_handler} = $self->handlers_backup;
       $self->handlers_backup = undef;
     }

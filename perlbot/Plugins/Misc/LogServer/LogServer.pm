@@ -16,14 +16,14 @@ use Perlbot::Plugin;
 
 use Perlbot::Utils;
 
-our $VERSION = '1.0.0';
+our $VERSION = '0.0.3';
 
 sub init {
   my $self = shift;
 
   $self->want_msg(0);
   $self->want_public(0);
-
+  
   $self->{logdir} = $self->perlbot->config->value(bot => 'logdir') || 'logs';
 
   $self->hook_web('logs', \&logs, 'Channel Logs');
@@ -36,8 +36,8 @@ sub logs {
 
   my $response = '<html><head><title>Perlbot Logs</title>';
  
-  if(defined($self->config->value('allowsearchengines'))
-     && lc($self->config->value('allowsearchengines')) eq 'yes') {
+  if(defined($self->config->value(logserver => 'allowsearchengines'))
+     && lc($self->config->value(logserver => 'allowsearchengines')) eq 'yes') {
      # don't bother adding the meta tag to disallow archiving
   } else {
     $response .= '<meta name="ROBOTS" content="NOINDEX, NOFOLLOW, NOARCHIVE" />';
@@ -257,8 +257,11 @@ sub logs {
 
   $response .= '</body></html>';
 
-  return ('text/html', $response);
-
+  if(defined($self->config->value(logserver => 'authtyperequired'))) {
+    return ('text/html', $response, $self->config->value(logserver => 'authtyperequired'));
+  } else {
+    return ('text/html', $response);
+  }
 }
 
 1;

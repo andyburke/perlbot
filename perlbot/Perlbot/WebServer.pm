@@ -96,7 +96,8 @@ sub connection {
     $self->perlbot->ircconn->{_connected} = 0;
     
     my $request = $connection->get_request();
-      
+    my $received_header = $request->headers();
+
     if ($request and $request->method eq 'GET') {
       my ($garbage, $dispatch, @args) = split('/', $request->uri());
       
@@ -126,15 +127,52 @@ sub connection {
         
         my $coderef = $self->hooks->{$dispatch}[0];
         my $description = $self->hooks->{$dispatch}[1];
-        my ($contenttype, $content) = $coderef->(@args);
 
-        if(defined($contenttype) && defined($content)) {
-          $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
-                                                       HTTP::Headers->new(Content_Type => $contenttype),
-                                                         $content));
-        } else {
-          # undef contenttype or content means "return a 404"
+        my ($contenttype, $content, $authtyperequired) = $coderef->(@args);
+        $authtyperequired ||= 'none';
+
+        if(!defined($contenttype) || !defined($content)) {
           $connection->send_error(RC_NOT_FOUND);
+        }
+
+        my $header = HTTP::Headers->new(Content_Type => $contenttype);
+        if(lc($authtyperequired) ne 'none') { # if we need to auth
+          my ($username, $password) = $received_header->authorization_basic();
+          my $user = undef;
+          if(defined($username)) {
+            $user = $self->perlbot->get_user($username);
+          }
+
+          if(defined($user) && $user->authenticate($password)) { # they're a user
+            if(lc($authtyperequired) eq 'admin') {
+              if(!$user->is_admin()) {
+                $connection->send_error(RC_UNAUTHORIZED);
+              } else {
+                $connection->send_response(HTTP::Response->new(RC_OK,
+                                                               status_message(RC_OK),
+                                                               $header,
+                                                               $content));
+              }
+            } elsif(lc($authtyperequired) eq 'user') { # just needed to be a user
+              $connection->send_response(HTTP::Response->new(RC_OK,
+                                                             status_message(RC_OK),
+                                                             $header,
+                                                             $content));
+            }
+  
+          } else { # they're not a user
+            $header->content_type('text/html');
+            $header->www_authenticate("Basic realm=\"$dispatch\"");
+            $connection->send_response(HTTP::Response->new(RC_UNAUTHORIZED,
+                                                           status_message(RC_UNAUTHORIZED),
+                                                           $header,
+                                                           undef));
+          }
+        } else { # no need to auth
+          $connection->send_response(HTTP::Response->new(RC_OK,
+                                                         status_message(RC_OK),
+                                                         $header,
+                                                         $content));
         }
       } else {
         # nobody has hooked this path
