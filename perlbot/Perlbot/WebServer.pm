@@ -17,7 +17,7 @@ sub new {
     _server => undef,
     perlbot => $perlbot,
     hooks => {}
-      };
+  };
 
   bless $self, $class;
   return $self;
@@ -33,11 +33,6 @@ sub start {
 
   my $hostname = $self->perlbot->config->value(webserver => 'hostname');
   my $port = $self->perlbot->config->value(webserver => 'port');
-
-  if(!$hostname) {
-    debug("No hostname specified for WebServer!");
-    return 0;
-  }
 
   if(!$port) {
     $port = 9090;
@@ -94,7 +89,7 @@ sub connection {
       
       my ($garbage, $dispatch, @args) = split('/', $request->uri());
       
-      if($dispatch eq '') {
+      if (!defined($dispatch) or $dispatch eq '') {
         my $response = "<html><head><title>Perlbot Web Interface</title></head><body><p><ul>";
         
         foreach my $link (keys(%{$self->{hooks}})) {
@@ -120,9 +115,11 @@ sub connection {
                                                        HTTP::Headers->new(Content_Type => $contenttype),
                                                          $content));
         } else {
+          # undef contenttype or content means "return a 404"
           $connection->send_error(RC_NOT_FOUND);
         }
       } else {
+        # nobody has hooked this path
         $connection->send_error(RC_NOT_FOUND);
       }
     }
@@ -134,11 +131,27 @@ sub connection {
 
 sub hook {
   my $self = shift;
-  my $hook = shift;
-  my $coderef = shift;
-  my $description = shift;
+  my ($hook, $coderef, $description, $plugin) = @_;
 
-  $self->{hooks}{$hook} = [$coderef, $description];
+  $self->{hooks}{$hook} = [$coderef, $description, $plugin];
+}
+
+# unhooks everything hooked by a given plugin
+sub unhook_all {
+  my $self = shift;
+  my ($plugin) = @_;
+
+  foreach my $hook (keys %{$self->{hooks}}) {
+    if ($self->{hooks}{$hook}[2] eq $plugin) {
+      delete $self->{hooks}{$hook};
+    }
+  }
+}
+
+sub num_hooks {
+  my $self = shift;
+
+  return scalar keys %{$self->{hooks}};
 }
 
 
