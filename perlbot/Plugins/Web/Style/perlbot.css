@@ -40,6 +40,11 @@
                 border-bottom: 1px solid;
 	}			
 		
+        .note {
+                font-size: smaller;
+                color: red;
+        }
+
 	.date	{ 
 		font-size: larger;
 		font-weight: bold; 
