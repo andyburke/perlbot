@@ -229,7 +229,7 @@ sub array_delete {
 }
 
 
-sub hash_get_keys {
+sub hash__keys {
   my $self = shift;
 
   return keys %{$self->_value(@_)};
