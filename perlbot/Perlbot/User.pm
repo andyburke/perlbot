@@ -74,11 +74,9 @@ sub hostmasks {
         # Substitutions to take a standard IRC hostmask and convert it to
         #   a regexp.  I thought this was pretty clever...  :)
 
-        # escape periods becuse they shouldn't be treated as wildcards
-        $hostmask =~ s/\./\\./g;
-
-        # * in a hostmask means "any string of chars" which becomes .* in a regexp
-        $hostmask =~ s/\*/.*/g;
+        print "$hostmask\n";
+        # split hostmask into nick and userhost, since the rules differ
+        my ($nick, $userhost) = $hostmask =~ /^(.*)!(.*)$/;
 
         # {}| are really the lowercase equivalents of []\  (Don't ask me... read RFC1459) 
         # The result of this is that { is equivalent to [ in a nick, etc.
@@ -91,13 +89,21 @@ sub hostmasks {
         #   regexp in a second pass.
         # First pass: convert each instance of a char (upper or lower) to some
         #   'impossible' character.  (ascii 01, 02, and 03)
-        $hostmask =~ s/[{[](?=.*!)/\01/g;
-        $hostmask =~ s/[}\]](?=.*!)/\02/g;
-        $hostmask =~ s/[|\\](?=.*!)/\03/g;
+        $nick =~ s/[{[]/\01/g;
+        $nick =~ s/[}\]]/\02/g;
+        $nick =~ s/[|\\]/\03/g;
         # Second pass: convert each impossible char to the appropriate regexp
-        $hostmask =~ s/\01/[{[]/g;
-        $hostmask =~ s/\02/[}\\]]/g;
-        $hostmask =~ s/\03/[|\\\\]/g;
+        $nick =~ s/\01/[{[]/g;
+        $nick =~ s/\02/[}\\]]/g;
+        $nick =~ s/\03/[|\\\\]/g;
+
+        $userhost =~ s/([[\]{}|\\])/\\$1/g; # escape \[]{} only in userhost
+
+        $hostmask = "$nick!$userhost";      # recombine
+        $hostmask =~ s/([().?^\$])/\\$1/g;  # escape ().?^$
+        $hostmask =~ s/\*/.*/g;             # translate wildchar "*" to regexp equivalent ".*"
+
+	print "FINAL:  $hostmask\n\n";
 
         if(!grep { /^\Q$hostmask\E$/ } @{$self->{hostmasks}}) { # don't add duplicates
           push @{$self->{hostmasks}}, $hostmask;
