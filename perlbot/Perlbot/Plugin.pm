@@ -86,6 +86,7 @@ sub author {
   if(defined($self->infoitems)) {
     return $self->infoitems->{'author'}[0];
   }
+  return undef;
 }
 
 sub contact {
@@ -93,6 +94,7 @@ sub contact {
   if(defined($self->infoitems)) {
     return $self->infoitems->{'contact'}[0];
   }
+  return undef;
 }
 
 sub url {
@@ -100,6 +102,7 @@ sub url {
   if(defined($self->infoitems)) {
     return $self->infoitems->{'url'}[0];
   }
+  return undef;
 }
 
 sub version {
@@ -439,29 +442,29 @@ sub _help {
   # return our (possibly empty) result
 
   if($command eq $self->{name}) {
-    if($self->helpitems->{overview}[0]) {
-      my $infostring = $self->name;
-      if($self->version) { $infostring .= " v" . $self->version; }
-      if($self->author) { $infostring .= " by " . $self->author; }
-      if($self->contact) { $infostring .= " <" . $self->contact . ">"; }
-      if($self->url) { $infostring .= ", " . $self->url; }
-      push(@result, $infostring);
-      push(@result, @{$self->{helpitems}{overview}});
-      if(keys(%{$self->{helpitems}{command}})) {
+    my $infostring = $self->name;
+    if($self->version) { $infostring .= " v" . $self->version; }
+    if($self->author) { $infostring .= " by " . $self->author; }
+    if($self->contact) { $infostring .= " <" . $self->contact . ">"; }
+    if($self->url) { $infostring .= ", " . $self->url; }
+    push(@result, $infostring);
+    if(defined($self->helpitems) && $self->helpitems->{overview}[0]) {
+      push(@result, @{$self->helpitems->{overview}});
+      if(keys(%{$self->helpitems->{command}})) {
         push(@result, 'Available commands:');
-        push(@result, join(' ', keys(%{$self->{helpitems}{command}})));
+        push(@result, join(' ', keys(%{$self->helpitems->{command}})));
       }
     }
-  } elsif($self->{helpitems}{command}{$command}) {
-    if($self->{helpitems}{command}{$command}{content}) {
-      if(ref($self->{helpitems}{command}{$command}{content}) eq 'ARRAY') {
-        push(@result, @{$self->{helpitems}{command}{$command}{content}});
+  } elsif(defined($self->helpitems) && $self->helpitems->{command}{$command}) {
+    if($self->helpitems->{command}{$command}{content}) {
+      if(ref($self->helpitems->{command}{$command}{content}) eq 'ARRAY') {
+        push(@result, @{$self->helpitems->{command}{$command}{content}});
       } else {
-        push(@result, $self->{helpitems}{command}{$command}{content});
+        push(@result, $self->helpitems->{command}{$command}{content});
       }
     }
-    if($self->{helpitems}{usage}{$command}{content}) {
-      push(@result, "Usage: " . $self->perlbot->config->value(bot => 'commandprefix') . $self->{helpitems}{usage}{$command}{content});
+    if($self->helpitems->{usage}{$command}{content}) {
+      push(@result, "Usage: " . $self->perlbot->config->value(bot => 'commandprefix') . $self->helpitems->{usage}{$command}{content});
     }
   }
 
