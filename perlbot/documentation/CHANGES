@@ -1,6 +1,12 @@
 CHANGES:
 
-1.2.3 - crash log, configurable plugin and command trigger characters, new plugin, plugin fixes, misc core updates/fixes
+1.2.3 - crash log, configurable plugin and command trigger characters,
+        new plugin, plugin fixes, misc core updates/fixes
+- Due to popular demand, the character that prefixes spoken commands to the
+  bot is now configurable!  bot.commandchar and bot.pluginchar are the
+  config values to set (the defaults are # and ! to mimic previous
+  behavior).  All stock plugins have been modified to work with this
+  setting.
 - Mike Edwards contributed the neat Internals plugin.  It allows bot owners
   to debug things remotely by viewing internal perlbot variables.  Sometimes
   this can be easier than using "perl -d" and mucking with breakpoints...
@@ -10,22 +16,26 @@ CHANGES:
 - Added debug statement when rolling log file to the next day
 - Added debug statement on inability to write to logfile
 - Most fatal crashes should now log the error message and a stack trace
-  to a log file.  Also a new config option bot.crashlog allows specifying
-  the name of the log file.
+  to crashlog.txt.  Also a new config option bot.crashlogdir allows
+  specifying the directory for this log file.
 - Cleaned up on-join mode setting
 - Fixed the server-cycling logic - now it works  :)
 - Fixed some forking problems in a few plugins
 - Plugins no longer support the "unimport" mechanism.  Just use perl's
   END instead.
+- On shutdown, all plugins are now explicitly unloaded
 - Added a SysV-style init script to miscscripts/
+- Logsearch plugin now has a much more robust interface
 - Improved the matching logic in the Define plugin somewhat.  Now long
   responses shouldn't trigger a match for no apparent reason.
-- Updated Freshmeat plugin to use FM's XML backend
+- Freshmeat plugin now uses FM's XML backend
+- Linuxtoday now uses LT XML backend (for news only; search is still
+  HTML)
+- Blues, AVNews and AVDemos plugins all updated to work with the
+  latest HTML syntax from the sites
 - Updated Host plugin to deal with CNAMEs and other such DNS details
 - PriceWatch plugin now works a lot better and the code is cleaner
 - Guile plugin now only prints stuff to the console if debugging is on
-- commandchar and pluginchar are two new options in the bot { } field of
-  the config file.
 
 1.2.2 - misc updates, stability fixes, plugin modifications
 - Fixed the flooding crashing the bot bug, stupid fork
