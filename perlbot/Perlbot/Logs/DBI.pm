@@ -28,6 +28,9 @@ sub new {
                   . $self->config_get('dbtype')
                   . ":dbname=" . $self->config_get('dbname');
 
+  $dbistring .= ';host=' . $self->config_get('dbhost') if($self->config_get('dbhost'));
+  $dbistring .= ';port=' . $self->config_get('dbhost') if($self->config_get('dbport'));
+
   $self->dbh = DBI->connect($dbistring,
                             $self->config_get('dbuser'),
                             $self->config_get('dbpassword'),
@@ -59,6 +62,21 @@ sub new {
         );
 
       ";
+    } elsif($self->config_get('dbtype') eq 'mysql') {
+      debug("Creating a table in MySQL");
+      $createtablestring = q{
+
+        CREATE TABLE logs (
+          eventtime bigint(20)   NOT NULL,
+          eventtype varchar(100) NOT NULL,
+          nick      varchar(100) NOT NULL,
+          channel   varchar(100) NOT NULL,
+          target    varchar(100)         ,
+          userhost  varchar(100)         ,
+          text      text
+        );
+
+      };
     } # else...
 
     debug("Auto-creating logs table!");
