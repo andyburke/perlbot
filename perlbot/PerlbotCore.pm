@@ -140,15 +140,15 @@ my %config_handlers =
        $crashlog = 'crashlog.txt';
      }
 
-     # get our command prefix char
-     $commandchar = $_[0]->{commandchar}[0];
-     $commandchar ||= '#';
+     # get our command prefix
+     $commandprefixr = '\Q'.$_[0]->{commandprefixr}[0].'\E';
+     $commandprefix ||= '\Q#\E';
 
-     # get our plugin prefix char
-     $pluginchar = $_[0]->{pluginchar}[0];
-     $pluginchar ||= '!';
+     # get our plugin prefix
+     $pluginprefix = '\Q'.$_[0]->{pluginprefix}[0].'\E';
+     $pluginprefix ||= '\Q!\E';
      # allow whitespace between char/string and command itself
-     $pluginchar .= '\s*?';
+     $pluginprefixr .= '\s*?';
    }
    );
 
