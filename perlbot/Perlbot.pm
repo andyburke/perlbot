@@ -149,7 +149,7 @@ sub shutdown {
   $quitmsg ||= 'goodbye';
 
   # we sign off of irc here
-  $self->ircconn->quit($quitmsg) if $self->irconn;
+  $self->ircconn->quit($quitmsg) if $self->ircconn;
 
   # we go through and call shutdown on each of our plugins
   my @plugins_copy = @{$self->plugins};
@@ -921,6 +921,10 @@ sub get_channel {
   } else {
     return undef;
   }
+}
+
+sub DESTROY {
+  # dummy
 }
 
 1;

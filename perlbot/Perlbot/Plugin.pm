@@ -689,4 +689,8 @@ sub _read_info {
   return read_generic_config(File::Spec->catfile($self->directory, $filename));
 }
 
+sub DESTROY {
+  # dummy
+}
+
 1;

@@ -98,6 +98,7 @@ sub parse_rawevent() {
     $self->target = $event->target;
     $self->userhost = $event->userhost;
     $self->text = $event->text;
+
   } elsif ($eventclass eq 'HASH') { # hash of values
     foreach my $key (keys(%{$event})) {
       $self->$key = $event->{$key};

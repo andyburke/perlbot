@@ -213,6 +213,10 @@ sub part {
     $self->logs->close;
 }
 
+sub DESTROY {
+  # dummy
+}
+
 1;
 
 

@@ -215,6 +215,9 @@ sub num_hooks {
   return scalar keys %{$self->hooks};
 }
 
+sub DESTROY {
+  # dummy
+}
 
 1;
 

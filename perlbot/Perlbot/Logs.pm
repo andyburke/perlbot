@@ -35,8 +35,20 @@ sub AUTOLOAD : lvalue {
   $self->{$field};
 }
 
+# dummy subs, meant to be overridden
+
 sub search {
-  # dummy sub, meant to be overridden
 }
+
+sub initial_entry_time {
+}
+
+sub final_entry_time {
+}
+
+sub DESTROY {
+  # dummy
+}
+
 
 1;

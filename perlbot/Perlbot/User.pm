@@ -120,4 +120,8 @@ sub update_channels {
   }
 }
 
+sub DESTROY {
+  # dummy
+}
+
 1;
