@@ -104,6 +104,11 @@ sub version {
   return eval '$Perlbot::Plugin::'.$self->name.'::VERSION';
 }
 
+sub set_initial_config_values {
+  # meant to be overridden
+  return;
+}
+
 # params:
 #   1: behavior name
 #   2: 0/1 to disable/enable the behavior, or undef to just query the
