@@ -49,30 +49,34 @@ sub perldoc_response {
     #child
 
     ($parms = $event->{args}[0]) =~ s/^!perldoc\s*//;
-    my ($func, $lines, $to) = split(' ', $parms);
+    my ($lines, $query) = split(' ', $parms);
 
-    $func =~ s/\`//g; #security?
-    $func =~ s/\$//g;
-    $func =~ s/\|//g;
-    
     if($lines eq '') { $lines = 10; }
     
-    my @text = `perldoc -tf $func`;
+    die "Can't fork: $!" unless defined($pid = open(KID, "-|"));
+
+    # Safer way of running perldoc
+    #
+    # Thanks to: Mike Edwards <pf-perlbot@mirkwood.net> 
+
+    if ($pid) {
+       # parent
+       @text = <KID>;
+       close KID;
+    } else {
+       # kid
+       # Send stderr to stdout, so the bot will report errors back to the user
+       open (STDERR, ">&STDOUT") or die "Can't dup stdout: $!\n";
+       exec 'perldoc', $query or die "Can't exec perldoc: $!\n";
+    }
+
     chomp @text;
 
     my $i = 0;
-    if($to) {
-      foreach (@text)  {
-	$conn->privmsg($to, $_);
-	if($i > $lines) { last; };
-	$i++;
-      }
-    } else {
-      foreach (@text) {
-	$conn->privmsg($who, $_);
-	if($i > $lines) { last; };
-	$i++;
-      }
+    foreach (@text) {
+      $conn->privmsg($who, $_);
+      if($i > $lines) { last; };
+      $i++;
     }
     
     $conn->{_connected} = 0;
