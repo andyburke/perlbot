@@ -22,7 +22,7 @@ sub auth {
     my $self = shift;
     my $user = shift;
     my $event = shift;
-    my $userhost = $event->nick.'!'.$event->userhost;
+    my $userhost = $event->from();
     my ($username, $password) = split(' ', shift, 2);
     
     if(!$username || !$password || $password eq "''") {
@@ -35,6 +35,8 @@ sub auth {
 	if($self->{perlbot}{users}{$username}->password()
 	   && (crypt($password, $self->{perlbot}{users}{$username}->password()) eq $self->{perlbot}{users}{$username}->password())) {
 	    $self->{perlbot}{users}{$username}->hostmasks($userhost); # add this hostmask
+            use Data::Dumper;
+            print Dumper($self->{perlbot}{users}{$username});
 	    $self->reply("User $username authenticated!");
 	} else {
 	    $self->reply('Bad password!');

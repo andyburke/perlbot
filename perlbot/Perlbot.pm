@@ -145,39 +145,41 @@ sub process_config {
   $self->{users} = undef;
   $self->{channels} = undef;
 
-  foreach my $user (keys(%{$self->config('user')})) {
-    print "process_config: loading user '$user'\n" if $DEBUG;
-    $self->{users}{$user} =
-      new Perlbot::User($user,
-                        $self->config(user => $user => 'flags'),
-                        $self->config(user => $user => 'password'),
-                        $self->config(user => $user => 'hostmask'));
-    foreach my $admin ($self->config(bot => 'admin')) {
-      if($admin eq $user) {
-        print "process_config:   is an admin\n" if $DEBUG;
-        $self->{users}{$user}->admin(1);
+  if($self->config('user')) {
+    foreach my $user (keys(%{$self->config('user')})) {
+      print "process_config: loading user '$user'\n" if $DEBUG;
+      $self->{users}{$user} =
+          new Perlbot::User($user,
+                            $self->config(user => $user => 'flags'),
+                            $self->config(user => $user => 'password'),
+                            $self->config(user => $user => 'hostmask'));
+      foreach my $admin ($self->config(bot => 'admin')) {
+        if($admin eq $user) {
+          print "process_config: $admin  is an admin\n" if $DEBUG;
+          $self->{users}{$user}->admin(1);
+        }
       }
     }
   }
 
-  foreach my $channel (keys(%{$self->config('channel')})) {
-    print "process_config: loading channel '$channel'\n" if $DEBUG;
-    my $chan =
-      new Perlbot::Chan(name => normalize_channel($channel),
-                        flags => $self->config(channel => $channel => 'flags'),
-                        key => $self->config(channel => $channel => 'key'),
-                        logging => $self->config(channel => $channel => 'logging'),
-                        logdir => $self->config(bot => 'logdir'));
+  if($self->config('channel')) {  
+    foreach my $channel (keys(%{$self->config('channel')})) {
+      print "process_config: loading channel '$channel'\n" if $DEBUG;
+      my $chan =
+          new Perlbot::Chan(name => normalize_channel($channel),
+                            flags => $self->config(channel => $channel => 'flags'),
+                            key => $self->config(channel => $channel => 'key'),
+                            logging => $self->config(channel => $channel => 'logging'),
+                            logdir => $self->config(bot => 'logdir'));
+      
+      foreach my $op ($self->config(channel => $channel => 'op')) {
+        $chan->add_op($op) if (exists($self->{users}{$op}));
+      }
 
-    foreach my $op ($self->config(channel => $channel => 'op')) {
-      $chan->add_op($op) if (exists($self->{users}{$op}));
+      $self->{channels}{$channel} = $chan;
+
     }
-
-    $self->{channels}{$channel} = $chan;
-
   }
-
-#  push @INC, $self->config(bot => 'plugindir');
 }
 
 sub connect {
