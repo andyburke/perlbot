@@ -1,3 +1,7 @@
+# oh my god this code is awful
+#
+# unless you have a desire to disconnect a lobe in response, read no further
+
 package Perlbot::Plugin::Trivia;
 
 use Perlbot::Plugin;
@@ -44,8 +48,10 @@ sub init {
   
   $self->{percentageranks} = {};
   $self->{winsranks} = {};
+  $self->{winstimespercentageranks} = {};
   $self->{percentagerank} = {};
   $self->{winsrank} = {};
+  $self->{winstimespercentagerank} = {};
 
   $self->{askedtime} = 0;
   
@@ -440,7 +446,16 @@ sub triviastats {
 
     $timerank = $self->{timeranks}{$nick};
 
-    $self->reply("$nick: %R:$percentagerank  WR:$winsrank  TR:$timerank  W:$self->{correctlyanswered}{$nick}  TA:$self->{totalanswered}{$nick}  S:" . $self->score($nick) . "%  FT: $self->{fastestoverall}{$nick}");
+    my @wpranks = $self->rankplayersbywinstimespercentage();
+    my $wprank = 1;
+    foreach my $name (@wpranks) {
+      $self->{winstimespercentageranks}{$name} = $wprank;
+      $wprank++;
+    }
+
+    $wprank = $self->{winstimespercentageranks}{$nick};
+
+    $self->reply("$nick: %R:$percentagerank  WR:$winsrank  TR:$timerank  W%R:$wprank  W:$self->{correctlyanswered}{$nick}  TA:$self->{totalanswered}{$nick}  S:" . $self->score($nick) . "%  FT: $self->{fastestoverall}{$nick}");
   }
 }
 
