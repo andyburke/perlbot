@@ -12,6 +12,7 @@ use vars qw($AUTOLOAD %FIELDS);
 use fields qw(name perlbot directory config helpitems infoitems commandprefix_hooks addressed_command_hooks regular_expression_hooks addressed_hooks commandprefix_admin_hooks addressed_command_admin_hooks commandprefix_advanced_hooks addressed_command_advanced_hooks event_hooks lastcontact lastnick lasthost behaviors);
 
 use Perlbot::Utils;
+use Perlbot::PluginConfig;
 use File::Spec;
 
 sub new {
@@ -26,9 +27,8 @@ sub new {
   $self->perlbot = $perlbot;
   $self->directory = $directory;
 
-  $self->config = new Perlbot::Config(File::Spec->catfile($self->directory, 'config.xml'));
-  # if config.xml failed to load, try config-sample.xml but do it read-only
-  $self->config ||= new Perlbot::Config(File::Spec->catfile($self->directory, 'config-sample.xml'), 1);
+  $self->config = new Perlbot::PluginConfig($self->name,
+                                            $self->perlbot->config->filename);
 
   $self->helpitems = $self->_read_help();
   $self->infoitems = $self->_read_info();
@@ -482,7 +482,7 @@ sub _process { # _process to stay out of people's way
   my $chan_name = normalize_channel($event->{to}[0]);
   if ($event->type ne 'msg' and
       grep {$_ eq $self->name}
-           $self->perlbot->config->get_array(channel => $chan_name => 'ignoreplugin')) {
+           $self->perlbot->config->array_get(channel => $chan_name => 'ignoreplugin')) {
     return;
   }
 
@@ -654,7 +654,7 @@ sub _shutdown {
   my $self = shift;
 
   
-  $self->config->save() if $self->config;
+  $self->config->save if $self->config;
   $self->shutdown();
 }
 
