@@ -104,7 +104,8 @@ my %config_handlers =
      if($_[0]->{nick}) { @nicks = @{$_[0]->{nick}}; }
      # if no name given, default to 'perlbot'
      $nicks[0] or $nicks[0] = 'perlbot';
-     
+     $currentnick = $nicks[0];
+ 
      $nick_append = $_[0]->{nickappend}[0];
      # if no nick_append string given, default to '_'
      $nick_append or $nick_append = '_';
@@ -174,6 +175,7 @@ my %command_handlers =
        notify_users($priv_conn, 'nick', "$from requested NICK change to $newnick");
        if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
 	 $priv_conn->nick($newnick);
+         $currentnick = $newnick;
        } else {
 	 $priv_conn->privmsg($from, "You are not an owner.");
        }
@@ -746,10 +748,12 @@ sub on_nick_error {
   if(@nicks < 2) {
     $nicks[0] = $nicks[0] . $nick_append;
     $self->nick($nicks[0]);
+    $currentnick = $nicks[0];
   } else {
     foreach(@nicks) {
       if($use_this_one) {
 	$self->nick($_);
+        $currentnick = $_;
 	return;
       } else {
 	if($_ eq $self->nick()) {
@@ -762,6 +766,7 @@ sub on_nick_error {
     # if every nickname we like is in use... we do this...
     $nicks[0] = $nicks[0] . $nick_append;
     $self->nick($nicks[0]);
+    $currentnick = $nicks[0];
   }
 }
 

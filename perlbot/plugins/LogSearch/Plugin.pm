@@ -41,7 +41,7 @@ sub logsearch {
   my $finaldate;
     
   my $pid;
-    
+
   if($args =~ /^${pluginprefix}logsearch/) { 
     if(!defined($pid = fork)) {
       $conn->privmsg($who, "error in logsearch plugin: failed to fork");
