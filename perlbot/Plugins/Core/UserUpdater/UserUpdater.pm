@@ -55,7 +55,7 @@ sub update {
     # FIXME: consider a solution like plugins being able to defer
     # here we delay removing them from the channel member list so that the logger
     # can log their quit.
-    $self->perlbot->ircconn->schedule(1, sub { $self->delayed_quit_remove($nick); });
+    $self->perlbot->schedule(1, sub { $self->delayed_quit_remove($nick); });
   }
 
   if ($type eq 'nick') {

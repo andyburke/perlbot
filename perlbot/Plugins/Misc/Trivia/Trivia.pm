@@ -116,7 +116,7 @@ sub starttrivia {
 
   srand();
 
-  $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
+  $self->perlbot->schedule(10, sub { $self->askquestion() });
 }
 
 sub stoptrivia {
@@ -327,7 +327,7 @@ sub answer {
     
     
     $self->{curquestion}++;
-    $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });    
+    $self->perlbot->schedule(10, sub { $self->askquestion() });    
 
     foreach my $person (keys(%{$self->{answeredthisquestion}})) {
       delete $self->{answeredthisquestion}{$person};
@@ -352,8 +352,8 @@ sub askquestion {
     $self->{answered} = 0;
     $self->reply("${curquestion}. [" . $self->{questions}[$self->{question}]{category} . "] " . $self->{questions}[$self->{question}]{text});
     $self->{askedtime} = time();
-    $self->perlbot->ircconn->schedule(10, sub { $self->hint(eval "$curquestion") });
-    $self->perlbot->ircconn->schedule(30, sub { $self->notanswered(eval "$curquestion") });
+    $self->perlbot->schedule(10, sub { $self->hint(eval "$curquestion") });
+    $self->perlbot->schedule(30, sub { $self->notanswered(eval "$curquestion") });
   } else {
     $self->reply("Game over.");
     $self->endofgame();
@@ -417,7 +417,7 @@ sub notanswered {
 
   $self->reply("The answer was: " . $self->{questions}[$self->{question}]{answer});
   $self->{state} = 'playing';
-  $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
+  $self->perlbot->schedule(10, sub { $self->askquestion() });
   $self->{curquestion}++;
 
   foreach my $person (keys(%{$self->{answeredthisquestion}})) {
