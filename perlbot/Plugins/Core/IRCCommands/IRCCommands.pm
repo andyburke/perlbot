@@ -52,7 +52,12 @@ sub join {
   my ($channel, $key) = split(' ', shift, 2);
 
   $channel = normalize_channel($channel);
-  my $chan = new Perlbot::Channel($channel, new Perlbot::Config(), $self->perlbot());
+  my $chan;
+  if(defined($self->perlbot->config->value(channel => $channel))) {
+    $chan = new Perlbot::Channel($channel, $self->perlbot->config, $self->perlbot());
+  } else {
+    $chan = new Perlbot::Channel($channel, new Perlbot::Config(), $self->perlbot());
+  }
   $chan->key($key);
   $self->perlbot->channels->{$channel} = $chan;
   $self->perlbot->join($chan);
