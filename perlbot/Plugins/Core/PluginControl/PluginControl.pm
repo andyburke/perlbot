@@ -2,10 +2,12 @@ package Perlbot::Plugin::PluginControl;
 
 use Perlbot;
 use Perlbot::Plugin;
+use strict;
 
-@ISA = qw(Perlbot::Plugin);
+our @ISA = qw(Perlbot::Plugin);
 
 our $VERSION = '1.0.0';
+
 
 sub init {
   my $self = shift;
@@ -13,37 +15,107 @@ sub init {
   $self->want_public(0);
   $self->want_fork(0);
 
-  $self->hook_admin('plugins', \&plugins);
+  $self->hook_admin('loadplugin', \&load_plugin);
+  $self->hook_admin('startplugin', \&load_plugin);
+  $self->hook_admin('unloadplugin', \&unload_plugin);
+  $self->hook_admin('stopplugin', \&unload_plugin);
+  $self->hook_admin('reloadplugin', \&reload_plugin);
+  $self->hook_admin('restartplugin', \&reload_plugin);
+  $self->hook_admin('reloadallplugins', \&reload_all_plugins);
+  $self->hook_admin('restartallplugins', \&reload_all_plugins);
 }
 
-sub plugins {
-  my $self = shift;
-  my $user = shift;
-  my $text = shift;
 
-  if (!$text) { # no command specified
-    $self->reply_error('You must specify a command!');
-    return;
-  }
+sub load_plugin {
+  my ($self, $user, $text) = @_;
 
-  my ($command, $param) = split(' ', $text, 2);
+  my $plugin_name = $self->validate_input($text) or return;
 
-  if ($command eq 'load' or $command eq 'start') {
-    if (!$param) {
-      $self->reply('You need to specify a plugin to load!');
-      return;
-    }
-    if ($self->perlbot->load_plugin($param)) {
-      $self->reply("Successfully loaded plugin '$param'");
-    } else {
-      $self->reply("Couldn't load plugin '$param'");
-    }
-  } elsif ($command eq 'unload' or $command eq 'stop') {
-    $self->reply('command not yet implemented');
+  if ($self->perlbot->load_plugin($plugin_name)) {
+    $self->reply("Successfully loaded plugin '$plugin_name'");
   } else {
-    $self->reply("Unknown plugin command: '$command'");
+    $self->reply("Couldn't load plugin '$plugin_name'");
+  }
+}
+
+
+sub unload_plugin {
+  my ($self, $user, $text) = @_;
+
+  my $plugin_name = $self->validate_input($text) or return;
+
+  if ($self->perlbot->unload_plugin($plugin_name)) {
+    $self->reply("Successfully unloaded plugin '$plugin_name'");
+  } else {
+    $self->reply("Couldn't unload plugin '$plugin_name'");
+  }
+}
+
+
+# I can even reload myself, honest!  Can't unload then load, have to
+# reload.  If you just unload me first, you get caught with your pants
+# down, since there's no way to load me back up.  :)
+sub reload_plugin {
+  my ($self, $user, $text) = @_;
+
+  my $plugin_name = $self->validate_input($text) or return;
+
+  my $ret = $self->perlbot->reload_plugin($text);
+  # reload_plugin returns errors as scalar refs
+  if (ref($ret) eq 'SCALAR') {
+    $self->display_reload_error($$ret, $plugin_name);
+  } elsif ($ret == 1) {
+    $self->reply("Successfully reloaded plugin '$plugin_name'");
+  } else {
+    $self->reply("Unknown plugin reload error for plugin '$plugin_name");
+  }
+}
+
+
+sub reload_all_plugins {
+  my ($self, $user, $text) = @_;
+
+  foreach my $plugin (@{$self->perlbot->plugins}) {
+    my $ret = $self->perlbot->reload_plugin($plugin->name);
+    if (ref($ret) eq 'SCALAR') {
+      $self->display_reload_error($$ret, $plugin->name);
+    }
+  }
+  $self->reply("Finished reloading all plugins");
+}
+
+
+sub display_reload_error {
+  my ($self, $error, $plugin_name) = @_;
+
+  if ($error eq 'unload') {
+    $self->reply("Couldn't unload plugin '$plugin_name'");
+  } elsif ($error eq 'load') {
+    $self->reply("Failed to reload plugin '$plugin_name'; it remains unloaded");
+  }
+}
+
+# Validates and parses the input string.
+#
+# returns:
+#   If string is valid, returns the plugin name.
+#   If invalid, replies with an error and returns undef.
+# params:
+#   1) input string to validate
+sub validate_input {
+  my ($self, $text) = @_;
+
+  if (length($text) == 0) {
+    $self->reply('You must specify a plugin name');
+    return undef;
+  }
+  if ($text !~ /^\w+$/) {
+    $self->reply('Please specify only one plugin name');
+    return undef;
   }
 
+  return $text;
 }
+
 
 1;

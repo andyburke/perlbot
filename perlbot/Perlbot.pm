@@ -2,6 +2,7 @@ package Perlbot;
 
 use Net::IRC;
 use Data::Dumper;
+use Symbol;
 
 use Perlbot::Utils;
 use Perlbot::Config;
@@ -390,7 +391,7 @@ sub find_plugins {
   #     add it's directory to @INC so we can use it later
   #     close the dir
   #   return our found plugins
-  
+
   foreach my $plugindir (@{$self->config->value(bot => 'plugindir')}) {
     opendir(PDH, $plugindir);
     foreach my $plugin (readdir(PDH)) {
@@ -427,34 +428,39 @@ sub find_plugins {
 #   1) name of plugin to load
 # returns:
 #   0 if load failed
-#   1 if load succeeded
+#   reference to plugin object if load succeeded
 sub load_plugin {
   my ($self, $plugin) = @_;
 
   debug("load_plugin: loading plugin '$plugin'");
-  eval "local \$SIG{__DIE__}='DEFAULT'; require ${plugin}";  # try to import the plugin's package
+  # make sure the plugin isn't already loaded
+  if (grep {$plugin eq $_->name} @{$self->plugins}) {
+    debug("load_plugin: plugin '$plugin' already loaded!");
+    return 0;
+  }
+  # try to import the plugin's package
+  eval "local \$SIG{__DIE__}='DEFAULT'; require ${plugin}";
   # check for module load error
   if ($@) {
     debug("load_plugin:   failed to load '$plugin': $@");
     return 0;
   }
   # determine path to plugin subdirectory
-  my $pluginfile = $INC{"${plugin}.pm"};
+  my $pluginfile = $INC{"$plugin.pm"};
   my (undef,$pluginpath,undef) = File::Spec->splitpath($pluginfile);
   $pluginpath = File::Spec->canonpath($pluginpath);
   my $pluginref = eval "local \$SIG{__DIE__}='DEFAULT'; new Perlbot::Plugin::${plugin}(\$self, \$pluginpath)";
   # check for constructor error
-  if ($@) {
+  if ($@ or !$pluginref) {
     debug("load_plugin:   failed construction of '$plugin': $@");
     return 0;
   }
 
   # call init on our plugin
-  # push it into the bot's internal list
-  # return the pluginref for fun
-
   $pluginref->init;
+  # push it into the bot's internal list
   push @{$self->{plugins}}, $pluginref;
+  # return the pluginref as our true value (meaning success)
   return $pluginref;
 }
 
@@ -472,7 +478,29 @@ sub unload_plugin {
 
   @{$self->plugins} = grep {$pluginref ne $_} @{$self->plugins};
   $pluginref->shutdown;
-  eval "no Perlbot::Plugin::${plugin}";
+
+  # Here we try to make perl forget about the plugin module entirely.  It's
+  # hard to say what's actually necessary here and what's superfluous.  If
+  # you see this, and you have Knowledge in this area, contact the authors
+  # or the mailing list.  Until then, this seems to work OK.
+  # (does it leak memory???)
+  undef $pluginref;                     # heh, a rhyme
+  $self->remove_all_handlers($plugin);  # unhook it from the bot's multiplexer
+  eval "no ${plugin}";                  # first step of unloading (necessary?)
+  Symbol::delete_package("Perlbot::Plugin::${plugin}"); # delete all symbols
+  delete $INC{"$plugin.pm"};            # force full reload on next 'require'
+
+  return 1;
+}
+
+
+sub reload_plugin {
+  my ($self, $plugin) = @_;
+
+  # \q used instead of " so emacs doesn't get confused.
+  $self->unload_plugin($plugin) or return \q{unload};
+  $self->load_plugin($plugin) or return \q{load};
+
   return 1;
 }
 
@@ -503,8 +531,8 @@ sub add_handler {
 
 # Removes the handler for one event type for a given plugin
 # params:
-#   1) plugin name
-#   2) event type (same as param 1 to add_handler)
+#   1) event type (same as param 1 to add_handler)
+#   2) plugin name
 sub remove_handler {
   my $self = shift;
   my ($event, $plugin) = @_;
@@ -513,13 +541,29 @@ sub remove_handler {
   #   if the given plugin has actually registered a callback for this type
   #     delete that callback
 
-  if($self->{handlers}{$event}) {
-    if($self->{handlers}{$event}{$plugin}) {
+  debug("remove_handler: event:$event plugin:$plugin");
+  if ($self->{handlers}{$event}) {
+    if ($self->{handlers}{$event}{$plugin}) {
       delete $self->{handlers}{$event}{$plugin};
     }
   }
   # Net::IRC doesn't provide handler removal functionality, so there's
   # nothing more to do here.
+}
+
+# Removes all handlers for a given plugin
+# params:
+#   1) plugin name
+sub remove_all_handlers {
+  my $self = shift;
+  my ($plugin) = @_;
+
+  # Iterate over every event we're handling, and try to remove $plugin's
+  # handler for that event.  If $plugin doesn't handle an event,
+  # remove_handler just silently fails.
+  foreach $event (keys %{$self->{handlers}}) {
+    $self->remove_handler($event, $plugin);
+  }
 }
 
 sub event_multiplexer {
