@@ -315,8 +315,6 @@ sub initial_entry_time {
 
   my $firstline = shift @lines;
 
-  use Data::Dumper;
-
   my $datestring = $self->filename_to_datestring($firstfile);
   my $rawevent = $self->parse_log_entry($firstline, $datestring);
   my $event = new Perlbot::Logs::Event($rawevent);

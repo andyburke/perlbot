@@ -73,7 +73,11 @@ sub AUTOLOAD : lvalue {
   $self->{$field};
 }
 
-sub init { } # stub
+sub init {
+  my $self = shift;
+
+  die(ref($self) . "::init not implemented!");
+}
 
 sub author {
   my $self = shift;
@@ -105,7 +109,7 @@ sub version {
 }
 
 sub set_initial_config_values {
-  # meant to be overridden
+  # meant to be overridden, but shouldn't die if they don't
   return undef;
 }
 
@@ -652,7 +656,7 @@ sub _dispatch {
   }
 }
 
-sub shutdown { } # stub
+sub shutdown { } # stub, don't die if they don't do it
 
 sub _shutdown {
   my $self = shift;

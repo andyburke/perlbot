@@ -38,12 +38,18 @@ sub AUTOLOAD : lvalue {
 # dummy subs, meant to be overridden
 
 sub search {
+  my $self = shift;
+  die(ref($self) . "::search not implemented!");
 }
 
 sub initial_entry_time {
+  my $self = shift;
+  die(ref($self) . "::initial_entry_time not implemented!");
 }
 
 sub final_entry_time {
+  my $self = shift;
+  die(ref($self) . "::final_entry_time not implemented!");
 }
 
 sub DESTROY {
