@@ -1,4 +1,4 @@
-Perlbot  /  http://perlbot.sourceforge.net
+Perlbot  /  http://www.perlbot.org
 An IRC bot written in perl.
 Authors: Andrew Burke and Jeremy Muhlich
          burke@bitflood.org / jmuhlich@bitflood.org
@@ -505,7 +505,7 @@ Table of Contents
     ------------------------
 
       Check the FAQ included with perlbot.  If you still need more help, try
-      posting to the forums at perlbot.sourceforge.net.
+      posting to the forums at http://dev.fdntech.com/projectes/perlbot.
 
 
 5.0 Debugging

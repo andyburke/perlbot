@@ -1,4 +1,4 @@
-Perlbot Frequently Asked Questions  //  http://perlbot.sourceforge.net
+Perlbot Frequently Asked Questions  //  http://www.perlbot.org
 Authors: Andrew Burke, Jeremy Muhlich
          <burke@bitflood.org / jmuhlich@bitflood.org>
 ----------------------------------------------------------------------
@@ -18,8 +18,8 @@ How do I make this damn thing run?
 
    Please, please, please read and understand the manual.  If you still don't
    have your bot working after looking over the manual and following the
-   suggestions therein, email the authors or post to the sourceforge.net
-   project page.
+   suggestions therein, email the authors or post to the forums at
+   http://dev.fdntech.com/projects/perlbot
 
 
 Why won't my perlbot connect?
@@ -29,8 +29,8 @@ Why won't my perlbot connect?
    with another irc client to make sure they're up.  If your bot is still
    not connecting, set PERLBOT_DEBUG to 1 in your shell before running
    the bot and look for errors.  If you're still not connecting and don't
-   know what to do, email the authors or post to the sourceforge.net project
-   page.
+   know what to do, email the authors or post to the forums at 
+   http://dev.fdntech.com/projects/perlbot
 
 
 It won't connect and I'm sure my server configuration is right!
@@ -117,7 +117,7 @@ Where can I get more plugins?
 =============================
 
    There currently is no repository for plugins.  However, the best place
-   to check would be http://perlbot.sourceforge.net followed by a Google
+   to check would be http://www.perlbot.org followed by a Google
    search.
 
 
