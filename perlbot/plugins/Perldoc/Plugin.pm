@@ -50,6 +50,13 @@ sub perldoc_response {
 
     ($parms = $event->{args}[0]) =~ s/^!perldoc\s*//;
     my ($query) = $parms;
+    my $lines = '';
+
+    if($query =~ /\d+$/) {
+      $lines = $query;
+      $lines =~ s/.*?(\d+)$/$1/;
+    }
+    $query =~ s/\d+$//;
 
     if($lines eq '') { $lines = 10; }
     
