@@ -201,6 +201,7 @@ sub logserver {
                 s|^(\d+:\d+:\d+\s)(.*? left \#.*?$)|$1<font color=\"blue\">$2</font>|;
                 s|^(\d+:\d+:\d+\s)(\[.*?\])|$1<font color=\"red\">$2</font>|;
                 s|(\d+\:\d+:\d+)|<a name=\"$1\">$1</a>|;
+                s#(\w+://.*?|www\d*\..*?|ftp\d*\..*?|web\d*\..*?)(\s+|'|,|$)#<a href="$1">$1</a>$2#;
                 $response .= "<tt>$_</tt><br>";
               }
             }
@@ -242,13 +243,21 @@ sub logserver {
                   if (@lines) {
                     $results_found = 1;
                     ($year, $month, $day) = split(/\./, $file);
-                    $response .= "<b><a href=\"/${chan}/${year}/${month}/${day}\">$file</a></b>";
-                    $response .= '<pre>';
-                    foreach my $line (@lines) {
-                      $line =~ s/(\d+:\d+:\d+)/<a href=\"\/${chan}\/${year}\/${month}\/${day}#$1\">$1<\/a>/;
-                      $response .= $line;
+                    $response .= "<p><b><a href=\"/${chan}/${year}/${month}/${day}\">$file</a></b>";
+                    $response .= "<p>";
+                    foreach (@lines) {
+                      s/</\&lt\;/g;
+                      s/>/\&gt\;/g;
+                      s/(\&lt\;.*?\&gt\;)/<b>$1<\/b>/;
+                      s|^(\d+:\d+:\d+) \* (\w+) (.*)|$1 * <b>$2</b> $3|;
+                      s|^(\d+:\d+:\d+\s)(.*? joined \#.*?$)|$1<font color=\"blue\">$2</font>|;
+                      s|^(\d+:\d+:\d+\s)(.*? left \#.*?$)|$1<font color=\"blue\">$2</font>|;
+                      s|^(\d+:\d+:\d+\s)(\[.*?\])|$1<font color=\"red\">$2</font>|;
+                      s|(\d+:\d+:\d+)|<a href=\"/${chan}/${year}/${month}/${day}#$1\">$1</a>|;
+                      s#(\w+://.*?|www\d*\..*?|ftp\d*\..*?|web\d*\..*?)(\s+|'|,|$)#<a href="$1">$1</a>$2#;
+                      $response .= "<tt>$_</tt><br>";
+
                     }
-                    $response .= '</pre>';
                   }
                 }
 
