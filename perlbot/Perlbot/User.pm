@@ -59,6 +59,10 @@ sub admin {
   return grep({$_ eq $self->name} @{$self->config->value(bot => 'admin')}) ? 1 : 0;
 }
 
+sub is_admin {
+  my $self = shift;
+  return $self->admin();
+}
 
 sub password {
   my $self = shift;

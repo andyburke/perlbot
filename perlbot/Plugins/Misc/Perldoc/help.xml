@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin is a gateway to the perldoc command.</overview>
+  <command name="perldoc">Uses the perldoc command.<br/>Usage: perldoc [options] query<br/>options are things like -f, query should be something like XML::Simple or splice</command>
+</help>

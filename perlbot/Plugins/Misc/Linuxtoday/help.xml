@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin fetches headlines from LinuxToday</overview>
+  <command name="lt">Fetches LinuxToday headlines.<br/>Usage: lt [max]</command>
+</help>

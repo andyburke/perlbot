@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin provides a gateway to www.pricewatch.com.</overview>
+  <command name="pw">Finds the lowest price for your item and returns it.<br/>Usage: pw searchterms</command>
+</help>

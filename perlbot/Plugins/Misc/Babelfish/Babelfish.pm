@@ -43,8 +43,8 @@ sub translate {
       $self->reply('Unable to translate!');
     }
   } else {
-    $self->reply_error('You must specify: <source language> <dest language> <string to translate>');
     $self->reply_error('Available languages: ' . join(' ', @languages));
     $self->reply_error('Note: Not all languages can be translated to all other languages.');
   }
 }
+

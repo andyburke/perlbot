@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin does math.</overview>
+  <command name="math">This takes a perl mathematical expression and evaluates it.<br/>Usage: math expression</command>
+</help>
