@@ -12,6 +12,9 @@ for 2.0:
   so we can make a botnet
 - move Note.pm into the Notes plugin
 - flock the config file when reading/writing
+- move config stuff into a Config object
+- add character-counting to max-output functionality in case of
+  very long lines (1 line = 80 chars?)
 
 when we can:
 
