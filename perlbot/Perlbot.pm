@@ -8,7 +8,6 @@ use Perlbot::Utils;
 use Perlbot::Config;
 use Perlbot::User;
 use Perlbot::Channel;
-use Perlbot::WebServer;
 
 $VERSION = '1.9.3';
 $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
@@ -116,7 +115,6 @@ sub masterpid {
   return $self->{masterpid};
 }
 
-
 # starts everything rolling...
 sub start {
   my $self = shift;
@@ -154,12 +152,6 @@ sub start {
     }
   }
 
-  print "Starting WebServer\n";
-
-  # we need to start our webserver
-  $self->{webserver} = new Perlbot::WebServer($self);
-  $self->{webserver}->start() or print "Could not start internal WebServer!\n";
-
   # once we've connected, we load our plugins
   $self->load_all_plugins;
 
@@ -187,15 +179,11 @@ sub shutdown {
   # we go through and call shutdown on each of our plugins
   my @plugins_copy = @{$self->plugins};
   foreach my $plugin (@plugins_copy) {
-    $plugin->_shutdown;
+    $self->unload_plugin($plugin->name);
   }
 
   # save out our in-memory config file
   $self->config->save if !$is_crash;
-
-  # shut down the webserver
-  debug("Shutting down web services...");
-  $self->webserver->shutdown();
 
   # sleep a couple seconds to let everything fall apart
   debug("Sleeping 2 seconds...");
@@ -497,7 +485,7 @@ sub unload_plugin {
   }
 
   @{$self->plugins} = grep {$pluginref ne $_} @{$self->plugins};
-  $pluginref->shutdown;
+  $pluginref->_shutdown;
 
   # Here we try to make perl forget about the plugin module entirely.  It's
   # hard to say what's actually necessary here and what's superfluous.  If
@@ -506,6 +494,7 @@ sub unload_plugin {
   # (does it leak memory???)
   undef $pluginref;                     # heh, a rhyme
   $self->remove_all_handlers($plugin);  # unhook it from the bot's multiplexer
+  $self->webserver_remove_all_handlers($plugin); # unhook it from the webserver
   eval "no ${plugin}";                  # first step of unloading (necessary?)
   Symbol::delete_package("Perlbot::Plugin::${plugin}"); # delete all symbols
   delete $INC{"$plugin.pm"};            # force full reload on next 'require'
@@ -615,6 +604,59 @@ sub event_multiplexer {
     }
   }
 
+}
+
+sub webserver_add_handler {
+  my $self = shift;
+
+  debug("WebServer: adding handler: " . join(', ', @_), 3);
+
+  if (!$self->webserver) {
+    # start up the webserver
+    debug('WebServer: Automatically starting web service');
+
+    eval 'use Perlbot::WebServer';
+    if ($@) {
+      debug("Could not load WebServer module: $@");
+      return undef;
+    }
+
+    $self->{webserver} = Perlbot::WebServer->new($self);
+    if (!$self->webserver->start) {
+      debug('WebServer: Could not start internal web service!');
+      return undef;
+    }
+  }
+
+  # pass all params as given
+  return $self->webserver->hook(@_);
+}
+
+# unhooks every web path hooked by a given plugin
+sub webserver_remove_all_handlers {
+  my $self = shift;
+  my $ret;
+
+  debug("WebServer: removing plugin handlers: " . join(', ', @_), 3);
+
+  if (!$self->webserver) {
+    return undef;
+  }
+
+  # pass all params as given
+  $ret = $self->webserver->unhook_all(@_);
+
+  my $num_hooks = $self->webserver->num_hooks;
+  if ($num_hooks == 0) {
+    # shut down the webserver
+    debug('WebServer: Automatically stopping web service');
+    $self->webserver->shutdown();
+    $self->{webserver} = undef;
+  } else {
+    debug("WebServer: Still $num_hooks web hooks left", 3);
+  }
+
+  return $ret;
 }
 
 # removes all handlers and sends all waiting events, used prior to shutdown
