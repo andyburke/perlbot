@@ -42,16 +42,14 @@ sub init {
   $self->want_msg(0);
   $self->want_fork(0);
 
+  # remember we get a 'topic' even on channel joins too, so nothing
+  # extra is needed to capture the initial topic.
   $self->hook_event('topic', \&set_topic);
-  $self->hook_event('liststart', \&set_topic);
-  $self->hook_event('list', \&set_topic);
-  $self->hook_event('listend', \&set_topic);
   $self->hook(\&set_lastline);
 
   $self->{_topic_cache} = {};
 
-  $self->perlbot->ircconn->list;
-  $self->timer;
+  $self->timer;  # fire off the cycle
 }
 
 sub timer {
