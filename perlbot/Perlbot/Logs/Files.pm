@@ -116,6 +116,7 @@ sub filename_to_datestring {
   my $self = shift;
   my $filename = shift;
 
+#  $filename =~ s|.*?/(\d\d\d\d.\d\d.\d\d)$|$1|; # strip off any leading path
   $filename =~ s|^.*(\d\d\d\d).(\d\d)\.(\d\d)$|$1/$2/$3|;
   return $filename;
 }
@@ -219,13 +220,11 @@ sub get_filelist {
   while (my $file = readdir(DIR)) {
     $file =~ /\d\d\d\d\.\d\d\.\d\d/ or next;
 
-    my $initialdate_string = Perlbot::Utils::perlbot_date_filename($initialdate);
-    my $finaldate_string = Perlbot::Utils::perlbot_date_filename($finaldate);
+    my $initialdate_string = Perlbot::Utils::perlbot_date_filename($initialdate) if defined($initialdate);
+    my $finaldate_string = Perlbot::Utils::perlbot_date_filename($finaldate) if defined($finaldate);
 
-    my $filedate_string = $file;
-    $filedate_string =~ s|\.|/|g; # convert filename to date string
-
-    if ($file ge $initialdate_string and $file le $finaldate_string) {
+    if ((!defined($initialdate_string) or $file ge $initialdate_string)
+        and (!defined($finaldate_string) or $file le $finaldate_string)) {
       push @files, File::Spec->catfile($self->directory, $channel, $file);
     }
   }
@@ -294,6 +293,57 @@ sub search {
  }
 
   return @result;
+}
+
+sub initial_entry_time {
+  my $self = shift;
+
+  my @files = @{$self->get_filelist()};
+
+  my $firstfile = shift(@files);
+
+  if(!CORE::open(FIRSTFILE, $firstfile)) {
+    debug("failed to open '$firstfile': $!");
+  }
+
+  my @lines = <FIRSTFILE>;
+
+  CORE::close(FIRSTFILE);
+
+  my $firstline = shift @lines;
+
+  use Data::Dumper;
+
+  my $datestring = $self->filename_to_datestring($firstfile);
+  my $rawevent = $self->parse_log_entry($firstline, $datestring);
+  my $event = new Perlbot::Logs::Event($rawevent);
+
+  return $event->time;
+}
+
+sub final_entry_time {
+  my $self = shift;
+
+  my @files = @{$self->get_filelist()};
+
+  my $lastfile = pop(@files);
+
+  if(!CORE::open(LASTFILE, $lastfile)) {
+    debug("failed to open '$lastfile': $!");
+  }
+
+  my @lines = <LASTFILE>;
+
+  CORE::close(LASTFILE);
+
+  my $lastline = pop @lines;
+  
+  my $datestring = $self->filename_to_datestring($lastfile);
+  my $rawevent = $self->parse_log_entry($lastline, $datestring);
+  my $event = new Perlbot::Logs::Event($rawevent);
+
+  return $event->time;
+
 }
 
 
