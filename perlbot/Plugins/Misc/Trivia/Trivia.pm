@@ -93,7 +93,14 @@ sub answer {
   my $user = shift;
   my $text = shift;
 
-  my $nick = $self->{lastnick};
+  my $nick;
+
+
+  if($user) {
+    $nick = $user->name();
+  } else {
+    $nick = $self->{lastnick};
+  }
 
   if($self->{state} ne 'asked' || $self->{answered}) {
     return;
