@@ -1,10 +1,12 @@
 package Perlbot::Channel;
 
-use Perlbot::Utils;
 use strict;
 
+use Perlbot::Utils;
+use Perlbot::Logs::Event;
+
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(config name logs members currentopped currentvoiced perlbot);
+use fields qw(config name loggers logs members currentopped currentvoiced perlbot);
 
 sub new {
   my $class = shift;
@@ -18,56 +20,8 @@ sub new {
   $self->currentopped = {};
   $self->currentvoiced = {};
   $self->perlbot = $perlbot;
-
-  # TODO: make 'logtype' use defaults system
-  # TODO: make this not this ugly ... in english:
-  #         if the channel object has a logtype
-  #           set the logtype to that specified value
-  #         else
-  #           if the bot has a default logtype
-  #             use that
-  #           else
-  #             use 'Files'
-  my $logtypestring = $self->config->exists(channel => $self->name => 'logtype') ?
-    $self->config->get(channel => $self->name => 'logtype') :
-    ( $self->config->exists(bot => 'defaultlogtype') ?
-      $self->config->get(bot => 'defaultlogtype') :
-      'Files' );
-
-  my ($logtype, $arguments) = split(';', $logtypestring, 2);
-  $arguments ||= '';
-
-  $logtype =~ /^\w+(::\w+)*$/ or die "Channel $name: Invalid logtype '$logtype'";
-  debug("loading Logs package '$logtype'");
-
-  # try to import the requested Logs package
-  eval "
-    local \$SIG{__DIE__}='DEFAULT';
-    require Perlbot::Logs::${logtype};
-  ";
-
-  # check for package load error
-  if ($@) {
-    debug("  failed to load '$logtype': $@");
-    return undef;
-  }
-
-  my ($dbtype, $dbname, $dbuser, $dbpassword) = split(';', $arguments);
-
-  # try to construct the Logs object
-  $self->logs = eval "
-    local \$SIG{__DIE__}='DEFAULT';
-    new Perlbot::Logs::${logtype}(\$self->perlbot,
-                                  \$self->name,
-                                  \$dbtype,
-                                  \$dbname,
-                                  \$dbuser,
-                                  \$dbpassword);
-  ";
-  if ($@ or !$self->logs) {
-    debug("  failed construction of '$logtype': $@");
-    return undef;
-  }
+  $self->loggers = []; $self->initialize_loggers();
+  $self->logs = $self->loggers->[0]; # first logger is default
 
   return $self;
 }
@@ -87,11 +41,72 @@ sub AUTOLOAD : lvalue {
   $self->{$field};
 }
 
+sub initialize_loggers {
+  my $self = shift;
+
+  $self->config->exists(channel => $self->name => 'log') or return;
+
+  for(my $i = 0;
+      $i < $self->config->array_get(channel => $self->name => 'log');
+      $i++)
+  {
+    my $logtype;
+    
+    if($self->config->exists(channel => $self->name => log => $i => 'type')) {
+      $logtype = $self->config->get(channel => $self->name => log => $i => 'type');
+    } else {
+      $logtype = $self->config->get(channel => $self->name => log => $i);
+    }
+    
+    $logtype =~ /^\w+(::\w+)*$/ or die "Channel " . $self->name . ": Invalid logtype '$logtype'";
+    debug("loading Logs package '$logtype'");
+    
+    # try to import the requested Logs package
+    eval "
+      local \$SIG{__DIE__}='DEFAULT';
+      require Perlbot::Logs::${logtype};
+    ";
+    
+    # check for package load error
+    if ($@) {
+      debug("  failed to load '$logtype': $@");
+      return undef;
+    }
+    
+    # try to construct the Logs object
+    my $logger =
+        eval "
+          local \$SIG{__DIE__}='DEFAULT';
+          new Perlbot::Logs::${logtype}(\$self->perlbot,
+                                        \$self->name,
+                                        \$self->config,
+                                        \$i);
+        ";
+    
+    if ($@ or !$logger) {
+      debug("  failed construction of '$logtype': $@");
+      return undef;
+    }
+    
+    # add it to our logfacilties
+    push(@{$self->loggers}, $logger);
+  }
+}
+
 sub log_event {
   my $self = shift;
-  my $event = shift;
+  
+  # make the event once, here, so the time
+  # is the same, regardless of how long
+  # it takes us to get to any given
+  # logger
+
+  my $event = new Perlbot::Logs::Event(shift, $self->name);
+
   if ($self->is_logging) {
-    $self->logs->log_event($event);
+    foreach my $logger (@{$self->loggers}) {
+      $logger->log_event($event);
+    }
   }
 }
 
