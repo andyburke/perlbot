@@ -97,10 +97,19 @@ sub handle_request {
       if ($request->method eq 'GET') {
         my $data = {};
 
+        $data->{bot} = {version => $Perlbot::VERSION,
+                        authors => $Perlbot::AUTHORS,
+                        knownusers => scalar keys(%{$self->perlbot->users}),
+                        activechannels => scalar keys(%{$self->perlbot->channels}),
+                        activeplugins => scalar @{$self->perlbot->plugins}};
+
         foreach my $channel (values %{$self->perlbot->channels}) {
           $chan_data = {name => $channel->name, topic => $self->{_topics}{$channel->name}};
           push @{$data->{channel}}, $chan_data;
         }
+
+        $data->{uptime} = {value => $self->perlbot->uptime(),
+                           humanreadable => $self->perlbot->humanreadableuptime()};
 
         my $response_xml = qq{<?xml version="1.0"?>\n};
         $response_xml .= XMLout($data, rootname => 'perlbot-statistics');
@@ -140,7 +149,10 @@ sub set_topic {
 
 sub set_lastline {
   my $self = shift;
-  my ($event) = @_;
+  my $user = shift;
+  my $text = shift;
+  my $event = shift;
+
 }
 
 

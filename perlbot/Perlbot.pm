@@ -679,6 +679,30 @@ sub process_queue {
   }
 }
 
+# some utility functions
+
+sub uptime {
+  my $self = shift;
+
+  return time() - $self->starttime();
+}
+
+sub humanreadableuptime {
+  my $self = shift;
+
+  my $uptime = time() - $self->starttime();
+  my $uptimedays = sprintf("%02d", $uptime / 86400);
+  $uptime = $uptime % 86400;
+  my $uptimehours = sprintf("%02d", $uptime / 3600);
+  $uptime = $uptime % 3600;
+  my $uptimeminutes = sprintf("%02d", $uptime / 60);
+  $uptime = $uptime % 60;
+  my $uptimeseconds = sprintf("%02d", $uptime);
+
+  return "${uptimedays}d:${uptimehours}h:${uptimeminutes}m:${uptimeseconds}s";
+
+}
+
 # send a msg to a nick or channel
 sub msg {
   my $self = shift;

@@ -24,17 +24,8 @@ sub status {
   my $self = shift;
   my $user = shift;
 
-  my $uptime = time() - $self->perlbot->{starttime};
-  my $uptimedays = sprintf("%02d", $uptime / 86400);
-  $uptime = $uptime % 86400;
-  my $uptimehours = sprintf("%02d", $uptime / 3600);
-  $uptime = $uptime % 3600;
-  my $uptimeminutes = sprintf("%02d", $uptime / 60);
-  $uptime = $uptime % 60;
-  my $uptimeseconds = sprintf("%02d", $uptime);
-
   $self->reply("Perlbot $Perlbot::VERSION / $Perlbot::AUTHORS");
-  $self->reply("Uptime: ${uptimedays}d:${uptimehours}h:${uptimeminutes}m:${uptimeseconds}s");
+  $self->reply("Uptime: " . $self->perlbot->humanreadableuptime());
   $self->reply("Known users: " . keys(%{$self->perlbot->users}));
   $self->reply("Channels active: " . keys(%{$self->perlbot->channels}));
   $self->reply("Plugins active: " . @{$self->perlbot->plugins});
