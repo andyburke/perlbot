@@ -259,7 +259,26 @@ sub search {
       next FILE;
     }
 
-    while (my $line = <FILE>) {
+    # we do a little pre-processing to speed up this search
+    #
+    # we eat the file, and throw away all the lines that don't
+    # contain our search terms, if we have any
+    my @lines = <FILE>;
+
+    if(defined($terms)) {
+      foreach my $term (@$terms) {
+        @lines = grep(/\Q$term\E/i, @lines);  
+      }
+    }
+
+    #
+    # end pre-processing
+
+    # we still want to make sure our search term is in the right
+    # place here, and that our dates are more fine-grained than
+    # to the day, so we to some real conversions and searching
+    # here...
+    foreach my $line (@lines) {
       chomp $line;
       my $datestring = $self->filename_to_datestring($filename);
       my $rawevent = $self->parse_log_entry($line, $datestring);
