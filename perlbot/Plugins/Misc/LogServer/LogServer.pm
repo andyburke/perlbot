@@ -53,17 +53,6 @@ sub logserver {
   }
 
   $response .= '<link rel="stylesheet" href="/perlbot.css" type="text/css" />';
-#  $response .= '
-#
-#  </head>
-#  <body>
-#    <div style="width: 99%; border-bottom: 1px solid;">
-#      <table border="0" width="99%"><tr>
-#        <td width="50%">
-#          <div style="text-align: left; font-size: x-large; font-weight: bold;">Perlbot Logs</div>
-#        </td>
-#        <td width="50%">
-#';
   $response .= '
 
   </head>
