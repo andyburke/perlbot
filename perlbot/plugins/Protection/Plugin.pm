@@ -1,12 +1,7 @@
 package Protection::Plugin;
 
 my $last_mode_change_time;
-my @last_mode_changer;
-
-my $nick = 0;
-my $chan = 1;
-my $mode = 2;
-my $target = 3;
+my %last_mode_changer;
 
 sub get_hooks {
     return { mode => \&modechange };
@@ -31,21 +26,21 @@ sub modechange {
 
     $current_mode_change_time = time();
 
-    if(!$last_mode_change_time || !@last_mode_changer) {
+    if(!$last_mode_change_time || !%last_mode_changer) {
 
 	$last_mode_change_time = $current_mode_change_time;
     
-	$last_mode_changer[$nick] = $curnick;
-	$last_mode_changer[$chan] = $curchan;
-	$last_mode_changer[$mode] = $curmode;
-	$last_mode_changer[$target] = $curtarget;
+	$last_mode_changer{'nick'} = $curnick;
+	$last_mode_changer{'chan'} = $curchan;
+	$last_mode_changer{'mode'} = $curmode;
+	$last_mode_changer{'target'} = $curtarget;
 
 	return;
     }
 
     $timedif = $current_mode_change_time - $last_mode_change_time;
 
-    if($last_mode_changer[$nick] eq $curnick) {
+    if($last_mode_changer{'nick'} eq $curnick) {
 #	if(($curmode eq '-o') && ($last_mode_changer[$mode] eq '-o')) {
 #	    if($timedif < $mintime) {
 #		$conn->mode($curchan, "-o", $curnick);
@@ -53,7 +48,7 @@ sub modechange {
 #	    }
 #	}
 
-      if(($curmode =~ /-o/) && ($last_mode_changer[$mode] =~ /-o/)) {
+      if(($curmode =~ /-o/) && ($last_mode_changer{'mode'} =~ /-o/)) {
 	$curmode =~ s/[+|-]//g;
 	my @modes = split(/\s*/, $curmode);
 
@@ -66,10 +61,10 @@ sub modechange {
 
     $last_mode_change_time = $current_mode_change_time;
     
-    $last_mode_changer[$nick] = $curnick;
-    $last_mode_changer[$chan] = $curchan;
-    $last_mode_changer[$mode] = $curmode;
-    $last_mode_changer[$target] = $curtarget;
+    $last_mode_changer{'nick'} = $curnick;
+    $last_mode_changer{'chan'} = $curchan;
+    $last_mode_changer{'mode'} = $curmode;
+    $last_mode_changer{'target'} = $curtarget;
 
 }
 
