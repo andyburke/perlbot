@@ -287,18 +287,20 @@ sub connect {
   #   set our ircconn object to the new one
 
   if ($self->config->value(server => $index)) {
-    $server   = $self->config->value(server => $index => 'address'); # or die ("Server $i has no address specified\n");
-    $port     = $self->config->value(server => $index => 'port');
-    $password = $self->config->value(server => $index => 'password');
-    $nick     = $self->config->value(bot => 'nick');
-    $ircname  = $self->config->value(bot => 'ircname');
-    $localaddr= $self->config->value(bot => 'localaddr');
+    $server    = $self->config->value(server => $index => 'address'); # or die ("Server $i has no address specified\n");
+    $port      = $self->config->value(server => $index => 'port');
+    $password  = $self->config->value(server => $index => 'password');
+    $nick      = $self->config->value(bot => 'nick');
+    $ircname   = $self->config->value(bot => 'ircname');
+    $localaddr = $self->config->value(bot => 'localaddr');
+    $username  = $self->config->value(bot => 'username');
 
     $port ||= 6667;
     $password ||= '';
     $nick ||= 'perlbot';
     $ircname ||= 'imabot';
     $localaddr ||= '';
+    $username ||= '';
 
     debug("connect: attempting to connect to server: $server");
 
@@ -308,7 +310,8 @@ sub connect {
                                     Port => $port,
                                     Password => $password,
                                     Ircname => $ircname,
-                                    LocalAddr => $localaddr);
+                                    LocalAddr => $localaddr,
+                                    Username => $username);
   }
 
   # if our connection exists and it's actually connected
