@@ -8,15 +8,31 @@ package LogSearch::Plugin;
 use Perlbot;
 
 sub get_hooks {
-  return { public => \&logsearch, msg => \&logsearch };
+  return { public => \&on_public, msg => \&on_msg };
 }
 
+sub on_public {
+  my $conn = shift;
+  my $event = shift;
+  my $who = $event->{to}[0];
+
+  logsearch($conn, $event, $who);
+}
+
+sub on_msg {
+  my $conn = shift;
+  my $event = shift;
+  my $who = $event->nick;
+
+  logsearch($conn, $event, $who);
+}
+ 
 sub logsearch {
   my $conn = shift;
   my $event = shift;
+  my $who = shift;
   my $args = $event->{args}[0];
   my $logdir;
-  my $who = $event->{to}[0];
     
   my $maxresults = 5;
   my $results = 0;

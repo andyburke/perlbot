@@ -141,12 +141,12 @@ my %config_handlers =
      }
 
      # get our command prefix
-     $commandprefix = '\Q'.$_[0]->{commandprefixr}[0].'\E';
-     $commandprefix ||= '\Q#\E';
+     $commandprefix = $_[0]->{commandprefixr}[0];
+     $commandprefix ||= '#';
 
      # get our plugin prefix
-     $pluginprefix = '\Q'.$_[0]->{pluginprefix}[0].'\E';
-     $pluginprefix ||= '\Q!\E';
+     $pluginprefix = $_[0]->{pluginprefix}[0];
+     $pluginprefix ||= '!';
    }
    );
 
