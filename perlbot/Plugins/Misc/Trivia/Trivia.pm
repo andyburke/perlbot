@@ -59,7 +59,6 @@ sub init {
   $self->hook('stoptrivia', \&stoptrivia);
   $self->hook('triviatop', \&triviatop);
   $self->hook('triviastats', \&triviastats);
-  $self->hook('triviahelp', \&triviahelp);
   $self->hook('playing', \&playing);
   $self->hook('stopplaying', \&stopplaying);
   $self->hook(\&answer);
@@ -83,7 +82,8 @@ sub starttrivia {
 
   $self->{numquestions} = $numquestions;
   $self->reply("Starting a new trivia game of $numquestions questions!");
-  $self->reply("  To register to play in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "playing");
+  $self->reply("  !!! To register to play in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "playing");
+  $self->reply("  !!! To stop playing in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "stopplaying");
 
   $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
 }
@@ -351,7 +351,7 @@ sub playing {
   $self->{playing}{$nick} = 1;
 }
 
-sub playing {
+sub stopplaying {
   my $self = shift;
   my $user = shift;
   my $text = shift;
