@@ -9,6 +9,8 @@ use Perlbot;
 use Socket;
 use POSIX;
 
+use HTML::TableExtract;
+
 sub get_hooks {
   return { public => \&on_public, msg => \&on_msg };
 }
@@ -40,10 +42,10 @@ sub on_msg {
 sub get_pw {
   my $conn = shift;
   my $event = shift;
-  my $who = shift;
+  my $chan = shift;
 
   if(!defined($pid = fork)) {
-    $conn->privmsg($who, "error in pricewatch plugin...");
+    $conn->privmsg($chan, "error in pricewatch plugin...");
     return;
   }
 
@@ -68,28 +70,28 @@ sub get_pw {
     $port = "80";
     
     if(!defined($iaddr = inet_aton($remote))) {
-      $conn->privmsg($who, "Could not get address for $remote");
+      $conn->privmsg($chan, "Could not get address for $remote");
       $conn->{_connected} = 0;
       exit 1;
     }
     if(!defined($paddr = sockaddr_in($port, $iaddr))) {
-      $conn->privmsg($who, "Could not get port for $remote");
+      $conn->privmsg($chan, "Could not get port for $remote");
       $conn->{_connected} = 0;
       exit 1;
     }
     if(!defined($proto = getprotobyname('tcp'))) {
-      $conn->privmsg($who, "Could not get tcp protocol");
+      $conn->privmsg($chan, "Could not get tcp protocol");
       $conn->{_connected} = 0;
       exit 1;
     }
     
     if(!socket(SOCK, PF_INET, SOCK_STREAM, $proto)) {
-      $conn->privmsg($who, "Could not open socket to $remote");
+      $conn->privmsg($chan, "Could not open socket to $remote");
       $conn->{_connected} = 0;
       exit 1;
     }
     if(!connect(SOCK, $paddr)) {
-      $conn->privmsg($who, "Could not connect to $remote");
+      $conn->privmsg($chan, "Could not connect to $remote");
       $conn->{_connected} = 0;
       exit 1;
     }
@@ -105,7 +107,7 @@ sub get_pw {
     $msg = $msg . "\n\n";
 
     if(!send(SOCK, $msg, 0)) {
-      $conn->privmsg($who, "Could not send to $remote");
+      $conn->privmsg($chan, "Could not send to $remote");
       $conn->{_connected} = 0;
       exit 1;
     }
@@ -114,7 +116,7 @@ sub get_pw {
     my $newplace = '';
     while(<SOCK>) {
       if($newplace eq '') {
-	($newplace) = $_ =~ /.*?HREF=\"(.*?)\">.*/;
+	($newplace) = $_ =~ /Location\:\s+(.*?)$/;
 	if($newplace ne '') { last; }
       }
     }
@@ -122,40 +124,39 @@ sub get_pw {
 
     my $server;
     ($server) = $newplace =~ /http:\/\/(.*?)\//;
-
     $newplace =~ s/http:\/\/.*?\///;
 
     my $msg = "GET /" . $newplace . "\n\n";
 
     if(!defined($iaddr = inet_aton($server))) {
-      $conn->privmsg($who, "Could not get address for $server");
+      $conn->privmsg($chan, "Could not get address for $server");
       $conn->{_connected} = 0;
       exit 1;
     }
     if(!defined($paddr = sockaddr_in($port, $iaddr))) {
-      $conn->privmsg($who, "Could not get port for $server");
+      $conn->privmsg($chan, "Could not get port for $server");
       $conn->{_connected} = 0;
       exit 1;
     }
     if(!defined($proto = getprotobyname('tcp'))) {
-      $conn->privmsg($who, "Could not get tcp protocol");
+      $conn->privmsg($chan, "Could not get tcp protocol");
       $conn->{_connected} = 0;
       exit 1;
     }
     
     if(!socket(SOCK, PF_INET, SOCK_STREAM, $proto)) {
-      $conn->privmsg($who, "Could not open socket to $server");
+      $conn->privmsg($chan, "Could not open socket to $server");
       $conn->{_connected} = 0;
       exit 1;
     }
     if(!connect(SOCK, $paddr)) {
-      $conn->privmsg($who, "Could not connect to $server");
+      $conn->privmsg($chan, "Could not connect to $server");
       $conn->{_connected} = 0;
       exit 1;
     }
 
     if(!send(SOCK, $msg, 0)) {
-      $conn->privmsg($who, "Could not send to $server");
+      $conn->privmsg($chan, "Could not send to $server");
       $conn->{_connected} = 0;
       exit 1;
     }
@@ -164,40 +165,41 @@ sub get_pw {
     my $brand = '';
     my $product = '';
     my $description = '';
-    while (my $lala = <SOCK>) {
+    my $shipping = '';
 
+    my $html_string;
+
+    while (my $lala = <SOCK>) {
       $lala =~ s/&reg\;//g;
       $lala =~ s/&amp\;/&/g;
-
-      if($brand eq '') {
-	($brand) = $lala =~ /TARGET=\"Toolbar\"><b>(.*?)<\/b><\/a>/;
-	next;
-      }
-
-      if($product eq '') {
-	($product) = $lala =~ /<TD><font SIZE=\"-1\">(.*?)<\/font><\/td>/;
-	next;
-      }
-
-      if ($description eq '') {
-	($description) = $lala =~ /<TD><font SIZE=\"-1\">(.*?)<\/font><\/td>/;
-	next;
-      }
-
-      if($price eq '') {
-	($price) = $lala =~ /<b>(.*?)<\/b><INPUT TYPE=\"HIDDEN\"/;
-	next;
-      }
-      
-      if(($brand ne '') && ($product ne '') && ($price ne '')) {
-	$conn->privmsg($who, "$price / $brand / $product / $description");
-	close SOCK;
-	$conn->{_connected} = 0;
-	exit 0;
-      }
+      $html_string = $html_string . $lala;
     }
 
-    $conn->privmsg($who, "No pricewatch matches found for: $args");
+    $te = new HTML::TableExtract( headers => [qw(price brand product description shipping)] );
+
+    $te->parse($html_string);
+
+    my @rows = $te->rows;
+    my $row = $rows[0];
+
+    ($price) = $$row[0] =~ /(\$.*?\d+)/;
+    $price =~ s/\s+//g;
+
+    $brand = $$row[1];
+    $product = $$row[2];
+    $description = $$row[3];
+
+    $shipping = $$row[4];
+    $shipping  =~ s/\s\s+//gs; #(\w+.*)[\n|\s*]/;
+
+    if(($brand ne '') && ($product ne '') && ($price ne '')) {
+      $conn->privmsg($chan, "$price / $shipping / $brand / $product / $description");
+      close SOCK;
+      $conn->{_connected} = 0;
+      exit 0;
+    }
+
+    $conn->privmsg($chan, "No pricewatch matches found for: $args");
     close SOCK;
     $conn->{_connected} = 0;
     exit 0;
@@ -208,3 +210,4 @@ sub get_pw {
 }
 
 1;
+
