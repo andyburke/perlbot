@@ -57,11 +57,11 @@ sub update_date {
   $year += 1900; #yay, y2k!
   $mon += 1;
   
-  debug("Updating date to: $year.$mon.$mday for channel: $self->{chan}");
+  debug("Updating date to: $year.$mon.$mday for channel: " . $self->chan);
   
-  $self->curyr($year);
-  $self->curmon($mon);
-  $self->curday($mday);
+  $self->curyr = $year;
+  $self->curmon = $mon;
+  $self->curday = $mday;
 }
 
 sub open {
@@ -72,31 +72,31 @@ sub open {
     # user wants a single logfile per channel, not one file per day
     $self->close;
 
-    stat $self->{logdir} or mkdir($self->{logdir}, 0755);
+    stat $self->logdir or mkdir($self->logdir, 0755);
 
-    debug("Opening log file: " . File::Spec->catfile(strip_channel($self->{chan}) . '.log'), 2);
-    my $result = $self->{file}->open(">>" . File::Spec->catfile($self->{logdir}, strip_channel($self->chan) . '.log'));
-    $result or debug("Could not open logfile " . File::Spec->catfile($self->{logdir}, strip_channel($self->chan) . '.log') . ": $!");
+    debug("Opening log file: " . File::Spec->catfile(strip_channel($self->chan) . '.log'), 2);
+    my $result = $self->file->open(">>" . File::Spec->catfile($self->logdir, strip_channel($self->chan) . '.log'));
+    $result or debug("Could not open logfile " . File::Spec->catfile($self->logdir, strip_channel($self->chan) . '.log') . ": $!");
   } else {
     # this is the standard behavior, one logfile per day
     # make necessary dirs if they don't exist
     $self->close;
-    stat $self->{logdir} or mkdir($self->{logdir}, 0755);
-    stat File::Spec->catfile($self->{logdir}, strip_channel($self->chan)) or mkdir(File::Spec->catfile($self->{logdir}, strip_channel($self->chan)), 0755);
+    stat $self->logdir or mkdir($self->logdir, 0755);
+    stat File::Spec->catfile($self->logdir, strip_channel($self->chan)) or mkdir(File::Spec->catfile($self->logdir, strip_channel($self->chan)), 0755);
     
     $self->update_date();
     $date = sprintf("%04d.%02d.%02d", $self->curyr, $self->curmon, $self->curday);
     
-    debug("Opening log file: " . File::Spec->catfile(strip_channel($self->{chan}) , $date), 2);
-    my $result = $self->{file}->open(">>" . File::Spec->catfile($self->{logdir}, strip_channel($self->chan), "$date"));
-    $result or debug("Could not open logfile " . File::Spec->catfile($self->{logdir}, strip_channel($self->chan), "$date") . ": $!");
+    debug("Opening log file: " . File::Spec->catfile(strip_channel($self->chan) , $date), 2);
+    my $result = $self->file->open(">>" . File::Spec->catfile($self->logdir, strip_channel($self->chan), "$date"));
+    $result or debug("Could not open logfile " . File::Spec->catfile($self->logdir, strip_channel($self->chan), "$date") . ": $!");
   }
 
 }
 
 sub close {
   my $self = shift;
-  $self->{file}->close if $self->{file} and $self->{file}->opened;
+  $self->file->close if $self->file and $self->file->opened;
 }
 
 sub write {
@@ -109,7 +109,7 @@ sub write {
   $year += 1900;
   $mon += 1;
   
-  if (! $self->{file}->opened) { $self->open(); } 
+  if (! $self->file->opened) { $self->open(); } 
 
   if (! $self->singlelogfile) {
     # if the date has changed, roll the log file
@@ -121,8 +121,8 @@ sub write {
   
   $date = sprintf("%02d:%02d:%02d", $hour, $min, $sec);
   $logentry =~ s/\n//g;
-  $self->{file}->print("$date " . $logentry . "\n");
-  $self->{file}->flush();
+  $self->file->print("$date " . $logentry . "\n");
+  $self->file->flush();
 }
 
 
