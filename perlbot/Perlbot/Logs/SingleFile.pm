@@ -12,8 +12,6 @@ use File::Spec;
 
 use base qw(Perlbot::Logs::Files);
 
-
-
 # base our filename on just channel name
 sub filename {
   my $self = shift;

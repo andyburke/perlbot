@@ -9,7 +9,7 @@ use File::Spec;
 
 use base qw(Perlbot::Logs);
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(channel curtime file);
+use fields qw(curtime file);
 
 
 sub new {
@@ -123,7 +123,7 @@ sub filename_to_datestring {
 
 sub log_event {
   my $self = shift;
-  my $event = new Perlbot::Logs::Event(shift, $self->channel);
+  my $event = shift;
   my $base = $self->line_prefix;
 
   $self->open unless $self->file->opened;
