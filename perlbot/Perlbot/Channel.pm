@@ -1,4 +1,4 @@
-package Perlbot::Chan;
+package Perlbot::Channel;
 
 use Perlbot::Logs;
 use strict;
@@ -64,6 +64,17 @@ sub limit {
 sub ops {
     my $self = shift;
     return $self->config->value(channel => $self->name => 'op');
+}
+
+sub is_op {
+  my $self = shift;
+  my $user = shift;
+
+  if($user && (grep {$_ eq $user->name } @{$self->ops})) {
+    return 1;
+  }
+
+  return 0;
 }
 
 sub add_member {

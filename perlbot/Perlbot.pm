@@ -6,7 +6,7 @@ use Data::Dumper;
 use Perlbot::Utils;
 use Perlbot::Config;
 use Perlbot::User;
-use Perlbot::Chan;
+use Perlbot::Channel;
 
 $VERSION = '1.9.0';
 $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
