@@ -106,7 +106,7 @@ sub version {
 
 sub set_initial_config_values {
   # meant to be overridden
-  return;
+  return undef;
 }
 
 # params:

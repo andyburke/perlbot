@@ -58,13 +58,13 @@ sub load {
 sub save {
   my ($self) = @_;
 
-  debug("attempting to save " . $self->filename . " ...");
+  debug("attempting to save " . $self->filename . " ...", 6);
   if ($self->readonly) {
-    debug("  Config object is read-only; aborting");
+    debug("  Config object is read-only; aborting", 6);
     return 0;
   }
   my $ret = write_generic_config($self->filename, $self->config);
-  debug($ret ? "  success" : "  failure");
+  debug($ret ? "  success" : "  failure", 6);
   return $ret;
 }
 

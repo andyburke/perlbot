@@ -19,6 +19,14 @@ sub init {
   $self->hook('google', \&google);
 }
 
+sub set_initial_config_values {
+  my $self = shift;
+
+  $self->config->set('apikey', 'setmetosomethinguseful');
+
+  return 1;
+}
+
 sub google {
   my $self = shift;
   my $user = shift;

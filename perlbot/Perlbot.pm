@@ -170,6 +170,7 @@ sub shutdown {
 sub sigdie_handler {
   my $self = shift;
   my ($diemsg) = @_;
+  my $dietime = time();
 
   # if not called from an eval()
   if (! $^S) {
@@ -177,12 +178,16 @@ sub sigdie_handler {
     $SIG{__DIE__} = 'DEFAULT';
 
     $diemsg ||= '(no message)';
+
+    print localtime($dietime) . "\n\nDied with: $diemsg\n\n", Carp::longmess(), "\n=====\n\n\n";
+
+
     my $filename = File::Spec->catfile($self->config->get(bot => 'crashlogdir') ||
                                          File::Spec->curdir,
                                        'crashlog');
     open CRASHLOG, ">>$filename"
       or warn "Could not open crashlog '$filename' for writing: $!";
-    print CRASHLOG "Died with: $diemsg\n\n", Carp::longmess(), "\n=====\n\n\n";
+    print CRASHLOG localtime($dietime) . "\n\nDied with: $diemsg\n\n", Carp::longmess(), "\n=====\n\n\n";
     close CRASHLOG;
 
     $self->shutdown(' CRASHED :[ ', 1);
@@ -442,6 +447,10 @@ sub load_plugin {
     debug("  failed construction of '$plugin': $@");
     return 0;
   }
+
+  # see if our plugin needs to put shit in the main config
+  $self->config->exists(plugin => $plugin) or $self->config->hash_initialize(plugin => $plugin);
+  $pluginref->set_initial_config_values() or $self->config->hash_delete(plugin => $plugin);
 
   # call init on our plugin
   $pluginref->init;
