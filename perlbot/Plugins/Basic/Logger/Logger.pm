@@ -40,19 +40,19 @@ sub log {
     my $newnick = $event->{args}[0];
     foreach my $chan (values(%{$self->perlbot->channels})) {
       if ($chan->is_member($event->nick) || $chan->is_member($newnick)) {
-        $chan->log($event);
+        $chan->log_event($event);
       } 
     } 
   } elsif($event->type eq 'quit') {
     foreach my $chan (values(%{$self->perlbot->channels})) {
       if ($chan->is_member($event->nick)) {
-        $chan->log($event);
+        $chan->log_event($event);
         $chan->remove_member($event->nick); # unr, so dirty (note: race w/ UserUpdater)
       }
     }
   } else { # otherwise, just log it, so do it
     my $chan = $self->perlbot->get_channel($channel);
-    $chan->log($event) if $chan;
+    $chan->log_event($event) if $chan;
   }
 }
 

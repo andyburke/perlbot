@@ -89,7 +89,7 @@ sub close {
   $self->file->close if $self->file and $self->file->opened;
 }
 
-sub log {
+sub log_event {
   my $self = shift;
   my $event = shift;
   my $time = time();

@@ -1,5 +1,6 @@
 package Perlbot::Channel;
 
+use Perlbot::Utils;
 use Perlbot::LogFile;
 use strict;
 
@@ -9,18 +10,40 @@ use fields qw(config name logs members currentopped currentvoiced perlbot);
 sub new {
   my $class = shift;
   my ($name, $config, $perlbot) = @_;
-  my $singlelogfile = 0;
 
   my $self = fields::new($class);
 
   $self->config = $config;
   $self->name = $name;
-  use Perlbot::Logs::FlatFile;
-  $self->logs = new Perlbot::Logs::FlatFile($perlbot, $name);
   $self->members = {};
   $self->currentopped = {};
   $self->currentvoiced = {};
   $self->perlbot = $perlbot;
+
+  # TODO: make 'logtype' use defaults system
+  my $logtype = $self->config->exists(channel => $self->name => 'logtype') ?
+    $self->config->get(channel => $self->name => 'logtype') : 'FlatFile';
+  $logtype =~ /^\w+(::\w+)*$/ or die "Channel $name: Invalid logtype '$logtype'";
+  debug("loading Logs package '$logtype'");
+  # try to import the requested Logs package
+  eval "
+    local \$SIG{__DIE__}='DEFAULT';
+    require Perlbot::Logs::${logtype};
+  ";
+  # check for package load error
+  if ($@) {
+    debug("  failed to load '$logtype': $@");
+    return undef;
+  }
+  # try to construct the Logs object
+  $self->logs = eval "
+    local \$SIG{__DIE__}='DEFAULT';
+    new Perlbot::Logs::${logtype}(\$self->perlbot, \$self->name);
+  ";
+  if ($@ or !$self->logs) {
+    debug("  failed construction of '$logtype': $@");
+    return undef;
+  }
 
   return $self;
 }
@@ -40,11 +63,11 @@ sub AUTOLOAD : lvalue {
   $self->{$field};
 }
 
-sub log {
+sub log_event {
   my $self = shift;
   my $event = shift;
   if ($self->is_logging) {
-    $self->logs->log($event);
+    $self->logs->log_event($event);
   }
 }
 
@@ -179,7 +202,7 @@ sub join {
 sub part {
     my $self = shift;
 
-    $self->log->close;
+    $self->logs->close;
 }
 
 1;
