@@ -4,11 +4,9 @@ for 2.0 (i.e. ASAP):
 
 - Write a script to generate a list of plugins and their help.xml overview
   sections, and include the output of the script in documentation/ and on the
-  webpage.
-- clean up code, make -w clean, etc.
+  webpage. (script written)
 - User and Chan objects should know how to build a skeleton version of
   themselves in the config if their entry doesn't already exist
-- use strict;
 
 for 2.2:
 
