@@ -88,7 +88,7 @@ sub shutdown {
   $self->{ircconn}->quit($quitmsg);
 
   # we go through and call shutdown on each of our plugins
-  my @plugins_copy = $self->plugins;
+  my @plugins_copy = @{$self->plugins};
   foreach my $plugin (@plugins_copy) {
     $plugin->shutdown;
   }
@@ -107,9 +107,11 @@ sub shutdown {
 
 sub sigdie_handler {
   my $self = shift;
+  my ($diemsg) = @_;
 
+  $diemsg ||= '(no message)';
   open CRASHLOG, ">>" . File::Spec->catfile($self->config->value(bot => 'crashlogdir'), 'crashlog') or warn "Could not open crashlog '$crashlog' for writing: $!";
-  print CRASHLOG "Died with: $_[0]\n\n", Carp::longmess(), "\n=====\n\n\n";
+  print CRASHLOG "Died with: $diemsg\n\n", Carp::longmess(), "\n=====\n\n\n";
   close CRASHLOG;
 }
 
@@ -252,7 +254,7 @@ sub connect {
 sub plugins {
   my ($self) = @_;
 
-  return @{$self->{plugins}};
+  return $self->{plugins};
 }
 
 # loads all our plugins
@@ -372,6 +374,24 @@ sub load_plugin {
   $pluginref->init;
   push @{$self->{plugins}}, $pluginref;
   return $pluginref;
+}
+
+
+sub unload_plugin {
+  my ($self, $plugin) = @_;
+  my ($pluginref);
+
+  print "unload_plugin: unloading plugin: $plugin\n" if $DEBUG;
+  ($pluginref) = grep {$plugin eq $_->name} @{$self->plugins};
+  if (!$pluginref) {
+    print "unload_plugin: plugin '$plugin' not loaded!\n" if $DEBUG;
+    return 0;
+  }
+
+  @{$self->plugins} = grep {$pluginref ne $_} @{$self->plugins};
+  $pluginref->shutdown;
+  eval "no Perlbot::Plugin::${plugin}";
+  return 1;
 }
 
 

@@ -37,7 +37,7 @@ sub status {
   $self->reply("Uptime: ${uptimedays}d:${uptimehours}h:${uptimeminutes}m:${uptimeseconds}s");
   $self->reply("Known users: " . keys(%{$self->{perlbot}->users}));
   $self->reply("Channels active: " . keys(%{$self->{perlbot}->channels}));
-  $self->reply("Plugins active: " . $self->{perlbot}->plugins);
+  $self->reply("Plugins active: " . @{$self->{perlbot}->plugins});
 
 }
 
@@ -48,7 +48,7 @@ sub listplugins {
   my @plugins;
 
   if (!$text) {
-    foreach my $plugin ($self->{perlbot}->plugins) {
+    foreach my $plugin (@{$self->{perlbot}->plugins}) {
       push(@plugins, $plugin->{name});
     }
     $self->reply('plugins: ' . join(' ', @plugins));
