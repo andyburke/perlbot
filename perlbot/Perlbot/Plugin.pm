@@ -493,7 +493,7 @@ sub _process { # _process to stay out of people's way
       } else {
         $self->{lastcontact} = $event->{to}[0];
       }
-      $self->_dispatch($self->{commandprefix_hooks}{$commandprefix_hook}, $user, $texttocallwith);
+      $self->_dispatch($self->{commandprefix_hooks}{$commandprefix_hook}, $user, $texttocallwith, $event);
     }
   }
 
@@ -509,7 +509,7 @@ sub _process { # _process to stay out of people's way
       } else {
         $self->{lastcontact} = $event->{to}[0];
       }
-      $self->_dispatch($self->{addressed_command_hooks}{$addressed_command_hook}, $user, $texttocallwith);
+      $self->_dispatch($self->{addressed_command_hooks}{$addressed_command_hook}, $user, $texttocallwith, $event);
     }
   }
 
@@ -523,7 +523,7 @@ sub _process { # _process to stay out of people's way
         $self->{lastcontact} = $event->{to}[0];
       }
 
-      $self->_dispatch($self->{regular_expression_hooks}{$regular_expression_hook}, $user, $text);
+      $self->_dispatch($self->{regular_expression_hooks}{$regular_expression_hook}, $user, $text, $event);
     }
   }
   
@@ -539,7 +539,7 @@ sub _process { # _process to stay out of people's way
     my $texttocallwith = $text;
     $texttocallwith =~ s/^$self->perlbot->{curnick}(?:,|:|\.|\s)*//i;
     foreach my $addressed_hook (@{$self->{addressed_hooks}}) {
-      $self->_dispatch($addressed_hook, $user, $texttocallwith);
+      $self->_dispatch($addressed_hook, $user, $texttocallwith, $event);
     }
   }
 
@@ -558,7 +558,7 @@ sub _process { # _process to stay out of people's way
         } else {
           $self->{lastcontact} = $event->{to}[0];
         }
-        $self->_dispatch($self->{commandprefix_admin_hooks}{$commandprefix_admin_hook}, $user, $texttocallwith);
+        $self->_dispatch($self->{commandprefix_admin_hooks}{$commandprefix_admin_hook}, $user, $texttocallwith, $event);
       } else {
         $self->perlbot->msg($event->nick(), 'You are not an admin!');
       }
@@ -578,7 +578,7 @@ sub _process { # _process to stay out of people's way
         } else {
           $self->{lastcontact} = $event->{to}[0];
         }
-        $self->_dispatch($self->{addressed_command_admin_hooks}{$addressed_command_admin_hook}, $user, $texttocallwith);
+        $self->_dispatch($self->{addressed_command_admin_hooks}{$addressed_command_admin_hook}, $user, $texttocallwith, $event);
       }
     }
   }
