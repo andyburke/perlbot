@@ -274,11 +274,13 @@ sub connect {
     $password = $self->config->value(server => $index => 'password');
     $nick     = $self->config->value(bot => 'nick');
     $ircname  = $self->config->value(bot => 'ircname');
+    $localaddr= $self->config->value(bot => 'localaddr');
 
     $port ||= 6667;
     $password ||= '';
     $nick ||= 'perlbot';
     $ircname ||= 'imabot';
+    $localaddr ||= '';
 
     debug("connect: attempting to connect to server: $server");
 
@@ -287,7 +289,8 @@ sub connect {
                                     Server => $server,
                                     Port => $port,
                                     Password => $password,
-                                    Ircname => $ircname);
+                                    Ircname => $ircname,
+                                    LocalAddr => $localaddr);
   }
 
   # if our connection exists and it's actually connected

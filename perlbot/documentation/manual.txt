@@ -257,6 +257,20 @@ Table of Contents
             ...
           </bot>
 
+    localaddr
+      - This will set the hostname to which Net::IRC will attempt
+        to bind.  If you have multiple network interfaces in your
+        computer, you should set this to the ip or hostname of the
+        one you wish your bot to connect from.  It is safe in most
+        cases to leave this option out.
+
+        Example:
+
+          <bot nick="perlbot"
+               localaddr="tabr.fdntech.com">
+            ...
+            ...
+          </bot>
 
   3.2  server
   -----------
