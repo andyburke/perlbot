@@ -5,8 +5,11 @@ use Perlbot::Plugin;
 
 use strict;
 
+use Algorithm::MarkovChain;
 use WWW::Babelfish;
 use IPC::Open2;
+use FileHandle;
+use File::Spec;
 
 our $VERSION = '0.2.0';
 
@@ -16,20 +19,25 @@ sub init {
   $self->want_msg(0);
   $self->want_fork(0);
 
-  $self->{proc_pid} = -1;
-  $self->{lines} = 0;
-  $self->{trigger_lines} = 10;
+  $self->{chain} = new Algorithm::MarkovChain;
+  $self->{symbols} = ();
 
-  $self->{read} = undef;
-  $self->{write} = undef;
+  if(-f File::Spec->catfile($self->{directory}, 'knowledge')) {
+    open(KNOWLEDGE, File::Spec->catfile($self->{directory}, 'knowledge'));
+    my @lines = <KNOWLEDGE>;
+    close KNOWLEDGE;
 
-  $self->{learn} = 0;
-  
-  $self->{proc_pid} = open2( $self->{read}, $self->{write}, "$self->{directory}/megahal");
-  my $garbage = readline($self->{read});
-  
-  $self->hook(\&sodoit);
+    foreach my $line (@lines) {
+      push(@{$self->{symbols}}, split(' ', $line));
+    }
 
+    $self->{chain}->seed(symbols => $self->{symbols});
+
+    $self->hook(\&sodoit);
+
+  } else {
+    return;
+  }
 
 }
 
@@ -46,12 +54,8 @@ sub sodoit {
     $text =~ s/^.*?(?:,|:)\s*//;
 
     my $starttime = time();
-    if($self->{write}) {
-      print {$self->{write}} "$text\n\n";
-    }
-    if($self->{read}) {
-      $reply = readline($self->{read});
-    }
+    my @response = $self->{chain}->spew(complete => $text, length => length($text));
+    $reply = "@response";
     chomp $reply;
     $reply = $self->babel($reply);
 
@@ -77,12 +81,8 @@ sub sodoit {
     $text =~ s/$curnick/$theirnick/ig;
 
     my $starttime = time();
-    if($self->{write}) {
-      print {$self->{write}} "$text\n\n";
-    }
-    if($self->{read}) {
-      $reply = readline($self->{read});
-    }
+    my @response = $self->{chain}->spew(complete => $text, length => length($text));
+    $reply = "@response";
     chomp $reply;
     $reply = $self->babel($reply);
     my $timediff = time() - $starttime;
@@ -98,6 +98,9 @@ sub sodoit {
       $self->addressed_reply($reply);
     }
   }
+
+  push(@{$self->{symbols}}, split(' ', $text));
+  $self->{chain}->seed(symbols => $self->{symbols});
 }
 
 sub delay {
