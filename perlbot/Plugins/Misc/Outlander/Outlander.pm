@@ -22,6 +22,7 @@ sub init {
   $self->{chain} = new Algorithm::MarkovChain;
   $self->{symbols} = ();
   $self->seed();
+  $self->{lastseedtime} = time();
 
   $self->hook(\&sodoit);
 
@@ -142,7 +143,10 @@ sub sodoit {
   }
 
   $self->addline($text);
-  $self->seed();
+  if(time() - $self->{lastseedtime} > 120) {
+    $self->seed();
+    $self->{lastseedtime} = time();
+  }
 }
 
 sub delay {
