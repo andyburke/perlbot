@@ -48,19 +48,17 @@ sub on_public {
 	exit 0;
       }
       
-      if($Log::basedir =~ /^\./) {
+      if($Logs::basedir =~ /^\./) {
+        my @topleveldir = `pwd`;
+        chomp $topleveldir[0];
+        $logdir = $topleveldir[0] . "/" . $Logs::basedir . "/" . $channel . "/";
+      } else {
+        $logdir = $Logs::basedir . "/" . $channel . "/";
+      }
+
+      if($Logs::basedir =~ /^\./) {
 	my @topleveldir = `pwd`;
 	chomp $topleveldir[0];
-	$logdir = $topleveldir[0] . "/" . $Log$
-	$logdir = $topleveldir[0] . "/" . Revision 1.1  2000/07/11 03:50:05  jmuhlich
-	$logdir = $topleveldir[0] . "/" . Initial revision
-	$logdir = $topleveldir[0] . "/" .channel . "/";
-      } else {
-	$logdir = $Log$
-	$logdir = Revision 1.1  2000/07/11 03:50:05  jmuhlich
-	$logdir = Initial revision
-	$logdir =channel . "/";
-      }
       
       if(opendir(DIR, $logdir)) {
 	my @tmpfiles = readdir(DIR);

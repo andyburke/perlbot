@@ -9,7 +9,7 @@ use strict;
 use vars qw($hooks $CONFIG @noload);
 use Perlbot;
 use Chan;
-use Log;
+use Logs;
 use User;
 
 # We could put this in get_hooks but we'd need PerlbotCore:: in front of
@@ -112,24 +112,15 @@ my %config_handlers =
      $ircname = $_[0]->{ircname}[0];
      # default to 'imabot'
      $ircname or $ircname = 'imabot';
-     
-     $Log$
-     Revision 1.1  2000/07/11 03:50:00  jmuhlich
-     Initial revision
-_[0]->{logdir}[0];
+
+     $Logs::basedir = $_[0]->{logdir}[0];
      # if no basedir given, default to the current dir
      if($dirsep eq '/') {
-       $Log$
-       Revision 1.1  2000/07/11 03:50:00  jmuhlich
-       Initial revision
-Log::basedir = './logs';
+       $Logs::basedir or $Logs::basedir = './logs';
      } else {
-       $Log$
-       Revision 1.1  2000/07/11 03:50:00  jmuhlich
-       Initial revision
-Log::basedir = $dirsep . 'logs';
+       $Logs::basedir or $Logs::basedir = $dirsep . 'logs';
      }
-     
+
      $plugindir = $_[0]->{plugindir}[0];
      # if no plugindir given, default to 'plugins'
      if($dirsep eq '/') {
@@ -475,7 +466,7 @@ sub on_connect {
     $_->join($self);
   }
   
-  $msglog = new Log("msg");
+  $msglog = new Logs("msg");
 }
 
 sub on_msg {

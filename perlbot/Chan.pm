@@ -1,6 +1,6 @@
 package Chan;
 
-use Log;
+use Logs;
 use Perlbot;
 use strict;
 
@@ -12,7 +12,7 @@ sub new {
       name     => $name,
       flags    => $flags ? join('', @{$flags}) : '',
       key      => $key,
-      log      => new Log($name),
+      log      => new Logs($name),
       logging  => 'no', #don't log by default...
       ops      => {},
       redirects => {}
