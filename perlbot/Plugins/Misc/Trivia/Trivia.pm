@@ -242,7 +242,7 @@ sub topten {
   my @ranks = sort { $self->{playersoverall}{$b} <=> $self->{playersoverall}{$a} } keys(%{$self->{playersoverall}});
   my $rank = 1;
   foreach my $name (@ranks) {
-    $self->reply("$rank -- $name");
+    $self->reply("$rank -- $name (Wins: $self->{playersoverall}{$name})");
     $rank++;
     if($rank >= 10) { last; }
   }
