@@ -142,7 +142,7 @@ sub on_msg {
       $conn->privmsg($who, "No channels...");
     }
   } 
-  if(($event->{args}[0] !~ /^${pluginchar}/)) {
+  if($event->{args}[0] !~ /^($commandchar|$pluginchar)/) {
     hal($conn, $event, $who, 1);
   }
 }  
