@@ -36,15 +36,18 @@ $DEBUG ||= 0;
 sub debug {
   my $ref = shift;
   my $level = shift;
+  my ($package, $filename, $line) = caller();
+
+
   $level ||= 1;
 
   if($DEBUG >= $level) {
     if(!ref($ref)) { # we didn't get a reference, we assume it's a string
-      print "($$) $ref\n";
+      print "($$) $package: $ref\n";
       return;
     }
     if(ref($ref) eq 'SCALAR') {
-      print "($$) $ref\n";
+      print "($$) $package: $ref\n";
       return;
     }
     if(ref($ref) eq 'CODE') {
