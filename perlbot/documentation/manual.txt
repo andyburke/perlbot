@@ -159,13 +159,13 @@ Table of Contents
                   ircname would be a good idea on these nets.  The default
                   is "imabot".
 
-    - crashlog  - This is the filename of a file to which crash logs will
-                  be written.  When something goes wrong and the bot
-                  crashes unexpectedly, a perl stack trace will be dumped
-                  to this file, along with the error message from the crash.
-                  If your bot crashes unexpectedly, email your crash.log to
-                  perlbot@fdntech.com (see section 5.0).  The default is
-                  "./crash.log".
+    - crashlogdir-This is the directory to which crash logs will be written.
+                  When something goes wrong and the bot crashes unexpectedly,
+		  a perl stack trace will be dumped to "crashlog.txt" in this
+                  directory, along with the error message from the crash.
+                  If your bot crashes unexpectedly, email your crashlog.txt
+                  to perlbot@fdntech.com (see section 5.0).  The default is
+                  "." (the current directory, i.e. your perlbot directory).
 
   3.2  server
     Each server object represents an IRC server that you want your perlbot
@@ -304,10 +304,10 @@ commands.txt in its subdirectory as well.
   If you have major problems, please set the environment variable
   PERLBOT_DEBUG to 1.  Then, run:
 
-    ./perlbot.pl > pb_log.txt
+    ./perlbot.pl > pblog.txt
 
-  Now make the problem occur again, and then email pb_log.txt and
-  crash_log.txt (see "crashlog" under section 3.1 above) to
+  Now make the problem occur again, and then email pblog.txt and
+  crashlog.txt (see "crashlogdir" under section 3.1 above) to
   perlbot@fdntech.com .
 
 

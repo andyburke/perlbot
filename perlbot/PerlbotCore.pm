@@ -133,8 +133,12 @@ my %config_handlers =
      if($_[0]->{noload}) { @noload = @{$_[0]->{noload}}; }
 
      # get crash log filename
-     $crashlog = $_[0]->{crashlog}[0];
-     $crashlog ||= './crash.log';
+     $crashlog = $_[0]->{crashlogdir}[0];
+     if ($crashlog) {
+       $crashlog .= $dirsep.'crashlog.txt';
+     } else {
+       $crashlog = 'crashlog.txt';
+     }
 
      # get our command prefix char
      $commandchar = $_[0]->{commandchar}[0];
