@@ -194,7 +194,7 @@ sub answer {
     $timerank = $self->{timeranks}{$nick};
 
     $self->reply("The answer was: $answer");
-    $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} PR:$percentagerank WR:$winsrank TR:$timerank");
+    $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} %R:$percentagerank WR:$winsrank TR:$timerank");
     $self->reply("        This round: FT:$self->{fastest}{$nick} S:" . sprintf("%0.1f", 100 * ($self->{score}{$nick} / $self->{answeredthisround}{$nick})) . "% W:$self->{score}{$nick} A:$self->{answeredthisround}{$nick}");
 
     if($timediff < $self->{fastest}{$nick}) {
@@ -354,12 +354,13 @@ sub triviatop {
   if($num > 10) { $num = 10; }
 
   $self->reply("Top $num trivia players are: (you must answer at least $self->{minquestionsanswered} questions to be ranked!)");
-  $self->reply("Percentage Rankgings:   Wins Rankings:       Time Rankings:");
+  my $headers = sprintf("%-18s", '% Rankings:') . sprintf("%-18s", 'Wins Rankings:') . sprintf("%-18s", 'Time Rankings:') . sprintf("%-18s", 'Voodoo Rankings:');
+  $self->reply($headers);
 
   my @ranks = $self->rankplayersbypercentage();
   my $rank = 1;
   foreach my $name (@ranks) {
-    push(@response, "$rank - " . sprintf("%-10s", $name) . " (" . $self->score($name) . "%)");
+    push(@response, sprintf("%-18s", "$rank " . sprintf("%-8s", $name) . "(" . $self->score($name) . "%)"));
     $rank++;
     if($rank >= $num + 1) { last; }
   }
@@ -368,7 +369,7 @@ sub triviatop {
   $rank = 1;
   foreach my $name (@ranks) {
     if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . "  $rank - " . sprintf("%-10s", $name) . " (" . $self->{correctlyanswered}{$name} . ")";
+      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-18s", "$rank " . sprintf("%-8s", $name) . "(" . $self->{correctlyanswered}{$name} . ")");
       $rank++;
       if($rank >= $num + 1) { last; }
     }
@@ -378,7 +379,17 @@ sub triviatop {
   $rank = 1;
   foreach my $name (@ranks) {
     if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . "  $rank - " . sprintf("%-10s", $name) . " (" . $self->{fastestoverall}{$name} . ")";
+      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-18s", "$rank " . sprintf("%-8s", $name) . "(" . $self->{fastestoverall}{$name} . ")");
+      $rank++;
+      if($rank >= $num + 1) { last; }
+    }
+  }
+
+  @ranks = $self->rankplayersbywinstimespercentage();
+  $rank = 1;
+  foreach my $name (@ranks) {
+    if($response[$rank - 1]) {
+      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-18s", "$rank " . sprintf("%-8s", $name) . "(" . sprintf("%d", ($self->{correctlyanswered}{$name} * $self->score($name))/100) . ")");
       $rank++;
       if($rank >= $num + 1) { last; }
     }
@@ -466,9 +477,10 @@ sub stopplaying {
 sub rankplayersbypercentage {
   my $self = shift;
 
-  my @ranks = sort { $self->{correctlyanswered}{$b}/$self->{totalanswered}{$b} <=>
-                     $self->{correctlyanswered}{$a}/$self->{totalanswered}{$a} }
-                   $self->getqualifyingplayers();
+#  my @ranks = sort { $self->{correctlyanswered}{$b}/$self->{totalanswered}{$b} <=>
+#                     $self->{correctlyanswered}{$a}/$self->{totalanswered}{$a} }
+#                   $self->getqualifyingplayers();
+  my @ranks = sort { $self->score($b) <=> $self->score($a) } $self->getqualifyingplayers();
 
   return @ranks;
 }
@@ -486,6 +498,16 @@ sub rankplayersbytime {
   my $self = shift;
 
   my @ranks = sort { $self->{fastestoverall}{$a} <=> $self->{fastestoverall}{$b} }
+                   $self->getqualifyingplayers();
+
+  return @ranks;
+}
+
+sub rankplayersbywinstimespercentage {
+  my $self = shift;
+
+  my @ranks = sort { $self->score($b)*$self->{correctlyanswered}{$b} <=>
+                     $self->score($a)*$self->{correctlyanswered}{$a} }
                    $self->getqualifyingplayers();
 
   return @ranks;
