@@ -1,0 +1,33 @@
+#!/usr/bin/perl
+
+use strict;
+use Term::ReadKey;
+
+my $passwd1 = '';
+my $passwd2 = 'kludge';
+ReadMode('noecho');
+while(($passwd1 ne $passwd2) or (length($passwd1) < 5)) {
+
+  print "\nEnter password: ";
+  $passwd1 = ReadLine();
+  chomp $passwd1;
+
+  print "\nConfirm password: ";
+  $passwd2 = ReadLine();
+  chomp $passwd2;
+
+  if(length($passwd1) < 5) {
+    print "\nPassword must be at least 5 characters long!";
+  }
+  if($passwd1 ne $passwd2) {
+    print "\nPasswords don't match!";
+  }
+}
+ReadMode('normal');
+
+my $password = crypt($passwd1, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
+
+print "\n\nEncrypted password: $password\n";
+print "Line for perlbot config:\n\n";
+print "\tpassword\t\t$password\n\n";
+

@@ -14,7 +14,10 @@ to modify them for your own purposes, and please send us any patches
 or new scripts that you feel would be useful to the perlbot community.
 You can send any patches or additions to perlbot@fdntech.com .
 
+perlbotpasswd
+-------------
 
+Outputs a perlbot style password.
 
 perlbot-date-system.pl
 ----------------------
