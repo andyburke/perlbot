@@ -6,6 +6,7 @@ use Perlbot::Plugin;
 use strict;
 use Time::HiRes qw(time);
 use DB_File;
+use String::Approx qw(amatch);
 
 our $VERSION = '0.1.0';
 
@@ -97,7 +98,7 @@ sub answer {
 
   my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
 
-  if(lc($text) eq lc($answer)) {
+  if(amatch(lc($answer), lc($text))) {
     my $timediff = sprintf("%0.2f", time() - $self->{askedtime});
     $self->{answered} = 1;
     $self->{state} = 'answered';
