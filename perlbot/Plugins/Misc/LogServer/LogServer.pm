@@ -28,6 +28,15 @@ sub init {
   $self->hook_web('logs', \&logs, 'Channel Logs');
 }
 
+sub set_initial_config_values {
+  my $self = shift;
+
+  $self->config->set('allowsearchengines', 'no');
+  $self->config->set('authtyperequired', 'user');
+
+  return 1;
+}
+
 sub logdir {
   my $self = shift;
 

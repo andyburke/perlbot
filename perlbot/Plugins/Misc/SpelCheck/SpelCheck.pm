@@ -24,6 +24,14 @@ sub init {
   $self->hook('spell', \&spell);
 }
 
+sub set_initial_config_values {
+  my $self = shift;
+
+  $self->config->set('apikey', 'setmetosomethinguseful');
+
+  return 1;
+}
+
 sub spell {
   my $self = shift;
   my $user = shift;
