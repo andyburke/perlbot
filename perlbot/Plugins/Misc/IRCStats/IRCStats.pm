@@ -22,7 +22,7 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_fork(0);
+  $self->want_fork(1);
 
   $self->{datafile} = File::Spec->catfile($self->{directory}, 'channeldata.xml');
 
@@ -34,8 +34,8 @@ sub init {
     
   $self->{channels} = XMLin($self->{datafile});
 
-  $self->hook_event('public', \&public);
-  $self->hook_event('caction', \&action);
+#  $self->hook_event('public', \&public);
+#  $self->hook_event('caction', \&action);
 
   $self->hook_admin('updatestats', \&import_from_logs);
 
