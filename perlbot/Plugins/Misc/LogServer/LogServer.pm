@@ -219,7 +219,7 @@ sub logserver {
       }
 
       foreach my $event (@events) {
-        $response .= $self->event_as_html_string($event);
+        $response .= $self->event_as_html_string($event) . "\n";
       }
 
       return $self->std_response($response);
