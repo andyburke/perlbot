@@ -1,6 +1,0 @@
-This is a GUI to configure perlbot.
-The file gperlbotcfg.pl needs to be run from your perlbot directory.
-
-It requires Perl::GTK - ftp://ftp.gtk.org/pub/gtk/perl/
-
-More info to come later.
