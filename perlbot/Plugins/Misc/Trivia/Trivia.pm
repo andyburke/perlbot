@@ -11,6 +11,7 @@ use strict;
 use Time::HiRes qw(time);
 use DB_File;
 use String::Approx qw(amatch);
+use XML::Simple;
 
 our $VERSION = '0.2.0';
 
@@ -32,14 +33,16 @@ sub init {
 
   $self->{playing} = {};
 
-  open(TRIVIA, File::Spec->catfile($self->{directory}, 'trivia'));
-  my $i = 0;
-  while(my $q = <TRIVIA>) {
-    chomp $q;
-    $self->{questions}{$i} = $q;
-    $i++;
-  }
-  close(TRIVIA);
+#  open(TRIVIA, File::Spec->catfile($self->{directory}, 'trivia'));
+#  my $i = 0;
+#  while(my $q = <TRIVIA>) {
+#    chomp $q;
+#    $self->{questions}{$i} = $q;
+#    $i++;
+#  }
+#  close(TRIVIA);
+
+  $self->{questions} = XMLin(File::Spec->catfile($self->{directory}, 'trivia.xml'))->{question};
 
   $self->{score} = {};
   $self->{answeredthisquestion} = {};
@@ -68,6 +71,9 @@ sub init {
   tie %{$self->{performanceoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'performanceoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
 
+  $self->{requestedhintnum} = 0;
+  $self->{lastrequestedhinttime} = 0;
+  $self->{initialhintgiven} = 0;
   $self->{curquestion} = 1;
   $self->{numquestions} = 0;
   $self->{answered} = 0;
@@ -79,6 +85,7 @@ sub init {
   $self->hook('playing', \&playing);
   $self->hook('stopplaying', \&stopplaying);
   $self->hook('notplaying', \&stopplaying);
+  $self->hook('hint', \&requestedhint);
   $self->hook(\&answer);
 
 }
@@ -156,10 +163,11 @@ sub answer {
   }
   $self->{answeredthisquestion}{$nick} = 1;
   
-  my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
+#  my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
 
   my $correct = 0;
 
+  my $answer = $self->{questions}[$self->{question}]{answer};
   my $tmpanswer = $answer;
   my $tmptext = $text;
 
@@ -201,6 +209,9 @@ sub answer {
     $self->{answered} = 1;
     $self->{state} = 'answered';
     $self->{score}{$nick}++;
+    $self->{requestedhintnum} = 0;
+    $self->{lastrequestedhinttime} = 0;
+    $self->{initialhintgiven} = 0;
 
     foreach my $person (keys(%{$self->{answeredthisquestion}})) {
       if($keepstats) { $self->{totalanswered}{$person}++; }
@@ -331,14 +342,13 @@ sub askquestion {
   
   if($self->{curquestion} <= $self->{numquestions}) {
 
-    $self->{question} = rand(100000) % keys(%{$self->{questions}});
+    $self->{question} = rand(100000000) % scalar(@{$self->{questions}});
     $self->{state} = 'asked';
     
-    my ($category, $question, $answer) = split(':::', $self->{questions}{$self->{question}});
     my $curquestion = $self->{curquestion};
 
     $self->{answered} = 0;
-    $self->reply("${curquestion}. [${category}] $question");
+    $self->reply("${curquestion}. [" . $self->{questions}[$self->{question}]{category} . "] " . $self->{questions}[$self->{question}]{text});
     $self->{askedtime} = time();
     $self->perlbot->ircconn->schedule(10, sub { $self->hint(eval "$curquestion") });
     $self->perlbot->ircconn->schedule(30, sub { $self->notanswered(eval "$curquestion") });
@@ -356,7 +366,7 @@ sub hint {
     return;
   }
 
-  my ($category, $q, $a) = split(':::', $self->{questions}{$self->{question}});
+  my $a = $self->{questions}[$self->{question}]{answer};
 
   if(length($a) > 4) {
     my $blackout;
@@ -371,6 +381,25 @@ sub hint {
   }
 
   $self->reply("Hint: $a");
+  $self->{initialhintgiven} = 1;
+}
+
+sub requestedhint {
+  my $self = shift;
+
+  if($self->{state} ne 'asked' || !$self->{initialhintgiven}) {
+    return;
+  }
+
+  if(time - $self->{lastrequestedhinttime} < 5) {
+    return;
+  }
+
+  if(defined($self->{questions}[$self->{question}]{hint}[$self->{requestedhintnum}])) {
+    $self->reply("Hint: " . $self->{questions}[$self->{question}]{hint}[$self->{requestedhintnum}]);
+  }
+  $self->{requestedhintnum}++;
+  $self->{lastrequestedhinttime} = time();
 }
 
 sub notanswered {
@@ -384,9 +413,7 @@ sub notanswered {
     return;
   }
 
-  my ($category, $questiontext, $answer) = split(':::', $self->{questions}{$self->{question}});
-
-  $self->reply("The answer was: $answer");
+  $self->reply("The answer was: " . $self->{questions}[$self->{question}]{answer});
   $self->{state} = 'playing';
   $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
   $self->{curquestion}++;
@@ -395,6 +422,10 @@ sub notanswered {
     if($keepstats) { $self->{totalanswered}{$person}++; }
     delete $self->{answeredthisquestion}{$person};
   }
+
+  $self->{requestedhintnum} = 0;
+  $self->{lastrequestedhinttime} = 0;
+  $self->{initialhintgiven} = 0;
 
 }
 
@@ -434,6 +465,10 @@ sub endofgame {
   foreach my $nick (keys(%{$self->{answeredthisround}})) {
     delete $self->{answeredthisround}{$nick};
   }
+
+  $self->{requestedhintnum} = 0;
+  $self->{lastrequestedhinttime} = 0;
+  $self->{initialhintgiven} = 0;
 
   $self->{curquestion} = 1;
   $self->{state} = 'idle';
