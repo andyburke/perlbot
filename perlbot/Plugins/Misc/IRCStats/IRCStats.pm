@@ -13,7 +13,6 @@ sub init {
   my $self = shift;
 
   $self->want_fork(0);
-  $self->want_msg(0);
 
   $self->{datafile} = File::Spec->catfile($self->{directory}, 'channeldata.xml');
 
@@ -27,6 +26,8 @@ sub init {
 
   $self->hook_event('public', \&public);
   $self->hook_event('caction', \&action);
+
+  $self->hook_admin('updatestats', \&import_from_logs);
 
   $self->hook_web('ircstats', \&ircstats, 'IRC Stats');
 
@@ -150,6 +151,51 @@ sub action {
 
 }
 
+sub import_from_logs {
+  my $self = shift;
+
+  $self->reply("Updating stats from logs...");
+
+  my $logdir = $self->perlbot->config->value(bot => 'logdir');
+
+  opendir(LOGSDIR, File::Spec->catfile($logdir));
+  my @dirs = grep { !/^\./ } readdir(LOGSDIR);
+  close(LOGSDIR);
+
+  foreach my $channel (@dirs) {
+    opendir(CHANLOGS, File::Spec->catfile($logdir, $channel));
+    my @logs = grep { !/^\./ } readdir(CHANLOGS);
+    close(CHANLOGS);
+    foreach my $log (@logs) {
+      open(LOG, File::Spec->catfile($logdir, $channel, $log));
+      while(my $line = <LOG>) {
+        if ($line =~ /^(\d\d):\d\d:\d\d\s<.*?>\s.+$/) {
+          my $hour = $1;
+          if(exists($self->{channels}{$channel}{'hour' . $hour})) {
+            $self->{channels}{$channel}{'hour' . $hour}++;
+          } else {
+            $self->{channels}{$channel}{'hour' . $hour} = 1;
+          }
+        } elsif ($line =~ /^(\d\d):\d\d:\d\d\s\*\s\S+\s.+$/) {
+          my $hour = $1;
+          if(exists($self->{channels}{$channel}{'hour' . $hour})) {
+            $self->{channels}{$channel}{'hour' . $hour}++;
+          } else {
+            $self->{channels}{$channel}{'hour' . $hour} = 1;
+          }
+        }
+      }
+      close(LOG);
+    }
+  }
+
+  open(DATAFILE, '>' . $self->{datafile});
+  print DATAFILE XMLout($self->{channels}, rootname => 'channeldata');
+  close DATAFILE;
+
+  $self->reply("Stats updated!");
+
+}
 
 1;
 
