@@ -50,7 +50,7 @@ sub sodoit {
   my $curnick = $self->perlbot->curnick;
 
   if($text !~ /$curnick/) {
-    if(int(rand(20)) == 0) {
+    if(int(rand(20)) == 5) {
       $text =~ s/^.*?(?:,|:)\s*//;
 
       my $starttime = time();

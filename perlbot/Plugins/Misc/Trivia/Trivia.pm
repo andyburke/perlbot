@@ -69,6 +69,7 @@ sub init {
   $self->hook('triviastats', \&triviastats);
   $self->hook('playing', \&playing);
   $self->hook('stopplaying', \&stopplaying);
+  $self->hook('notplaying', \&stopplaying);
   $self->hook(\&answer);
 
 }
