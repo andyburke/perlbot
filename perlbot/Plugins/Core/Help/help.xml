@@ -1,5 +1,5 @@
 <help>
-  <overview>This plugin provides acces to the Perlbot Help System</overview>
+  <overview>This plugin provides access to the Perlbot Help System</overview>
   <command name="help">Gets help on a command.</command>
   <usage name="help">help [command|plugin name]</usage>
 </help>
