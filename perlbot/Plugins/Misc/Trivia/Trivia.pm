@@ -203,7 +203,7 @@ sub answer {
     $self->{score}{$nick}++;
 
     foreach my $person (keys(%{$self->{answeredthisquestion}})) {
-      $self->{totalanswered}{$person}++ if $keepstats;
+      if($keepstats) { $self->{totalanswered}{$person}++; }
       delete $self->{answeredthisquestion}{$person};
     }
 
@@ -376,6 +376,9 @@ sub hint {
 sub notanswered {
   my $self = shift;
   my $question = shift;
+  my $numanswerers = keys(%{$self->{playing}});
+  my $keepstats = 0;
+  if($numanswerers > 1) { $keepstats = 1; }
 
   if($self->{state} ne 'asked' || $self->{curquestion} != $question) {
     return;
@@ -389,7 +392,7 @@ sub notanswered {
   $self->{curquestion}++;
 
   foreach my $person (keys(%{$self->{answeredthisquestion}})) {
-    $self->{totalanswered}{$person}++;
+    if($keepstats) { $self->{totalanswered}{$person}++; }
     delete $self->{answeredthisquestion}{$person};
   }
 
