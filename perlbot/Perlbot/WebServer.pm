@@ -118,7 +118,7 @@ sub connection {
           }
         }
         
-        $response .= qq(</ul></td></tr></table><center></body></html>);
+        $response .= qq(</ul></td></tr></table><font size="-2" color="red">* some links may require you to be a user or admin registered with this bot, enter your bot username and password if required</font><center></body></html>);
         $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
                                                      HTTP::Headers->new(Content_Type => 'text/html'),
                                                        $response));
