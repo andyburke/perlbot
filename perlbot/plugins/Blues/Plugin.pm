@@ -20,7 +20,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}bluesnews/ || $args =~ /^${pluginchar}blues/) {
+  if($args =~ /^${pluginprefix}bluesnews/ || $args =~ /^${pluginchar}blues/) {
     get_bluesnews($conn, $event, $event->{to}[0]);
   }
 }
@@ -32,7 +32,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}bluesnews/ || $args =~/^${pluginchar}blues/) {
+  if($args =~ /^${pluginprefix}bluesnews/ || $args =~/^${pluginchar}blues/) {
     get_bluesnews($conn, $event, $event->nick);
   }
 }
@@ -46,8 +46,8 @@ sub get_bluesnews {
 
 
   ($max = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-  $max =~ s/^${pluginchar}bluesnews//;
-  $max =~ s/^${pluginchar}blues//; 
+  $max =~ s/^${pluginprefix}bluesnews//;
+  $max =~ s/^${pluginprefix}blues//; 
   $max =~ s/\s+(\d+)\s*.*/\1/;
 
   if($max eq '' || $max < 1) { $max = 5; }

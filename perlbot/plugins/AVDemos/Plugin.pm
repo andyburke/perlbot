@@ -20,7 +20,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}av-demos/) {
+  if($args =~ /^${pluginprefix}av-demos/) {
     get_avdemos($conn, $event, $event->{to}[0]);
   }
 }
@@ -32,7 +32,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}av-demos/) {
+  if($args =~ /^${pluginprefix}av-demos/) {
     get_avdemos($conn, $event, $event->nick);
   }
 }
@@ -44,7 +44,7 @@ sub get_avdemos {
   my $max;
 
   ($max = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-  $max =~ s/^${pluginchar}av-demos//;
+  $max =~ s/^${pluginprefix}av-demos//;
   $max =~ s/\s+(\d+)\s*.*/$1/;
 
   if($max eq '' || $max < 1) { $max = 5; }
@@ -65,7 +65,7 @@ sub get_avdemos {
 
     my $args;
     ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-    $args =~ s/^${pluginchar}av-demos\s*//;
+    $args =~ s/^${pluginprefix}av-demos\s*//;
     
     my($remote,$port,$iaddr,$paddr,$proto,$line);
     $remote = "www.avault.com";

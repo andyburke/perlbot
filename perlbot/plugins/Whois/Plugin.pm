@@ -20,7 +20,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}who(is|are)/) {
+  if($args =~ /^${pluginprefix}who(is|are)/) {
 #    print "Checking $args\n";
     get_whois($conn, $event, $event->{to}[0]);
   }
@@ -33,7 +33,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}who(is|are)/) {
+  if($args =~ /^${pluginprefix}who(is|are)/) {
     get_whois($conn, $event, $event->nick);
   }
 }
@@ -62,7 +62,7 @@ sub get_whois {
 
     ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
     
-    if ($args =~ /^\s*[${pluginchar}]*(who\w*) (.*)/i) {
+    if ($args =~ /^\s*[${pluginprefix}]*(who\w*) (.*)/i) {
       @multidomains = split(/ /, $2);
       if ($1 eq "whois") {
 	push (@domains, @multidomains);

@@ -20,7 +20,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if ($args =~ /^${pluginchar}dict/  || $args =~ /^${pluginchar}dictionary/) {
+  if ($args =~ /^${pluginprefix}dict/  || $args =~ /^${pluginchar}dictionary/) {
     get_def($conn, $event, $event->{to}[0]);
   }
 }
@@ -31,7 +31,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if ($args =~ /^${pluginchar}dict/  || $args =~ /^${pluginchar}dictionary/) {
+  if ($args =~ /^${pluginprefix}dict/  || $args =~ /^${pluginchar}dictionary/) {
     get_def($conn, $event, $event->nick);
   }
 }
@@ -56,8 +56,8 @@ sub get_def {
 
     my $args;
     ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-    $args =~ s/^${pluginchar}dict\s*//;
-    $args =~ s/^${pluginchar}dictionary\s*//;
+    $args =~ s/^${pluginprefix}dict\s*//;
+    $args =~ s/^${pluginprefix}dictionary\s*//;
     $args =~ tr/[A-Z]/[a-z]/;
 
     my $url = "http://www.ibiblio.org/webster/cgi-bin/headword_search.pl?query=${args}&=Submit";

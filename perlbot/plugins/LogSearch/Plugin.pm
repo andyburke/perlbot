@@ -26,7 +26,7 @@ sub on_public {
     
   my $pid;
     
-  if($args =~ /^${pluginchar}logsearch/) { 
+  if($args =~ /^${pluginprefix}logsearch/) { 
     if(!defined($pid = fork)) {
       $conn->privmsg($who, "error in logsearch plugin: failed to fork");
       return;
@@ -42,7 +42,7 @@ sub on_public {
       # child
       $args =~ tr/[A-Z]/[a-z]/;
       
-      $args =~ s/^${pluginchar}logsearch\s+//;
+      $args =~ s/^${pluginprefix}logsearch\s+//;
 
       my($channel) = split(/ /, $args);
       $args =~ s/^$channel\s+//;
@@ -62,13 +62,13 @@ sub on_public {
       my @words = split(/ /, $args);
      
       if(!@words) {
-        $conn->privmsg($who, "usage: ${pluginchar}logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>");
+        $conn->privmsg($who, "usage: ${pluginprefix}logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>");
         $conn->{_connected} = 0;
         exit 0;
       }
 
       if(!$channel) {
-	$conn->privmsg($who, "usage: ${pluginchar}logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>");
+	$conn->privmsg($who, "usage: ${pluginprefix}logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>");
 	$conn->{_connected} = 0;
 	exit 0;
       }
@@ -129,7 +129,7 @@ sub on_public {
 	}
 	
       } else {
-	$conn->privmsg($who, "usage: ${pluginchar}logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>");
+	$conn->privmsg($who, "usage: ${pluginprefix}logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>");
 	$conn->{_connected} = 0;
 	exit 0;
       }

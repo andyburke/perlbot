@@ -24,7 +24,7 @@ sub on_public {
   my $event = shift;
   my $who = $event->{to}[0];
 
-  if ($event->{args}[0] =~ /^${pluginchar}spell /) {
+  if ($event->{args}[0] =~ /^${pluginprefix}spell /) {
     spell($conn, $event, $who);
   }
 
@@ -35,7 +35,7 @@ sub on_msg {
   my $event = shift;
   my $who = $event->nick;
 
-  if($event->{args}[0] =~ /^${pluginchar}spell /) {
+  if($event->{args}[0] =~ /^${pluginprefix}spell /) {
     spell($conn, $event, $who);
   }
 }
@@ -60,7 +60,7 @@ sub spell {
     } else {
 	# child
 	my $args;
-	($args = $event->{args}[0]) =~ s/^${pluginchar}spell\s*//;
+	($args = $event->{args}[0]) =~ s/^${pluginprefix}spell\s*//;
     
 	# kill all punctuation that might piss off ispell, or the shell (?)
 	$args =~ tr/\w //c;

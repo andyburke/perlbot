@@ -20,7 +20,7 @@ sub on_public {
   my $who = $event->{to}[0];
 
   my $args = $event->{args}[0];
-  if ($args =~ /^${pluginchar}gl\s*/) {
+  if ($args =~ /^${pluginprefix}gl\s*/) {
     guile($conn, $event, $who);
   }
 
@@ -32,7 +32,7 @@ sub on_msg {
   my $who = $event->nick;
 
   my $args = $event->{args}[0];
-  if ($args =~ /^${pluginchar}gl\s*/) {
+  if ($args =~ /^${pluginprefix}gl\s*/) {
     guile($conn, $event, $who);
   }
 }
@@ -58,7 +58,7 @@ sub guile {
     # child...
     
     my ($args, $line, @bc);
-    ($args = $event->{args}[0]) =~ s/^${pluginchar}gl\s*//;
+    ($args = $event->{args}[0]) =~ s/^${pluginprefix}gl\s*//;
     $args =~ s/`//g;                  # remove security hole like !gl \"`ls`\"
     $args =~ s/(\s*quit\s*(\d*))//g;  # never use (quit)
     $args =~ s/(\s*exit\s*(\d*))//g;  # never use (exit)

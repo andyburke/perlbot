@@ -25,8 +25,8 @@ bot {
 	plugindir	./plugins
 	crashlogdir	.
 	ircname		imabot
-	commandchar	#
-	pluginchar	!
+	commandprefix	#
+	pluginprefix	!
 }
 
 

@@ -20,8 +20,8 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}linuxtoday\s*/  || $args =~ /^${pluginchar}lt\s*/) {
-    if($args =~ /^${pluginchar}linuxtoday\s+search.*/ || $args =~/^${pluginchar}lt\s+search.*/) {
+  if($args =~ /^${pluginprefix}linuxtoday\s*/  || $args =~ /^${pluginchar}lt\s*/) {
+    if($args =~ /^${pluginprefix}linuxtoday\s+search.*/ || $args =~/^${pluginchar}lt\s+search.*/) {
       get_lt_search($conn, $event, $event->{to}[0]);
     } else {
       get_lt($conn, $event, $event->{to}[0]);
@@ -36,8 +36,8 @@ sub on_msg {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}linuxtoday\s*/  || $args =~ /^${pluginchar}lt\s*/) {
-    if($args =~ /^${pluginchar}linuxtoday\s+search.*/ || $args =~/^${pluginchar}lt\s+search.*/) {
+  if($args =~ /^${pluginprefix}linuxtoday\s*/  || $args =~ /^${pluginchar}lt\s*/) {
+    if($args =~ /^${pluginprefix}linuxtoday\s+search.*/ || $args =~/^${pluginchar}lt\s+search.*/) {
       get_lt_search($conn, $event, $event->nick);
     } else {
       get_lt($conn, $event, $event->nick);
@@ -52,8 +52,8 @@ sub get_lt {
   my $max;
 
   ($max = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-  $max =~ s/^${pluginchar}linuxtoday\s*//;
-  $max =~ s/^${pluginchar}lt\s*//;
+  $max =~ s/^${pluginprefix}linuxtoday\s*//;
+  $max =~ s/^${pluginprefix}lt\s*//;
   $max =~ s/\s+(\d+)\s*.*/$1/;
 
   if ($max < 1) { $max = 5; }
@@ -125,8 +125,8 @@ sub get_lt_search {
   my ($term, $max) = split(':', $args, 2);
   my $term_escaped;
 
-  $term =~ s/^${pluginchar}linuxtoday\s+search\s*//;
-  $term =~ s/^${pluginchar}lt\s+search\s*//;
+  $term =~ s/^${pluginprefix}linuxtoday\s+search\s*//;
+  $term =~ s/^${pluginprefix}lt\s+search\s*//;
   $term_escaped = uri_escape($term, '^a-zA-Z0-9');
 
   if ($max < 1) { $max = 3 }

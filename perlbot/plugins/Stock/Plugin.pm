@@ -18,7 +18,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}[l]*quote/) {
+  if($args =~ /^${pluginprefix}[l]*quote/) {
     get_stock($conn, $event, $event->{to}[0]);
   }
 }
@@ -30,7 +30,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}[l]*quote/) {
+  if($args =~ /^${pluginprefix}[l]*quote/) {
     get_stock($conn, $event, $event->nick);
   }
 }

@@ -20,8 +20,8 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}freshmeat\s*/  || $args =~ /^${pluginchar}fm\s*/) {
-    if($args =~ /^${pluginchar}freshmeat\s+search.*/ || $args =~/^${pluginchar}fm\s+search.*/) {
+  if($args =~ /^${pluginprefix}freshmeat\s*/  || $args =~ /^${pluginchar}fm\s*/) {
+    if($args =~ /^${pluginprefix}freshmeat\s+search.*/ || $args =~/^${pluginchar}fm\s+search.*/) {
       get_fm_search($conn, $event, $event->{to}[0]);
     } else {
       get_fm($conn, $event, $event->{to}[0]);
@@ -36,8 +36,8 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}freshmeat\s*/  || $args =~ /^${pluginchar}fm\s*/) {
-    if($args =~ /^${pluginchar}freshmeat\s+search.*/ || $args =~/^${pluginchar}fm\s+search.*/) {
+  if($args =~ /^${pluginprefix}freshmeat\s*/  || $args =~ /^${pluginchar}fm\s*/) {
+    if($args =~ /^${pluginprefix}freshmeat\s+search.*/ || $args =~/^${pluginchar}fm\s+search.*/) {
       get_fm_search($conn, $event, $event->nick);
     } else {
       get_fm($conn, $event, $event->nick);
@@ -52,8 +52,8 @@ sub get_fm {
   my $max;
 
   ($max = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-  $max =~ s/^${pluginchar}freshmeat\s*//;
-  $max =~ s/^${pluginchar}fm\s*//;
+  $max =~ s/^${pluginprefix}freshmeat\s*//;
+  $max =~ s/^${pluginprefix}fm\s*//;
   $max =~ s/\s+(\d+)\s*.*/\1/;
 
   if($max eq '') { $max = 5; }
@@ -185,8 +185,8 @@ sub get_fm_search {
 
   my($term, $max) = split(':', $args, 2);
 
-  $term =~ s/^${pluginchar}freshmeat\s+search\s*//;
-  $term =~ s/^${pluginchar}fm\s+search\s*//;
+  $term =~ s/^${pluginprefix}freshmeat\s+search\s*//;
+  $term =~ s/^${pluginprefix}fm\s+search\s*//;
   $term =~ s/\s+/+/g;
 
 

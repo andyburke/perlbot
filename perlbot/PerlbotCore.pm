@@ -503,13 +503,13 @@ sub on_msg {
   
   if($msglog) { $msglog->write('<' . $event->nick . '!' . $event->userhost . '> ' . $event->{args}[0]); }
   
-  if(($event->args)[0] =~ /^$commandchar.*/) {
+  if(($event->args)[0] =~ /^$commandprefix.*/) {
     # split text (on whitespace) into words
     my @commands = split(';', $event->{args}[0]);
     foreach my $command (@commands) {
       my @params = split (' ', $command);
       # shift off the command and strip the leading #
-      my ($tmpcommand) = (shift @params) =~ /^$commandchar(.*)/;
+      my ($tmpcommand) = (shift @params) =~ /^$commandprefix(.*)/;
       # see if we have a handler for this command
       if (exists($command_handlers{$tmpcommand})) {
 	# 3rd param is standard IRC nick!ident@host string

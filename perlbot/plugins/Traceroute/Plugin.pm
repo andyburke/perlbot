@@ -17,7 +17,7 @@ sub on_public {
   my $conn = shift;
   my $event = shift;
 
-  if ($event->{args}[0] =~ /^${pluginchar}(traceroute|tr)/) {
+  if ($event->{args}[0] =~ /^${pluginprefix}(traceroute|tr)/) {
    trace($conn, $event, $event->{to}[0]);
   }
 }  
@@ -26,7 +26,7 @@ sub on_msg {
   my $conn = shift;
   my $event = shift;
 
-  if ($event->{args}[0] =~ /^${pluginchar}(traceroute|tr)/) {
+  if ($event->{args}[0] =~ /^${pluginprefix}(traceroute|tr)/) {
     trace($conn, $event, $event->nick);
   }
 }  
@@ -52,7 +52,7 @@ sub trace {
   } else {
     # child...
 
-    ($in = $event->{args}[0]) =~ s/^${pluginchar}(traceroute|tr)\s*//;
+    ($in = $event->{args}[0]) =~ s/^${pluginprefix}(traceroute|tr)\s*//;
 
     $in =~ s/\`//g; #security?
     $in =~ s/\$//g;

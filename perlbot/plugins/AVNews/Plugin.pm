@@ -20,7 +20,7 @@ sub on_public {
 
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}av-news/) {
+  if($args =~ /^${pluginprefix}av-news/) {
     get_avnews($conn, $event, $event->{to}[0]);
   }
 }
@@ -32,7 +32,7 @@ sub on_msg {
  
   ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
 
-  if($args =~ /^${pluginchar}av-news/) {
+  if($args =~ /^${pluginprefix}av-news/) {
     get_avnews($conn, $event, $event->nick);
   }
 }
@@ -44,7 +44,7 @@ sub get_avnews {
   my $max;
 
   ($max = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-  $max =~ s/^${pluginchar}av-news//;
+  $max =~ s/^${pluginprefix}av-news//;
   $max =~ s/\s+(\d+)\s*.*/$1/;
 
   if($max eq '' || $max < 1) { $max = 5; }
@@ -65,7 +65,7 @@ sub get_avnews {
 
     my $args;
     ($args = $event->{args}[0]) =~ tr/[A-Z]/[a-z]/;
-    $args =~ s/^${pluginchar}av-news\s*//;
+    $args =~ s/^${pluginprefix}av-news\s*//;
     
     my($remote,$port,$iaddr,$paddr,$proto,$line);
     $remote = "www.avault.com";

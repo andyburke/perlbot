@@ -20,7 +20,7 @@ use vars qw(
 	    $plugindir $main_conn
             $crashlog
             $ircname
-            $commandchar $pluginchar
+            $commandprefix $pluginprefix
 	    @plugins @servers @nicks
 	    %handlers %users %channels
 	    );
@@ -36,7 +36,7 @@ require Exporter;
 	     $dirsep
              $crashlog
              $ircname
-             $commandchar $pluginchar
+             $commandprefix $pluginprefix
 	     @plugins @servers @nicks
 	     %handlers %users %channels
 	     &parse_config &write_config

@@ -16,7 +16,7 @@ sub on_public {
   my $conn = shift;
   my $event = shift;
 
-  if ($event->{args}[0] =~ /^${pluginchar}(host|nslookup)/) {
+  if ($event->{args}[0] =~ /^${pluginprefix}(host|nslookup)/) {
    lookup($conn, $event, $event->{to}[0]);
   }
 }  
@@ -25,7 +25,7 @@ sub on_msg {
   my $conn = shift;
   my $event = shift;
 
-  if ($event->{args}[0] =~ /^${pluginchar}(host|nslookup)/) {
+  if ($event->{args}[0] =~ /^${pluginprefix}(host|nslookup)/) {
     lookup($conn, $event, $event->nick);
   }
 }  
@@ -51,7 +51,7 @@ sub lookup {
   } else {
     # child...
 
-    ($in = $event->{args}[0]) =~ s/^${pluginchar}(host|nslookup)\s*//;
+    ($in = $event->{args}[0]) =~ s/^${pluginprefix}(host|nslookup)\s*//;
 
     $in =~ s/\`//g; #security?
     $in =~ s/\$//g;

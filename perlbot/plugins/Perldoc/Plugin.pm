@@ -15,7 +15,7 @@ sub on_public {
   my $conn = shift;
   my $event = shift;
 
-  if ($event->{args}[0] =~ /^${pluginchar}perldoc/) {
+  if ($event->{args}[0] =~ /^${pluginprefix}perldoc/) {
     perldoc_response($conn, $event, $event->{to}[0]);
   }
 }
@@ -24,7 +24,7 @@ sub on_msg {
   my $conn = shift;
   my $event = shift;
 
-  if($event->{args}[0] =~ /^${pluginchar}perldoc/) {
+  if($event->{args}[0] =~ /^${pluginprefix}perldoc/) {
     perldoc_response($conn, $event, $event->nick);
   }
 }
@@ -48,7 +48,7 @@ sub perldoc_response {
   } else {
     #child
 
-    ($parms = $event->{args}[0]) =~ s/^${pluginchar}perldoc\s*//;
+    ($parms = $event->{args}[0]) =~ s/^${pluginprefix}perldoc\s*//;
     my ($query) = $parms;
     my $lines = '';
 
