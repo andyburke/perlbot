@@ -2,6 +2,7 @@ TODO:
 
 for 2.0 (i.e. ASAP):
 
+- Write a script to convert between arbitrary log types...
 - Write a script to generate a list of plugins and their help.xml overview
   sections, and include the output of the script in documentation/ and on the
   webpage. (script written)
