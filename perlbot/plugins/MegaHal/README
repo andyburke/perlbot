@@ -9,6 +9,7 @@ forget to update this file... so if there's a dir in here called like, src,
 you might wanna look at it...
 
 if you don't know what you're doing here, just leave the noload for this
-plugin in the config file...
+plugin in the config file...  If something goes wrong, you'll end up with
+zombie processes and a poorly behaving bot.
 
 -andy
