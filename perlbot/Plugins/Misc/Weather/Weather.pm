@@ -23,10 +23,10 @@ sub weather {
   my $self = shift;
   my $user = shift;
   my $text = shift;
-  my ($city, $state) = split(',', $text);
+  my ($origcity, $origstate) = split(',', $text);
 
   my $weather = new Geo::Weather();
-  my $report = $weather->get_weather($city, $state);
+  my $report = $weather->get_weather($origcity, $origstate);
 
   if(!ref($report)) {
     $self->reply_error('Unable to get weather report!');
@@ -36,24 +36,50 @@ sub weather {
     my ($city, $state, $zip) = ($report->{city}, $report->{state}, $report->{zip});
     my $conditions = $report->{cond};
     my $tempf = $report->{temp};
-    my $tempc = sprintf("%d", ($tempf - 32) * (5/9));
+    my $tempc;
+    if(defined($tempf)) {
+      $tempc = sprintf("%d", ($tempf - 32) * (5/9));
+    }
     my ($heatindexf) = ($report->{heat} =~ /(\d+)/);
-    my $heatindexc = sprintf("%d", ($heatindexf - 32) * (5/9));
+    my $heatindexc;
+    if(defined($heatindexf)) {
+      $heatindexc = sprintf("%d", ($heatindexf - 32) * (5/9));
+    }
     my $wind = $report->{wind};
     my ($windm) = ($report->{wind} =~ /(\d+)/); $windm = sprintf("%d", $windm * 1.6);
     my $dewpointf = $report->{dewp};
-    my $dewpointc = sprintf("%d", ($dewpointf - 32) * (5/9));
+    my $dewpointc;
+    if(defined($dewpointf)) {
+      $dewpointc = sprintf("%d", ($dewpointf - 32) * (5/9));
+    }
     my $humidity = $report->{humi};
-    my $barometer = $report->{baro};
-    my $barometerm = sprintf("%.2f", $barometer * 2.54);
-    my $visibility = $report->{visb};
-    my $visibilitym = sprintf("%d", $visibility * 1.6);
     
     my @reply;
 
-    push(@reply, "Location: $city, $state $zip");
-    push(@reply, "  Currently: $conditions  Wind: $wind (${windm}Kph)");
-    push(@reply, "  Temp: ${tempf}F(${tempc}C) Heat Index: ${heatindexf}F(${heatindexc}C) Dewpoint: ${dewpointf}F(${dewpointc}C) Humidity: ${humidity}");
+    my $locline = "Location: ";
+    if(defined($city)) { $locline .= "$city"; }
+    if(defined($state)) { $locline .= ", $state"; }
+    if(defined($zip)) { $locline .= " $zip"; }
+    if(!defined($city) && !defined($state) && !defined($zip)) {
+      if(defined($origcity)) { $locline .= "$origcity"; }
+      if(defined($origstate)) { $locline .= ", $origstate"; }
+    }
+    push(@reply, $locline);
+
+    my $currentline = "  Currently: $conditions ";
+    if(defined($wind)) { $currentline .= "Wind: $wind "; }
+    if(defined($windm)) { $currentline .= "(${windm}Kph)"; }
+    push(@reply, $currentline);
+
+    my $detailline;
+    if(defined($tempf)) { $detailline .= "  Temp: ${tempf}F"; }
+    if(defined($tempc)) { $detailline .= "(${tempc}C)"; }
+    if(defined($heatindexf)) { $detailline .= " Heat Index: ${heatindexf}F"; }
+    if(defined($heatindexc)) { $detailline .= "(${heatindexc}C)"; }
+    if(defined($dewpointf)) { $detailline .= " Dewpoint: ${dewpointf}F"; }
+    if(defined($dewpointc)) { $detailline .= "(${dewpointc}C)"; }
+    if(defined($humidity)) { $detailline .= " Humidity: ${humidity}"; }
+    push(@reply, $detailline);
 
     $self->reply(@reply);
   }

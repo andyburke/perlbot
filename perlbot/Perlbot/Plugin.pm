@@ -63,24 +63,24 @@ sub new {
 sub init { } # stub
 
 sub property {
-  my ($self, $property, $param) = @_;
-  if($param) { $self->{$property} = $param; }
+  my ($self, $property, @params) = @_;
+  if(scalar @params) { $self->{$property} = $param[0]; }
   return $self->{$property};
 }
 
 sub name {
-  my ($self, $newname) = @_;
-  return $self->property('name', $newname);
+  my $self = shift;
+  return $self->property('name', @_);
 }
 
 sub perlbot {
-  my ($self, $perlbot) = @_;
-  return $self->property('perlbot', $perlbot);
+  my $self = shift;
+  return $self->property('perlbot', @_);
 }
 
 sub directory {
-  my ($self, $directory) = @_;
-  return $self->property('directory', $directory);
+  my $self = shift;
+  return $self->property('directory', @_);
 }
 
 sub author {
@@ -113,13 +113,13 @@ sub version {
 }
 
 sub helpitems {
-  my ($self, $helpitems) = @_;
-  return $self->property('helpitems', $helpitems);
+  my $self = shift;
+  return $self->property('helpitems', @_);
 }
 
 sub infoitems {
-  my ($self, $infoitems) = @_;
-  return $self->property('infoitems', $infoitems);
+  my $self = shift;
+  return $self->property('infoitems', @_);
 }
 
 # params:
