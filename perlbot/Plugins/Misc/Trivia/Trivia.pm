@@ -230,7 +230,7 @@ sub answer {
 
     $timerank = $self->{timeranks}{$nick};
 
-    my $numanswerers = keys(%{$self->{answeredthisquestion}});
+    my $numanswerers = keys(%{$self->{playing}});
     print "numanswerers: $numanswerers\n";
     if(!defined($self->{performanceoverall}{$nick})) {
       $self->{performanceoverall}{$nick} = 0;
