@@ -42,6 +42,7 @@ sub quit {
   my $user = shift;
   my $quitmsg = shift;
 
+  $self->reply("Quitting...");
   $self->perlbot->shutdown($quitmsg);
 }
 
