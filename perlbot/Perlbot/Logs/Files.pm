@@ -195,4 +195,8 @@ sub search {
   return @result;
 }
 
+
+sub DESTROY {
+}
+
 1;

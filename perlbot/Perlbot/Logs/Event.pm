@@ -174,4 +174,7 @@ sub as_string_formatted {
 }
 
 
+sub DESTROY {
+}
+
 1;
