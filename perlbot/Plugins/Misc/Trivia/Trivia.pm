@@ -106,6 +106,7 @@ sub answer {
 #
 #    }
 
+    my $rank = '-1';
     $self->reply("The answer was: $answer");
     $self->reply("Winner: $nick  Time: $timediff (This Round: Fastest: $self->{usersfastest}{$nick} Wins: $self->{players}{$nick}) Overall: Fastest: $self->{usersfastestoverall}{$nick} Wins: $self->{playersoverall}{$nick} Rank: $rank");
     if($timediff < $self->{usersfastest}{$nick}) {
