@@ -6,18 +6,19 @@ use Carp;
 use XML::Simple;
 use Perlbot::Utils;
 
+use vars qw($AUTOLOAD %FIELDS);
+use fields qw(_filename _readonly _config _slaves);
+
 sub new {
   my $class = shift;
   my ($filename, $readonly) = (@_);
 
-  my $self = {
-    _filename => $filename,
-    _readonly => $readonly ? 1 : undef,
-    _config => {},
-    _slaves => [],
-  };
+  my $self = fields::new($class);
 
-  bless $self, $class;
+  $self->_filename = $filename;
+  $self->_readonly = $readonly ? 1 : undef;
+  $self->_config = {};
+  $self->_slaves = [];
 
   # if we didn't get a filename, just send back a config object
   # otherwise
@@ -33,23 +34,37 @@ sub new {
 
 }
 
+sub AUTOLOAD : lvalue {
+  my $self = shift;
+  my $field = $AUTOLOAD;
+
+  $field =~ s/.*:://;
+
+  if(!exists($FIELDS{$field})) {
+    return;
+  }
+
+  debug("AUTOLOAD:  Got call for field: $field", 15);
+
+  $self->{$field};
+}
 
 sub load {
   my ($self) = @_;
 
-  return $self->{_config} = read_generic_config($self->{_filename});
+  return $self->_config = read_generic_config($self->_filename);
 }
 
 
 sub save {
   my ($self) = @_;
 
-  debug("Config::save: attempting to save $self->{_filename} ...");
-  if ($self->{_readonly}) {
+  debug("Config::save: attempting to save " . $self->{_filename} . " ...");
+  if ($self->_readonly) {
     debug("  Config object is read-only; aborting");
     return 0;
   }
-  my $ret = write_generic_config($self->{_filename}, $self->{_config});
+  my $ret = write_generic_config($self->_filename, $self->_config);
   debug($ret ? "  success" : "  failure");
   return $ret;
 }
@@ -87,9 +102,9 @@ sub value : lvalue {
   my ($current, $key, $type, $ref);
 
   # $current is a "pointer", iterated down the tree
-  $current = $self->{_config};
+  $current = $self->_config;
   # $ref is a reference to whatever $current is storing
-  $ref = \$self->{_config};
+  $ref = \$self->_config;
 
   # loop over the list of keys we got
   while (defined ($key = shift @keys)) {
@@ -155,7 +170,7 @@ sub set {
 sub publish {
   my $self = shift;
 
-  foreach my $slave (@{$self->{_slaves}}) {
+  foreach my $slave (@{$self->_slaves}) {
     # publish to slave
   }
 }

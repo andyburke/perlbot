@@ -9,31 +9,51 @@ use Perlbot::Config;
 use Perlbot::User;
 use Perlbot::Channel;
 
-$VERSION = '1.9.4';
+$VERSION = '1.9.5';
 $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
+
+use fields qw(starttime configfile config ircobject ircconn msg_queue empty_queue webserver plugins handlers handlers_backup users channels curnick masterpid);
 
 sub new {
   my $class = shift;
   my $configfile = shift; $configfile ||= './config.xml';
 
-  my $self = {
-    starttime => time(),       # bot startup time, used for uptime
-    configfile => $configfile, # bot's config filename
-    config => undef,           # bot's config object reference
-    ircobject => undef,        # bot's irc object
-    ircconn => undef,          # bot's irc connection
-    msg_queue => [],           # for output buffering, eventually
-    empty_queue => 1,          # more output buffering
-    webserver => undef,        # the bot's built-in webserver
-    plugins => [],             # all the plugin references
-    handlers => {},            # all the handlers per event type and plugin
-    users => {},               # all our users
-    channels => {},            # all the channels
-    curnick => '',             # the bot's current nick
-    masterpid => $$,           # the bot's master pid
-  };
+  my $self = fields::new($class);
 
-  bless $self, $class;
+  $self->starttime = time();
+  $self->configfile = $configfile;
+  $self->config = undef;
+  $self->ircobject = undef;
+  $self->ircconn = undef;
+  $self->msg_queue = [];
+  $self->empty_queue = 1;
+  $self->webserver = undef;
+  $self->plugins = [];
+  $self->handlers = {};
+  $self->handlers_backup = undef;
+  $self->users = {};
+  $self->channels = {};
+  $self->curnick = {};
+  $self->masterpid = $$;
+
+#  my $self = {
+#    starttime => time(),       # bot startup time, used for uptime
+#    configfile => $configfile, # bot's config filename
+#    config => undef,           # bot's config object reference
+#    ircobject => undef,        # bot's irc object
+#    ircconn => undef,          # bot's irc connection
+#    msg_queue => [],           # for output buffering, eventually
+#    empty_queue => 1,          # more output buffering
+#    webserver => undef,        # the bot's built-in webserver
+#    plugins => [],             # all the plugin references
+#    handlers => {},            # all the handlers per event type and plugin
+#    users => {},               # all our users
+#    channels => {},            # all the channels
+#    curnick => '',             # the bot's current nick
+#    masterpid => $$,           # the bot's master pid
+#  };
+
+#  bless $self, $class;
 
   # here we hook up signals to their handlers
   # INT shuts the bot down
@@ -52,38 +72,29 @@ sub new {
 # If someone tries to call a function that the perl interpreter
 # doesn't find, it tries this function.
 
-sub AUTOLOAD {
+sub AUTOLOAD : lvalue {
   my $self = shift;
-  my $value = shift;
-  my $call = $AUTOLOAD;
+  my $field = $Perlbot::AUTOLOAD;
 
-  $call =~ s/.*:://;
+  $field =~ s/.*:://;
 
-  if($call eq 'BEGIN' || $call eq 'DESTROY') {
+  if(!exists($Perlbot::FIELDS{$field})) {
     return;
   }
 
-  debug("AUTOLOAD:  Got call for method/variable: $call", 8);
+  debug("AUTOLOAD:  Got call for field: $field", 15);
 
-  if(!exists($self->{$call})) {
-    die("No such method/variable: $call");
-  }
-
-  if(defined($value)) {
-    $self->{$call} = $value;
-  }
-
-  return $self->{$call};
+  $self->{$field};
 }
 
 # starts everything rolling...
 sub start {
   my $self = shift;
 
-  # this reads our config and puts it into $self->{config}
-  $self->{config} = new Perlbot::Config($self->{configfile});
-  if (!$self->{config}) {
-    print "Couldn't read main config file '$self->{configfile}'\n";
+  # this reads our config and puts it into $self->config
+  $self->config = new Perlbot::Config($self->configfile);
+  if (!$self->config) {
+    print "Couldn't read main config file '" . $self->configfile . "'\n";
     exit -1;
   }
 
@@ -93,11 +104,11 @@ sub start {
 
   # config file must at the very least define a bot section and a server
   if (! $self->config->value('bot')) {
-    print "No bot section in config file '$self->{configfile}'\n";
+    print "No bot section in config file '" . $self->{configfile} . "'\n";
     exit -1;
   }
   if (! $self->config->value('server')) {
-    print "No servers specified in config file '$self->{configfile}'\n";
+    print "No servers specified in config file '" . $self->configfile . "'\n";
     exit -1;
   }
 
@@ -117,7 +128,7 @@ sub start {
   $self->load_all_plugins;
 
   # we should be all set, so we start the irc loop
-  $self->{ircobject}->start();
+  $self->ircobject->start();
 }
 
 # shuts the bot down gracefully
@@ -125,8 +136,8 @@ sub shutdown {
   my ($self, $quitmsg, $is_crash) = @_;
 
   # if this isn't the master process, just silently exit.
-  if ($$ ne $self->{masterpid}) {
-    $self->{ircconn}{_connected} = 0;
+  if ($$ ne $self->masterpid) {
+    $self->ircconn->{_connected} = 0;
     exit;
   }
 
@@ -135,7 +146,7 @@ sub shutdown {
   $quitmsg ||= 'goodbye';
 
   # we sign off of irc here
-  $self->{ircconn}->quit($quitmsg);
+  $self->ircconn->quit($quitmsg);
 
   # we go through and call shutdown on each of our plugins
   my @plugins_copy = @{$self->plugins};
@@ -188,8 +199,8 @@ sub process_config {
 
   # make sure our users and channels are wiped, this is for when
   # we try to do config reloading.
-  $self->{users} = {};
-  $self->{channels} = {};
+  $self->users = {};
+  $self->channels = {};
 
   # if there are users defined
   #   foreach user
@@ -238,14 +249,14 @@ sub connect {
   my $handlers;
 
   # make an ircobject if one doesn't exist yet
-  if (!$self->{ircobject}) {
-    $self->{ircobject} = new Net::IRC;
-    debug( sub { $self->{ircobject}{_debug} = 1; }, 10);
+  if (!$self->ircobject) {
+    $self->ircobject = new Net::IRC;
+    debug( sub { $self->ircobject->{_debug} = 1; }, 10);
   }
 
   # if we already have a connection, back up our handlers
-  if ($self->{ircconn}) { # had a connection
-    $self->{handlers_backup} = $self->{ircconn}{_handler};
+  if ($self->ircconn) { # had a connection
+    $self->handlers_backup = $self->ircconn->{_handler};
   }
 
   # if the server we've been given exists
@@ -270,16 +281,16 @@ sub connect {
 
     debug("connect: attempting to connect to server: $server");
 
-    $self->{ircconn} =
-        $self->{ircobject}->newconn(Nick => $nick,
-                                    Server => $server,
-                                    Port => $port,
-                                    Password => $password,
-                                    Ircname => $ircname,
-                                    LocalAddr => $localaddr,
-                                    Username => $username);
+    $self->ircconn =
+        $self->ircobject->newconn(Nick => $nick,
+                                  Server => $server,
+                                  Port => $port,
+                                  Password => $password,
+                                  Ircname => $ircname,
+                                  LocalAddr => $localaddr,
+                                  Username => $username);
   }
-
+  
   # if our connection exists and it's actually connected
   #   if we had a backup of our handlers, jam it into this ircconn
   #   set out curnick appropriately
@@ -287,23 +298,23 @@ sub connect {
   #   return the connection
   # else fail
 
-  if ($self->{ircconn} && $self->{ircconn}->connected()) {
+  if ($self->ircconn && $self->ircconn->connected()) {
     debug("connect: connected to server: $server");
 
-    if ($self->{handlers_backup}) {
-      $self->{ircconn}{_handler} = $self->{handlers_backup};
-      delete $self->{handlers_backup};
+    if(defined($self->handlers_backup)) {
+      $self->ircconn->{_handler} = $self->handlers_backup;
+      $self->handlers_backup = undef;
     }
 
-    $self->{curnick} = $nick;
+    $self->curnick = $nick;
 
     if ($self->config->value(bot => 'ignore')) {
       foreach my $hostmask (@{$self->config->value(bot => 'ignore')}) {
-        $self->{ircconn}->ignore('all', $hostmask);
+        $self->ircconn->ignore('all', $hostmask);
       }
     }
 
-    return $self->{ircconn};
+    return $self->ircconn;
   } else {
     return undef;
   }
@@ -312,6 +323,8 @@ sub connect {
 # loads all our plugins
 sub load_all_plugins {
   my $self = shift;
+
+  print "in load all plugins\n";
 
   my @plugins;
   my @plugins_found = $self->find_plugins;
@@ -430,7 +443,7 @@ sub load_plugin {
   # call init on our plugin
   $pluginref->init;
   # push it into the bot's internal list
-  push @{$self->{plugins}}, $pluginref;
+  push @{$self->plugins}, $pluginref;
   # return the pluginref as our true value (meaning success)
   return $pluginref;
 }
@@ -491,15 +504,15 @@ sub add_handler {
   #   make sure we have a hashref for the event type in the bot object
   #   add a hook for this event type to the ircconn, point it to our multiplexer
 
-  unless ($self->{handlers}{$event}) {
+  unless ($self->handlers->{$event}) {
     debug("    add_handler: event:$event plugin:$plugin", 4);
-    $self->{handlers}{$event} = {};
-    $self->{ircconn}->add_handler($event, sub { $self->event_multiplexer(@_) });
+    $self->handlers->{$event} = {};
+    $self->ircconn->add_handler($event, sub { $self->event_multiplexer(@_) });
   }
 
   # add this handler to the bot's internal handlers
 
-  $self->{handlers}{$event}{$plugin} = $coderef;
+  $self->handlers->{$event}{$plugin} = $coderef;
 }
 
 # Removes the handler for one event type for a given plugin
@@ -515,9 +528,9 @@ sub remove_handler {
   #     delete that callback
 
   debug("    remove_handler: event:$event plugin:$plugin", 4);
-  if ($self->{handlers}{$event}) {
-    if ($self->{handlers}{$event}{$plugin}) {
-      delete $self->{handlers}{$event}{$plugin};
+  if ($self->handlers->{$event}) {
+    if ($self->handlers->{$event}{$plugin}) {
+      delete $self->handlers->{$event}{$plugin};
     }
   }
   # Net::IRC doesn't provide handler removal functionality, so there's
@@ -534,7 +547,7 @@ sub remove_all_handlers {
   # Iterate over every event we're handling, and try to remove $plugin's
   # handler for that event.  If $plugin doesn't handle an event,
   # remove_handler just silently fails.
-  foreach $event (keys %{$self->{handlers}}) {
+  foreach $event (keys %{$self->handlers}) {
     $self->remove_handler($event, $plugin);
   }
 }
@@ -554,10 +567,10 @@ sub event_multiplexer {
   #     do nothing
 
   debug("event_multiplexer: Got event '" . $event->type . "'", 3);
-  foreach my $plugin (keys(%{$self->{handlers}{$event->type}})) {
-    if (exists($self->{handlers}{$event->type}{$plugin})) {
+  foreach my $plugin (keys(%{$self->handlers->{$event->type}})) {
+    if (exists($self->handlers->{$event->type}{$plugin})) {
       debug("  -> dispatching to '$plugin'", 3);
-      my $handler = $self->{handlers}{$event->type}{$plugin};
+      my $handler = $self->handlers->{$event->type}{$plugin};
       &$handler($event, $user, $text);
     } else {
       # If we get here, we must have already processed an unload
@@ -584,7 +597,7 @@ sub webserver_add_handler {
       return undef;
     }
 
-    $self->{webserver} = Perlbot::WebServer->new($self);
+    $self->webserver = Perlbot::WebServer->new($self);
     if (!$self->webserver->start) {
       debug('WebServer: Could not start internal web service!');
       return undef;
@@ -614,7 +627,7 @@ sub webserver_remove_all_handlers {
     # shut down the webserver
     debug('WebServer: Automatically stopping web service');
     $self->webserver->shutdown();
-    $self->{webserver} = undef;
+    $self->webserver = undef;
   } else {
     debug("WebServer: Still $num_hooks web hooks left", 3);
   }
@@ -623,21 +636,21 @@ sub webserver_remove_all_handlers {
 }
 
 # removes all handlers and sends all waiting events, used prior to shutdown
-sub empty_queue {
-  my ($self) = @_;
-  my $lines;
+#sub emptyqueue {
+#  my ($self) = @_;
+#  my $lines;
 
 ### commented out until Net::IRC supports pacing
-#  $lines = $self->{ircobject}->queue;
+#  $lines = $self->ircobject->queue;
 #  # abort if no lines in queue, or pacing not enabled
-#  $lines and $self->{ircobject}->pacing or return;
+#  $lines and $self->ircobject->pacing or return;
 #
-#  delete $self->{handlers};  # make sure no handlers are triggered while we do this
+#  delete $self->handlers;  # make sure no handlers are triggered while we do this
 #  debug("empty_queue: outputing $lines events", 3);
-#  while ($self->{ircobject}->queue) {
-#    $self->{ircobject}->do_one_loop;
+#  while ($self->ircobject->queue) {
+#    $self->ircobject->do_one_loop;
 #  }
-}
+#}
 
 # takes a username or hostmask and returns a user if one exists that matches
 sub get_user {
@@ -690,14 +703,14 @@ sub process_queue {
 
   # if there's something on the queue, send it and schedule this method to
   # be called again in a bit.  otherwise, just set the empty_queue flag.
-  my $params = shift(@{$self->{msg_queue}});
+  my $params = shift(@{$self->msg_queue});
   if ($params) {
     debug("process_queue: sending head of queue: $params->[0] / $params->[1]", 3);
-    $self->{ircconn}->privmsg(@$params);
-    debug("==>" . $self->{ircconn}->schedule(1, \&process_queue, $self), 3);
+    $self->ircconn->privmsg(@$params);
+    debug("==>" . $self->ircconn->schedule(1, \&process_queue, $self), 3);
   } else {
     debug("process_queue: queue now empty", 3);
-    $self->{empty_queue} = 1;
+    $self->empty_queue = 1;
   }
 }
 
@@ -733,15 +746,15 @@ sub msg {
 
   # push msg on the queue, and process the queue if it was previously empty
   # (then flag the queue as non-empty)
-#  push(@{$self->{msg_queue}}, [$target, $text]);
+#  push(@{$self->msg_queue}, [$target, $text]);
 #  print "msg: queueing $target / $text\n" if $DEBUG >= 3;
-#  if ($self->{empty_queue}) {
+#  if ($self->empty_queue) {
 #    print "  queue was empty, processing\n" if $DEBUG >= 3;
 #    $self->process_queue;
-#    $self->{empty_queue} = 0;
+#    $self->empty_queue = 0;
 #  }
   
-  $self->{ircconn}->privmsg($target, $text);
+  $self->ircconn->privmsg($target, $text);
   
 }
 
@@ -750,7 +763,7 @@ sub notice {
   my $target = shift;
   my $text = shift;
 
-  $self->{ircconn}->notice($target, $text);
+  $self->ircconn->notice($target, $text);
 }
 
 # joins a channel
@@ -766,21 +779,21 @@ sub join {
   #   just join the channel
 
   if ($channel->key) {
-    $self->{ircconn}->join($channel->name, $channel->key);
+    $self->ircconn->join($channel->name, $channel->key);
   } else {
-    $self->{ircconn}->join($channel->name);
+    $self->ircconn->join($channel->name);
   }
 
   # call a names event so we can later populate the channel's member list
   # (a Core plugin handles the response to this event)
-  $self->{ircconn}->names($channel->name);
+  $self->ircconn->names($channel->name);
 }
 
 sub part {
   my $self = shift;
   my $channel = shift;
 
-  $self->{ircconn}->part($channel->name);
+  $self->ircconn->part($channel->name);
 
   $channel->part;
 }
@@ -790,7 +803,7 @@ sub op {
   my $channel = shift;
   my $target = shift;
 
-  $self->{ircconn}->mode($channel, '+o', $target);
+  $self->ircconn->mode($channel, '+o', $target);
 }
 
 sub deop {
@@ -798,23 +811,23 @@ sub deop {
   my $channel = shift;
   my $target = shift;
 
-  $self->{ircconn}->mode($channel, '-o', $target);
+  $self->ircconn->mode($channel, '-o', $target);
 }
 
 sub nick {
   my $self = shift;
   my $nick = shift;
 
-  $self->{curnick} = $nick;
-  $self->{ircconn}->nick($nick);
-  return $self->{curnick};
+  $self->curnick = $nick;
+  $self->ircconn->nick($nick);
+  return $self->curnick;
 }
 
 sub whois {
   my $self = shift;
   my $target = shift;
 
-  $self->{ircconn}->whois($target);
+  $self->ircconn->whois($target);
 }
 
 sub dcc_send {
@@ -822,7 +835,7 @@ sub dcc_send {
   my $nick = shift;
   my $filename = shift;
 
-  $self->{ircconn}->new_send($nick, $filename);
+  $self->ircconn->new_send($nick, $filename);
 }
 
 sub dcc_chat {
@@ -830,7 +843,7 @@ sub dcc_chat {
   my $nick = shift;
   my $host = shift;
 
-  $self->{ircconn}->new_chat(1, $nick, $host);
+  $self->ircconn->new_chat(1, $nick, $host);
 }
 
 sub mode {
@@ -838,7 +851,7 @@ sub mode {
   my $channel = shift;
   my $modeline = shift;
 
-  $self->{ircconn}->mode($channel, $modeline);
+  $self->ircconn->mode($channel, $modeline);
 }
 
 sub kick {
@@ -847,7 +860,7 @@ sub kick {
   my $nick = shift;
   my $reason = shift;
 
-  $self->{ircconn}->kick($channel, $nick, $reason);
+  $self->ircconn->kick($channel, $nick, $reason);
 }
 
 sub schedule {
@@ -855,7 +868,7 @@ sub schedule {
   my $time = shift;
   my $coderef = shift;
 
-  $self->{ircconn}->schedule($time, $coderef);
+  $self->ircconn->schedule($time, $coderef);
 }
 
 sub get_channel {

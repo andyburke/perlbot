@@ -9,23 +9,35 @@ use HTTP::Status;
 
 use XML::Simple;
 
+use vars qw($AUTOLOAD %FIELDS);
+use fields qw(_server perlbot hooks);
+
 sub new {
   my $class = shift;
   my $perlbot = shift;
 
-  my $self = {
-    _server => undef,
-    perlbot => $perlbot,
-    hooks => {}
-  };
+  my $self = fields::new($class);
 
-  bless $self, $class;
+  $self->_server = undef;
+  $self->perlbot = $perlbot;
+  $self->hooks = {};
+
   return $self;
 }
 
-sub perlbot {
+sub AUTOLOAD : lvalue {
   my $self = shift;
-  return $self->{perlbot};
+  my $field = $AUTOLOAD;
+
+  $field =~ s/.*:://;
+
+  if(!exists($FIELDS{$field})) {
+    return;
+  }
+
+  debug("AUTOLOAD:  Got call for field: $field", 15);
+
+  $self->{$field};
 }
 
 sub start {
@@ -38,15 +50,15 @@ sub start {
     $port = 9090;
   }
 
-  $self->{_server} = HTTP::Daemon->new(LocalAddr => $hostname,
-                                       LocalPort => $port);
+  $self->_server = HTTP::Daemon->new(LocalAddr => $hostname,
+                                     LocalPort => $port);
 
-  if (!$self->{_server}) {
+  if (!$self->_server) {
     debug("Could not create WebServer http server: $!");
     return 0;
   }
 
-  $self->perlbot->ircobject->addfh($self->{_server}, sub { $self->connection(shift) });
+  $self->perlbot->ircobject->addfh($self->_server, sub { $self->connection(shift) });
   
   return 1;
 }
@@ -54,10 +66,10 @@ sub start {
 sub shutdown {
   my $self = shift;
 
-  if($self->{_server}) {
-    $self->perlbot->ircobject->removefh($self->{_server});
-    $self->{_server}->close;
-    $self->{_server} = undef;
+  if($self->_server) {
+    $self->perlbot->ircobject->removefh($self->_server);
+    $self->_server->close;
+    $self->_server = undef;
   }
 }
 
@@ -97,9 +109,9 @@ sub connection {
              <td align="right"><font size="-1"><a href="http://www.perlbot.org/">perlbot v${Perlbot::VERSION}</a>
              </font></td></tr></table></td></tr><tr><td><ul>);
         
-        foreach my $link (keys(%{$self->{hooks}})) {
-          if(defined($self->{hooks}{$link}[1])) {
-            $response .= "<li><a href=\"/$link\">" . $self->{hooks}{$link}[1] . "</a>";
+        foreach my $link (keys(%{$self->hooks})) {
+          if(defined($self->hooks->{$link}[1])) {
+            $response .= "<li><a href=\"/$link\">" . $self->hooks->{$link}[1] . "</a>";
           } else {
             $response .= "<li><a href=\"/$link\">$link</a>";
           }
@@ -109,11 +121,11 @@ sub connection {
         $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
                                                      HTTP::Headers->new(Content_Type => 'text/html'),
                                                        $response));
-      } elsif(exists($self->{hooks}{$dispatch})) {
+      } elsif(exists($self->hooks->{$dispatch})) {
         debug("web_service: running hook '$dispatch'", 3);
         
-        my $coderef = $self->{hooks}{$dispatch}[0];
-        my $description = $self->{hooks}{$dispatch}[1];
+        my $coderef = $self->hooks->{$dispatch}[0];
+        my $description = $self->hooks->{$dispatch}[1];
         my ($contenttype, $content) = $coderef->(@args);
 
         if(defined($contenttype) && defined($content)) {
@@ -142,7 +154,7 @@ sub hook {
   my $self = shift;
   my ($hook, $coderef, $description, $plugin) = @_;
 
-  $self->{hooks}{$hook} = [$coderef, $description, $plugin];
+  $self->hooks->{$hook} = [$coderef, $description, $plugin];
 }
 
 # unhooks everything hooked by a given plugin
@@ -150,9 +162,9 @@ sub unhook_all {
   my $self = shift;
   my ($plugin) = @_;
 
-  foreach my $hook (keys %{$self->{hooks}}) {
-    if ($self->{hooks}{$hook}[2] eq $plugin) {
-      delete $self->{hooks}{$hook};
+  foreach my $hook (keys %{$self->hooks}) {
+    if ($self->hooks->{$hook}[2] eq $plugin) {
+      delete $self->hooks->{$hook};
     }
   }
 }
@@ -160,7 +172,7 @@ sub unhook_all {
 sub num_hooks {
   my $self = shift;
 
-  return scalar keys %{$self->{hooks}};
+  return scalar keys %{$self->hooks};
 }
 
 

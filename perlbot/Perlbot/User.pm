@@ -4,42 +4,39 @@ use strict;
 use Perlbot::Utils;
 use Digest::MD5 qw(md5_base64);
 
+use vars qw($AUTOLOAD %FIELDS);
+use fields qw(config name curnick curchans lastnick temphostmasks allowed);
+
 sub new {
     my $class = shift;
     my ($nick, $config) = @_;
 
-    my $self =
-      {
-       config     => $config,
-       name	  => $nick,
-       curnick    => $nick,
-       curchans   => [],
-       lastnick   => undef,
+    my $self = fields::new($class);
 
-       temphostmasks => [],
+    $self->config = $config;
+    $self->name = $nick;
+    $self->curnick = $nick;
+    $self->curchans = [];
+    $self->lastnick = undef;
+    $self->temphostmasks = [];
+    $self->allowed = {};
 
-       allowed    => {}
-      };
-
-    bless $self, $class;
     return $self;
 }
 
-sub config {
+sub AUTOLOAD : lvalue {
   my $self = shift;
-  return $self->{config};
-}
+  my $field = $AUTOLOAD;
 
-# name is read-only!
-sub name {
-  my $self = shift;
-  return $self->{name};
-}
+  $field =~ s/.*:://;
 
-sub curnick {
-    my $self = shift;
-    $self->{curnick} = shift if @_;
-    return $self->{curnick};
+  if(!exists($FIELDS{$field})) {
+    return;
+  }
+
+  debug("AUTOLOAD:  Got call for field: $field", 15);
+
+  $self->{$field};
 }
 
 sub admin {
@@ -71,12 +68,8 @@ sub password {
   my $self = shift;
   my $password = shift;
 
-  print "password: $password\n";
-
   if(defined($password)) {
-    print "setting password: $password\n";
     $self->config->value(user => $self->name => 'password') = md5_base64($password);
-    print "set to: " . $self->config->value(user => $self->name => 'password') . "\n";
   }
 
   return $self->config->value(user => $self->name => 'password');
@@ -141,11 +134,6 @@ sub hostmasks {
     $self->config->value(user => $self->name)->{hostmask} = [];
   }
   return $self->config->value(user => $self->name => 'hostmask');
-}
-
-sub temphostmasks {
-  my $self = shift;
-  return $self->{temphostmasks};
 }
 
 sub update_channels {
