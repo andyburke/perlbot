@@ -72,7 +72,10 @@ sub sodoit {
 
   my @words = split(' ', $text);
   my $length = scalar @words;
-  if((rand()*10)/ 2 == 0) {
+  my $lengthchangedeterminer = int(rand(10));
+  if($lengthchangedeterminer == 7) {
+    $length = int($length / 3);
+  } elsif($lengthchangedeterminer % 2 == 0) {
     $length = int($length * 1.2);
   } else {
     $length = int($length * .75);
