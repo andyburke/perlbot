@@ -120,7 +120,7 @@ sub babel {
 
   my $obj = new WWW::Babelfish( 'agent' => 'Perlbot/$VERSION');
 
-  my @languages = ('German', 'French'); # $obj->languages();
+  my @languages = ('German', 'French', 'English'); # $obj->languages();
 
   my $iterations = 3;
 
