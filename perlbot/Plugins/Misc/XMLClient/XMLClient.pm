@@ -17,6 +17,8 @@ sub init {
 
   my $users = $cli->send_request(RPC::XML::request->new('perlbot.User'));
 
+  print $users->value->value() . "\n";
+
   $self->{perlbot}->config->value('user') = XMLin($users->value->value());
 
 }
