@@ -354,7 +354,7 @@ sub triviatop {
   if($num > 10) { $num = 10; }
 
   $self->reply("Top $num trivia players are: (you must answer at least $self->{minquestionsanswered} questions to be ranked!)");
-  $self->reply("Percentage Rankgings:  Wins Rankings:      Time Rankings:");
+  $self->reply("Percentage Rankgings:   Wins Rankings:       Time Rankings:");
 
   my @ranks = $self->rankplayersbypercentage();
   my $rank = 1;
@@ -368,7 +368,7 @@ sub triviatop {
   $rank = 1;
   foreach my $name (@ranks) {
     if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . " $rank - " . sprintf("%-10s", $name) . " (" . $self->{correctlyanswered}{$name} . ")";
+      $response[$rank - 1] = $response[$rank - 1] . "  $rank - " . sprintf("%-10s", $name) . " (" . $self->{correctlyanswered}{$name} . ")";
       $rank++;
       if($rank >= $num + 1) { last; }
     }
@@ -378,7 +378,7 @@ sub triviatop {
   $rank = 1;
   foreach my $name (@ranks) {
     if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . " $rank - " . sprintf("%-10s", $name) . " (" . $self->{fastestoverall}{$name} . ")";
+      $response[$rank - 1] = $response[$rank - 1] . "  $rank - " . sprintf("%-10s", $name) . " (" . $self->{fastestoverall}{$name} . ")";
       $rank++;
       if($rank >= $num + 1) { last; }
     }
