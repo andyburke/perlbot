@@ -23,6 +23,9 @@ Table of Contents
 5) Cleanup
 6) The plugin help facility
 7) The plugin info facility
+8) How to get your plugin included with the bot by default
+
+===============================================================================
 
 1) So you want to write a plugin
 --------------------------------
@@ -329,3 +332,29 @@ directory:
 </info>
 
 Please provide such a file with your plugin!
+
+8) How to get your plugin included with the bot by default
+----------------------------------------------------------
+
+You've written a plugin you feel lots of people would like to use and
+that you think should be included with Perlbot by default.  That's
+great, we're always open to including plugins that people write.
+
+Here's what you should ask yourself before submitting the plugin
+for inclusion with the default distribution:
+
+1) Is your plugin applicable to a large group of potential Perlbot users?
+2) Does your plugin conform to the requirements above, such as including
+   a help.xml and info.xml file?
+3) Is your plugin clearly coded with descriptive variable names and
+   good comments?
+4) Have you tested your plugin adequately?
+
+If you answered yes to all of these questions, then you should submit
+your plugin for inclusion with Perlbot.  If you're not so sure about some
+of them, you should try to improve your plugin to the point where you
+can answer all the above questions affirmatively.
+
+The best way to submit a plugin is probably on the developer mailing list
+so that you can get feedback from other Perlbot developers.  The list
+can be reached from the homepage at http://www.perlbot.org
