@@ -57,9 +57,14 @@ sub shutdown {
   my $self = shift;
 
   # clean up Select and HTTP server socket
-  $self->{_select}->remove($self->{_server});
-  $self->{_server}->close;
-  $self->{_server} = undef;
+  if($self->{_select}) {
+    $self->{_select}->remove($self->{_server});
+  }
+
+  if($self->{_server}) {
+    $self->{_server}->close;
+    $self->{_server} = undef;
+  }
 }
 
 sub timer {
