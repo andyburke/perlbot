@@ -505,7 +505,7 @@ sub _dispatch {
   #   just send the event without forking
 
   if ($self->want_fork) {
-    print "FORKING IN " . $self->name . "\n";
+    print "FORKING OFF " . $self->name . "\n" if ($debug > 2);
     if (!defined($pid = fork)) {
       $self->reply_error("fork error in $self->{name} plugin");
       return;

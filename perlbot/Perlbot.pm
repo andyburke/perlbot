@@ -117,7 +117,7 @@ sub sigdie_handler {
 sub reload_config {
   my $self = shift;
 
-  # TODO: write this!
+  $self->config->load();
 }
 
 
