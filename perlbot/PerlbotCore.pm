@@ -17,6 +17,7 @@ use User;
 $hooks = {
   'msg'            => \&on_msg,
   'endofmotd'      => \&on_connect,
+  'nomotd'         => \&on_connect,
   'public'         => \&on_public,
   'join'           => \&on_join,
   'part'           => \&on_part,
