@@ -8,9 +8,9 @@ What is Perlbot?
 
    Perlbot is an IRC bot written in Perl. It depends on Net::IRC and its goals
    are simplicity and modularity. The base bot allows auto-opping, notes,
-   multiple channels, channel redirection, etc., but much, much more is possible
-   through the use of plugins. Many plugins are included, and it should be easy
-   for anyone with some knowledge of Perl to write her own.
+   multiple channels, channel redirection, etc., but much, much more is
+   possible through the use of plugins. Many plugins are included, and it
+   should be easy for anyone with some knowledge of Perl to write her own.
 
 
 How do I make this damn thing run?
@@ -36,15 +36,15 @@ I don't want to edit this configuration by hand!
 ================================================
 
    Until there are good XML editors supporting XML Schemas, you're kind of
-   out of luck, sorry.
+   out of luck, sorry.  One editor that seems fairly functional is MLView,
+   which can be had from: http://www.freesoftware.fsf.org/mlview/
 
 
 Can I configure Perlbot right from IRC?
 =======================================
 
-   Not yet, but users can maintain their own hostmasks, greatly reducing
-   the workload of the bot admin.  Further configuration from IRC may be
-   possible in the future.
+   User management can be done from IRC, which is what we have found to
+   be the most common configuration task.
 
 
 Why won't my perlbot connect?
@@ -90,7 +90,7 @@ Do I need to restart when I change the configuration or add/upgrade a plugin?
    to reread its configuration.
 
    Plugins can be loaded, unloaded and reloaded dynamically.  Ask the bot
-   for help on the plugins command.
+   for help on the PluginControl plugin.
 
 
 Where can I get more plugins?
@@ -116,6 +116,3 @@ I'm not on IRC from my usual place, will the bot still know me?
 
    You should use the auth command to identify yourself with the bot.  Ask
    the bot for help on auth for more information.
-
-
-
