@@ -258,7 +258,7 @@ the optional authtyperequired is one of the strings 'none',
 
 The default authtype is 'none', ie: open for anyone to use without
 authorization.  'user' forces the client to enter a username and
-password that exists in the bot config file and admin requires
+password that exists in the bot config file and 'admin' requires
 a username/password combination that is a bot admin. 
 
 For good examples, see the StatsServer or LogServer plugins.
@@ -267,19 +267,92 @@ For good examples, see the StatsServer or LogServer plugins.
 4) Config files
 ---------------
 
-All plugins try to read a valid XML config file from their own directory.
-An example config for a plugin is:
+A perlbot config file is an XML file with a hierarchal collection of data
+pertaining to bot settings.  Based on certain conventions, a given part of
+the XML document tree may be interpreted as a scalar value, an array, or a
+hash.  This all corresponds directly to the parsing behavior of XML::Simple
+with forcearray=>1, as this is precisely what perlbot uses.  If you are
+familiar with XML::Simple then you are in good shape, otherwise you ought
+to read up and play around with it before reading any farther!  Remember
+that forcearray=>1 will always create arrays, except in the presence of the
+attributes name/id/key, in which case a hash is created.  So the overall
+structure is (in perl terms) HoAoHoA, but with any of the aforementioned
+attributes at a given level, an A becomes an H.
 
-<config>
-  <server hostname="www.someplace.com" port="9000" />
-</config>
+In older versions of perlbot code, a "config" was just the reference
+returned by XML::Simple's XMLin function.  You had to traverse the hashes
+and arrays yourself and watch out for numerous pitfalls.  When the 1.9.x
+tree was started, the class module Perlbot::Config was created to
+encapsulate some of the nastiness.  A "config" is now a full object of this
+class.
 
-You can access elements from your config by using the Perlbot::Config
-object:
+The most commonly used method of Perlbot::Config is get().  get() takes a
+list of strings or integers that serve as indices into the nested hashes
+and arrays in the "raw" data structure returned by XMLin, to reference down
+a branch to a specific node.  It returns the value at that node.  You
+should always reference all the way to a leaf node, or else you will get
+warnings and less-than-useful return values.  A nice idiom is to use the =>
+operator (normally used in hash initializers) between the values, to
+obviate the need for quotes and also to provide a nice visual mnemonic of
+what's going on.  Remember however that if your final value is a literal
+string, you'll still need to quote it.
 
-  $self->config->value(server => 'hostname')
+If there is only one instance of a certain value or branch, instead of a
+list, you may omit the '0' array index here and it will be inferred.  For
+example, the <bot> section of the config contains the element <nick> for
+specifying the bot's IRC nick.  There is only one <bot> section and one
+<nick> element, so we don't need to say get(bot => 0 => nick => 0) .
+Instead we can leave out the 0's: get(bot => 'nick') .  It is desireable to
+leave out 0's in cases like this, as it makes the code far more readable.
 
-would return 'www.someplace.com'.
+In addition to get(), there is set() which takes the same key/index list,
+but also an extra parameter as the value to store at that location.  To set
+the bot's nick: set(bot => 'nick', 'new_nick') .
+
+To make dealing with arrays easier, there are 4 methods: array_get,
+array_initialize, array_push, and array_delete.  They all take a key/index
+list as their first parameter, just like get and set.  You must only call
+them on "leaf-level" arrays, i.e. arrays whose values are leaves in the raw
+tree.  Calling them on arrays with "complex" children will probably not
+work as expected.  array_get returns the values in an array; do not modify
+these values directly, use the set method instead.  Note that array_get in
+scalar context will return the size of an array, which is useful for
+looping over a non-leaf-level array and accessing sub-elements with get().
+array_initialize creates a new empty array at the specified location.
+array_push pushes a value (its final parameter, as with set) onto the
+specified array, creating the array if necessary.  array_delete deletes the
+given value (its final parameter) from the specified array; note that the
+value to delete is NOT an index but rather an actual value, making it work
+like a hash deletion.  There is currently no way to "splice" from an array,
+but this should be possible to implement if desired.
+
+For hashes, there are 3 methods: hash_keys, hash_initialize, and
+hash_delete.  The same rules and conventions from the array_ methods apply.
+hash_keys returns a hash's keys.  hash_initialize creates an empty hash.
+hash_delete deletes a value (the final parameter) from a hash.
+
+All plugins are given a Config object that is limited just to the sub-tree
+of the main config file rooted at the <plugin> element whose "name"
+attribute matches that plugin's name.  Sound complicated?  Here's an
+example.  For a plugin named "Foo", this <plugin> element would describe
+some kind of server option:
+
+<plugin name="Foo">
+  <server>
+    <hostname>www.someplace.com</hostname>
+    <port>9000</port>
+  </server>
+</plugin>
+
+You can access elements from your config by using your Perlbot::Config
+object, accessible via $self->config .  This code would return
+'www.someplace.com':
+
+  $self->config->get(server => 'hostname')
+
+If you really, REALLY need to look at the rest of the config, you may
+access $self->perlbot->config to get at the entire thing, but PLEASE make
+sure this is what you want/need to do.
 
 
 5) Cleanup
@@ -307,11 +380,11 @@ directory.  It should have the following format:
 If you define this file, Perlbot will automatically give users acess to your
 help.
 
-<command> tags can contain <br/> tags which will be interpreted as a 'line break'
-by perlbot and sent as a new line in irc.
+<command> tags can contain <br/> tags which will be interpreted as a 'line
+break' by perlbot and sent as a new line in irc.
 
-*** <usage> tags CANNOT contain <br/> tags!  They will also have the admin's
-commandprefix PREPENDED to them atomatically.  Be aware.
+*** <usage> tags CANNOT contain <br/> tags!  They will also have the
+    commandprefix PREPENDED to them automatically.  Be aware.
 
 
 7) The plugin info facility
@@ -326,3 +399,4 @@ directory:
   <url>http://web.address.com/plugin</url>
 </info>
 
+Please provide such a file with your plugin!
