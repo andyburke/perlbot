@@ -20,6 +20,8 @@ sub modechange {
   my $event = shift;
   my $modestring = $event->{args}[0];
 
+  $self->config() or return;
+
   my $deopper = $event->nick();
   my $mintime = $self->config->value('mintimebetweendeops');
 

@@ -224,6 +224,13 @@ sub answer {
     if(defined($oldwinsrank) && $winsrank > $oldwinsrank) {
       $self->reply("Sad day, $nick has dropped from $oldwinsrank to $winsrank in the overall wins standings...");
     }
+
+    if(defined($oldtimerank) && $timerank < $timerank) {
+      $self->reply("$nick has moved up in the fastest time standings from $oldtimerank to $timerank!!");
+    }
+    if(defined($oldtimerank) && $timerank > $oldtimerank) {
+      $self->reply("Sad day, $nick has dropped from $oldtimerank to $timerank in the fastest time standings...");
+    }
     
     
     $self->{curquestion}++;
