@@ -2,9 +2,9 @@ CHANGES:
 
 1.2.3 - crash log, configurable plugin and command trigger characters,
         new plugin, plugin fixes, misc core updates/fixes
-- Due to popular demand, the character that prefixes spoken commands to the
-  bot is now configurable!  bot.commandchar and bot.pluginchar are the
-  config values to set (the defaults are # and ! to mimic previous
+- Due to popular demand, the character/string that prefixes spoken commands
+  to the bot is now configurable!  bot.commandprefix and bot.pluginprefix
+  are the config values to set (the defaults are # and ! to mimic previous
   behavior).  All stock plugins have been modified to work with this
   setting.
 - Mike Edwards contributed the neat Internals plugin.  It allows bot owners
