@@ -51,7 +51,7 @@ sub new {
   # try to read their config file
   # try to read their help file
 
-  $self->{config} = new Perlbot::Config(File::Spec->catfile($self->{directory}, 'config'));
+  $self->{config} = new Perlbot::Config(File::Spec->catfile($self->{directory}, 'config.xml'));
   $self->{helpitems} = $self->_read_help();
   $self->{infoitems} = $self->_read_info();
   
