@@ -155,14 +155,14 @@ should use consist of:
   my $event = new Perlbot::Logs::Event($ircevent);
 
   my $insert_line =
-    "INSERT INTO logs WHERE"
-    . " time = " . $event->time()
-    . ", type = " . $event->type()
-    . ", nick = " . $event->nick()
-    . ", channel = " . $event->channel()
-    . ", target = " . $event->target()
-    . ", userhost = " . $event->userhost()
-    . ", text = " . $event->text();
+    "INSERT INTO logs (time, type, nick, channel, target, userhost, text) values ("
+    . $event->time() . ","
+    . $event->type() . ","
+    . $event->nick() . ","
+    . $event->channel() . ","
+    . $event->target() . ","
+    . $event->userhost() . ","
+    . $event->text() . ")";
     
     Perlbot::Logs::Event can also perform transforms on events, such
 as producing a standard event string (containing all the data in a
