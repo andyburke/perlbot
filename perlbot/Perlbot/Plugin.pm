@@ -321,7 +321,7 @@ sub hook_web {
   my $call = shift;
   my $description = shift;
 
-  $self->perlbot->webserver_add_handler($hook, sub { $call->($self, @_) }, $description, $self->name);
+  $self->perlbot->webserver_add_handler($hook, sub { $self->$call(@_) }, $description, $self->name);
 }
 
 # send a reply to the bot's last contact via the correct path (msg, public, etc.)
