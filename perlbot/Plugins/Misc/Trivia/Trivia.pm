@@ -284,6 +284,11 @@ sub notanswered {
   $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
   $self->{curquestion}++;
 
+  foreach my $person (keys(%{$self->{answeredthisquestion}})) {
+    $self->{totalanswered}{$person}++;
+    delete $self->{answeredthisquestion}{$person};
+  }
+
 }
 
 sub endofgame {
