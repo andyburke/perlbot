@@ -166,25 +166,17 @@ sub answer {
   }
   
   my $numwords = @answerwords;
-  print "numwords: $numwords\n";
   my $right = 0;
   my $i;
   for($i = 0; $i < $numwords; $i++) {
     if(defined($answerwords[$i]) && defined($guesswords[$i])) {
-      print "comparing: $answerwords[$i] to guess: $guesswords[$i]\n";
       if(length($answerwords[$i]) < 6) {
         if(lc($answerwords[$i]) eq lc($guesswords[$i])) {
           $right++;
-          print "  short and correct\n";
-        } else {
-          print "  short and incorrect\n";
         }
       } else {
         if(amatch(lc($answerwords[$i]), lc($guesswords[$i]))) {
           $right++;
-          print "  long and correct\n";
-        } else {
-          print "  long and incorrect\n";
         }
       }
     }
@@ -238,7 +230,7 @@ sub answer {
 
     $timerank = $self->{timeranks}{$nick};
 
-    my $numanswerers = @{keys(%{$self->{answeredthisquestion}})};
+    my $numanswerers = keys(%{$self->{answeredthisquestion}});
     if(!defined($self->{performanceoverall}{$nick})) {
       $self->{performanceoverall}{$nick} = 0;
     }
