@@ -134,6 +134,7 @@ sub value : lvalue {
 
   # Dereferencing $ref (and omitting 'return'!) is how we get the lvalue
   # stuff to work, so don't touch this unless you know what you're doing!
+  $ref or return undef;
   $$ref;
 }
 
