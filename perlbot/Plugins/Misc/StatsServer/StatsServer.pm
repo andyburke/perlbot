@@ -28,7 +28,7 @@ sub init {
   $self->hook_event('topic', \&set_topic);
   # ('topicinfo' tells us *who* set the topic, should anyone want to grab that too)
 
-  $self->hook_web('stats', \&stats, 'XML Bot Stats');
+  $self->hook_web('stats', \&stats, 'Bot Stats');
 
 }
 
@@ -36,26 +36,56 @@ sub stats {
   my $self = shift;
   my @args = @_;
 
-  my $data = {};
+  if(!scalar @args) {
+    my $response = "<html><head><title>Bot Stats</title></head><body><ul><li><a href=\"/stats/html\">HTML Stats</a><li><a href=\"/stats/xml\">XML Stats</a></body></html>";
 
-  $data->{bot} = {version => $Perlbot::VERSION,
-                  authors => $Perlbot::AUTHORS,
-                  knownusers => scalar keys(%{$self->perlbot->users}),
-                  activechannels => scalar keys(%{$self->perlbot->channels}),
-                  activeplugins => scalar @{$self->perlbot->plugins}};
-
-  foreach my $channel (values %{$self->perlbot->channels}) {
-    $chan_data = {name => $channel->name, topic => $self->{_topics}{$channel->name}};
-    push @{$data->{channel}}, $chan_data;
+    return ('text/html', $response);
   }
-  
-  $data->{uptime} = {value => $self->perlbot->uptime(),
-                     humanreadable => $self->perlbot->humanreadableuptime()};
 
-  my $response_xml = qq{<?xml version="1.0"?>\n};
-  $response_xml .= XMLout($data, rootname => 'perlbot-statistics');
+  if($args[0] eq 'html') {
+    my $response = "<html><head><title>Bot Stats</title></head><body>";
 
-  return ('text/xml', $response_xml);
+    $response .= "<p>Perlbot " . $Perlbot::VERSION . " by " . $Perlbot::AUTHORS;
+    $response .= "<br>Known Users: " . scalar keys(%{$self->perlbot->users});
+    $response .= "<br>Active Channels: " . scalar keys(%{$self->perlbot->channels});
+    $response .= "<br>Active Plugins: " .  scalar @{$self->perlbot->plugins};
+    $respinse .= "<br>Uptime: " . $self->perlbot->humanreadableuptime();
+
+    $response .= "<p><b>Channels:</b>";
+    $response .= "<table width=100% border=1><tr><th width=20%>Name</th><th>Topic</th></tr>";
+
+    foreach my $channel (values %{$self->perlbot->channels}) {
+      $response .= "<tr><td>" . $channel->name() . "</td><td>" . $self->{_topics}{$channel->name()} . "</td></tr>";
+    }
+
+    $response .= "</table></body></html>";
+
+    return ('text/html', $response);
+
+  } elsif($args[0] eq 'xml') {
+    my $data = {};
+    
+    $data->{bot} = {version => $Perlbot::VERSION,
+                    authors => $Perlbot::AUTHORS,
+                    knownusers => scalar keys(%{$self->perlbot->users}),
+                  activechannels => scalar keys(%{$self->perlbot->channels}),
+                    activeplugins => scalar @{$self->perlbot->plugins}};
+    
+    foreach my $channel (values %{$self->perlbot->channels}) {
+      $chan_data = {name => $channel->name, topic => $self->{_topics}{$channel->name}};
+      push @{$data->{channel}}, $chan_data;
+    }
+    
+    $data->{uptime} = {value => $self->perlbot->uptime(),
+                       humanreadable => $self->perlbot->humanreadableuptime()};
+    
+    my $response_xml = qq{<?xml version="1.0"?>\n};
+    $response_xml .= XMLout($data, rootname => 'perlbot-statistics');
+    
+    return ('text/xml', $response_xml);
+  } else {
+    return (undef, undef); # 404
+  }
 }
 
 sub set_topic {
@@ -78,3 +108,13 @@ sub set_topic {
 }
 
 1;
+
+
+
+
+
+
+
+
+
+

@@ -85,49 +85,49 @@ sub connection {
     # child
 
     $self->perlbot->ircconn->{_connected} = 0;
-
+    
     my $connection = $server->accept();
-
-    while (my $request = $connection->get_request) {
-      if ($request->method eq 'GET') {
-
-        my ($garbage, $dispatch, @args) = split('/', $request->uri());
-
-        if($dispatch eq '') {
-          my $response = "<html><head><title>Perlbot Web Interface</title></head><body><p><ul>";
-
-          foreach my $link (keys(%{$self->{hooks}})) {
-            if(defined($self->{hooks}{$link}[1])) {
-              $response .= "<li><a href=\"/$link\">" . $self->{hooks}{$link}[1] . "</a>";
-            } else {
-              $response .= "<li><a href=\"/$link\">$link</a>";
-            }
-          }
-
-          $response .= "</ul></body></html>";
-
-          $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
-                                                       HTTP::Headers->new(Content_Type => 'text/html'),
-                                                         $response));
-        } elsif(exists($self->{hooks}{$dispatch})) {
-          my $coderef = $self->{hooks}{$dispatch}[0];
-          my $description = $self->{hooks}{$dispatch}[1];
-          my ($contenttype, $content) = $coderef->(@args);
-          
-          if(defined($contenttype) && defined($content)) {
-            $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
-                                                         HTTP::Headers->new(Content_Type => $contenttype),
-                                                           $content));
+    
+    my $request = $connection->get_request();
+    
+    if ($request->method eq 'GET') {
+      
+      my ($garbage, $dispatch, @args) = split('/', $request->uri());
+      
+      if($dispatch eq '') {
+        my $response = "<html><head><title>Perlbot Web Interface</title></head><body><p><ul>";
+        
+        foreach my $link (keys(%{$self->{hooks}})) {
+          if(defined($self->{hooks}{$link}[1])) {
+            $response .= "<li><a href=\"/$link\">" . $self->{hooks}{$link}[1] . "</a>";
           } else {
-            $connection->send_error(RC_NOT_FOUND);
+            $response .= "<li><a href=\"/$link\">$link</a>";
           }
+        }
+        
+        $response .= "</ul></body></html>";
+        
+        $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
+                                                     HTTP::Headers->new(Content_Type => 'text/html'),
+                                                       $response));
+      } elsif(exists($self->{hooks}{$dispatch})) {
+        my $coderef = $self->{hooks}{$dispatch}[0];
+        my $description = $self->{hooks}{$dispatch}[1];
+        my ($contenttype, $content) = $coderef->(@args);
+        
+        if(defined($contenttype) && defined($content)) {
+          $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
+                                                       HTTP::Headers->new(Content_Type => $contenttype),
+                                                         $content));
         } else {
           $connection->send_error(RC_NOT_FOUND);
         }
+      } else {
+        $connection->send_error(RC_NOT_FOUND);
       }
     }
+    $connection->force_last_request;
     $connection->close;
-
     exit;
   }
 }

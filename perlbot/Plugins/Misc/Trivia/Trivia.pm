@@ -593,6 +593,39 @@ sub triviastats {
   }
 }
 
+sub webtriviastats {
+  my $self = shift;
+  my @args = @_;
+
+  my $response = "<html><head><title>Perlbot Trivia Stats</title></head><body>";
+
+  $response .= "<p><center><font size=+1>Top 20 Trivia Players</font></center>";
+
+  $response .= "<p><table width=100%>";
+
+  $response .= "<tr><td><b>Rank</b></td><td><b>% Rankings</b></td><td><b>Wins Rankings</b></td><td><b>Time Rankings</b></td><td><b>Performance Rankings</b></td></tr>";
+
+  my @percranks = $self->rankplayersbypercentage($self->getqualifyingplayers());
+  my @winsranks = $self->rankplayersbywins($self->getqualifyingplayers());
+  my @timeranks = $self->rankplayersbytime($self->getqualifyingplayers());
+  my @perfranks = $self->rankplayersbyperformance($self->getqualifyingplayers());
+
+  for(my $rank = 0; $rank < 20; $rank++) {
+    my $numerical_rank = $rank + 1;
+    $response .= "<tr><td>$numerical_rank</td>";
+    $response .= "<td>" . $percranks[$rank] . " (" . $self->score($percranks[$rank]) . "%)</td>";
+    $response .= "<td>" . $winsranks[$rank] . " (" . $self->{correctlyanswered}{$winsranks[$rank]} . ")</td>";
+    $response .= "<td>" . $timeranks[$rank] . " (" . $self->{fastestoverall}{$timeranks[$rank]} . ")</td>";
+    $response .= "<td>" . $perfranks[$rank] . " (" . sprintf("%0.2f", $self->{performanceoverall}{$perfranks[$rank]}) . ")</td>";
+    $response .= "</tr>";
+  }
+
+  $response .= "</table></body>";
+  
+  return ('text/html', $response);
+
+}
+
 sub triviahelp {
   my $self = shift;
 
