@@ -78,7 +78,10 @@ sub open {
 
     $self->update_date();
     $self->{file}->close if $self->{file}->opened;   # is this necessary?
-    $self->{file}->open(">>$basedir".$dirsep.from_channel($self->chan).$dirsep."$date");
+    my $result = $self->{file}->open(">>$basedir".$dirsep.from_channel($self->chan).$dirsep."$date");
+    if (!$result) {
+      print "Could not open logfile '$date': $!\n" if $debug;
+    }
 }
 
 sub close {
