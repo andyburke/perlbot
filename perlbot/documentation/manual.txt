@@ -44,16 +44,16 @@ Table of Contents
   - Plugins may have their own requirements, and we trust plugin authors
     to put that in their documentation.
   - Optional, but recommended:
-      LWP::Simple (Many web plugins use this module)
-      Geo::Weather (For the Weather plugin)
-      WWW::Babelfish (For the Babelfish plugin)
-      HTTP::Daemon (Used by the integrated webserver)
+      Algorithm::MarkovChain (For the Outlander plugin)
+      Calendar::Simple (For the Cal plugin)
       HTML::CalendarMonth (Used by the LogServer plugin)
       HTML::TableExtract (Used by some web plugins)
-      String::Approx (Used by the Trivia plugin)
+      HTTP::Daemon (Used by the integrated webserver)
+      LWP::Simple (Many web plugins use this module)
       Net::Google (For the Google and SpelCheck plugins)
-      Calendar::Simple (For the Cal plugin)
-      Algorithm::MarkovChain (For the Outlander plugin)
+      String::Approx (Used by the Trivia plugin)
+      Weather::Underground (For the Weather plugin)
+      WWW::Babelfish (For the Babelfish plugin)
 
 2.0 Installation
 ================
