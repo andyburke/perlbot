@@ -312,7 +312,7 @@ sub _process { # _process to stay out of people's way
         }
         $self->_dispatch($self->{admin_hooks}{$admin_hook}, $user, $texttocallwith);
       } else {
-        $self->{perlbot}{ircconn}->privmsg($event->nick(), 'You are not an admin!');
+        $self->{perlbot}->msg($event->nick(), 'You are not an admin!');
       }
     }
   }
