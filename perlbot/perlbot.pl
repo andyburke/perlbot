@@ -34,8 +34,11 @@ $AUTHORS = 'jmuhlich@jhu.edu, burke@pas.rochester.edu';
 # default to 'config'.
 $PerlbotCore::CONFIG = ($ARGV[0] ? $ARGV[0] : 'config');
 if (! -f $PerlbotCore::CONFIG) {
-  print "\nYou have no config file.  You obviously haven't read the README.\n";
-  print "Please read documentation/manual.txt before running perlbot.\n\n";
+  print "Config file '$PerlbotCore::CONFIG' not found\n";
+  if ($PerlbotCore::CONFIG eq 'config') {
+    print "\nPerhaps you haven't read the README.\n";
+    print "Please read documentation/manual.txt before running perlbot.\n\n";
+  }
   exit;
 }
 &PerlbotCore::parse_main_config;
