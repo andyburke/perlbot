@@ -1,9 +1,14 @@
 CHANGES:
 
 1.2.2 - misc updates, stability fixes, plugin modifications
-- fixed the flooding crashing the bot bug, stupid fork
-- got rid of reliance on nslookup because it is deprecated, now we use host
-
+- Fixed the flooding crashing the bot bug, stupid fork
+- Now perlbot.pl will print a warning and exit if it doesn't find the
+  default config file, or the one specified on the commandline.
+- updated manual.txt and plugins.txt
+- NSLookup plugin: Removed, since the nslookup utility is deprecated.
+  It has been replaced with the Host plugin (!host).
+- Host plugin added: As mentioned above
+- PriceWatch plugin: Fixed to work with the new HTML on the site
 
 1.2.1 - documentation fixes and additions; logsearch CGIs
 - Added a readme to the miscscripts/ directory and cleaned up the comments
