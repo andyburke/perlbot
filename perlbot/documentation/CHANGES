@@ -1,7 +1,7 @@
 CHANGES:
 
-1.2.3 - crash log, configurable plugin and command trigger prefixes,
-        new plugin, plugin fixes, misc core updates/fixes
+1.4.0/1.5.0 - crash log, configurable plugin and command trigger prefixes,
+              new plugin, plugin fixes, misc core updates/fixes
 - Due to popular demand, the character/string that prefixes spoken commands
   to the bot is now configurable!  bot.commandprefix and bot.pluginprefix
   are the config values to set (the defaults are # and ! to mimic previous
@@ -45,6 +45,9 @@ CHANGES:
 - Updated Host plugin to deal with CNAMEs and other such DNS details
 - PriceWatch plugin now works a lot better and the code is cleaner
 - Guile plugin now only prints stuff to the console if debugging is on
+
+1.3.x - skipped, big enough changes made to the 1.2.x tree to warrant
+        1.4.x
 
 1.2.2 - misc updates, stability fixes, plugin modifications
 - Fixed the flooding crashing the bot bug, stupid fork
