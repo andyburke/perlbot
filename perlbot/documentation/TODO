@@ -2,11 +2,8 @@ TODO:
 
 for 2.0:
 
-- make the bot quit gracefully and catch all the right signals
 - output buffering
-- port plugins
 - clean up code, make -w clean, etc.
-- flock the config file when reading/writing
 - move all code that touches Net::IRC stuff into Perlbot.pm and write
   accessor methods (for example, ConnectionManagement currently bangs on
   $perlbot->{ircconn})
@@ -22,7 +19,6 @@ for 2.0:
   separately.
 - caching hostmasks for use by get_user - may help performance issues, but
   do those issues even exist?
-- crashlog looks a little odd, check it out
 - profile code, look for candidates for optimization (no need to rush this)
 
 
