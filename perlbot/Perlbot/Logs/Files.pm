@@ -115,6 +115,8 @@ sub search {
 
   my $maxresults = $args->{maxresults};
   my $termsref = $args->{terms}; my @terms = @{$termsref};
+  my $nick = $args->{nick};
+  my $type = $args->{type};
   my $initialdate = $args->{initialdate} || 1;
   my $finaldate = $args->{finaldate} || time();
 
@@ -142,12 +144,20 @@ sub search {
       $finaldate_string = Perlbot::Utils::perlbot_date_string($finaldate);
 
       foreach my $line (@lines) {
-        next if $line lt $initialdate_string;
-        last if $line gt $finaldate_string;
+        chomp $line;
+        my $event = new Perlbot::Logs::Event($line, $self->channel);
+        print $event->as_string() . "\n";
+
+        next if $event->time < $initialdate;
+        last if $event->time > $finaldate;
+
+        next if $nick and $event->nick ne $nick;
+        next if $type and $event->type ne $type;
+
         my $add_to_result = 1;
 
         foreach my $term (@terms) {
-          if($line !~ /$term/i) {
+          if($event->text !~ /$term/i) {
             $add_to_result = 0;
             last;
           }
