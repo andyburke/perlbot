@@ -79,7 +79,8 @@ sub update {
     my $nickstring = $event->{args}[3];
     $nickstring =~ s/\@//g;
     my @nicks = split(' ', $nickstring);
-    if ($chan) {
+    if (defined($chan)) {
+      $chan->clear_member_list();
       foreach my $nick (@nicks) {
         $chan->add_member($nick);
       }

@@ -44,7 +44,7 @@ sub AUTOLOAD : lvalue {
 sub log_write {
     my $self = shift;
     if ($self->is_logging) {
-	$self->{log}->write(@_);
+	$self->log->write(@_);
     }
 }
 
@@ -66,7 +66,7 @@ sub logging {
 
     # open/close logfile if logging value is being set
     if (@_ and $_[0] eq 'no') {
-      $self->{log}->close;
+      $self->log->close;
     }
 
     return $self->config->value(channel => $self->name => 'logging');
@@ -104,27 +104,29 @@ sub add_member {
   my $self = shift;
   my $nick = shift;
 
-  $self->{members}{$nick} = 1;
+  $self->members->{$nick} = 1;
 }
 
 sub remove_member {
   my $self = shift;
   my $nick = shift;
 
-  if (exists($self->{members}{$nick})) {
-    delete $self->{members}{$nick};
+  if (exists($self->members->{$nick})) {
+    delete $self->members->{$nick};
   }
+}
+
+sub clear_member_list {
+  my $self = shift;
+  
+  $self->members = {};
 }
 
 sub is_member {
   my $self = shift;
   my $nick = shift;
 
-  if ($self->{members}{$nick}) {
-    return 1;
-  } else {
-    return 0;
-  }
+  defined($self->members->{$nick}) ? return 1 : return 0;
 }
 
 sub add_op {
@@ -134,7 +136,7 @@ sub add_op {
   defined $user or return;
   if (!$self->is_op($user)) {
     if(!defined($self->config->value(channel => $self->name => 'op'))) {
-      $self->{config}->{_config}->{channel}->{$self->name}->{'op'} = [];
+      $self->config->_config->channel->{$self->name}->{'op'} = [];
     }
     
     push @{$self->config->value(channel => $self->name => 'op')}, $user->name;
@@ -148,7 +150,7 @@ sub remove_op {
   my $removed_count = 0;
   
   my $old_ops = $self->config->value(channel => $self->name => 'op');
-  $self->{config}->{_config}->{channel}->{$self->name}->{'op'} = [];
+  $self->config->_config->channel->{$self->name}->{'op'} = [];
   
   if(defined($old_ops)) {
     foreach my $old_op (@{$old_ops}) {
@@ -173,7 +175,7 @@ sub join {
 sub part {
     my $self = shift;
 
-    $self->{log}->close;
+    $self->log->close;
 }
 
 1;

@@ -30,11 +30,12 @@ sub join_channels {
   my $self = shift;
   my $event = shift;
 
-  debug("joining channels");
+  debug("Joining Channels");
 
   foreach my $channel (values(%{$self->perlbot->channels})) {
-    debug("  Joining " . $channel->name);
+    debug("  Joining Channel: " . $channel->name);
     $self->perlbot->join($channel);
+    debug("    Sending whois to channel: " . $channel->name, 2);
     $self->perlbot->whois($channel);
   }
 
@@ -80,6 +81,8 @@ sub cycle_nick {
 }
 
 1;
+
+
 
 
 
