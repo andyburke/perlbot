@@ -86,20 +86,22 @@ sub save {
 #   instance (like the "bot" object in the base config) then you may omit
 #   the 0 in between hash key parameters. (see last few examples below)
 # examples:
-#   value('channel')                  # hashref of channels, keyed on name
-#   value(channel => '#perlbot')      # hashref of single channel's fields
-#   value(channel => '#perlbot' => 'op')                 # arrayref of ops
-#   foreach (@{value(channel=>'#perlbot'=>'op')}) {...}  # same
-#   value(bot => 'nick')              # omitting the 0
-#   value(bot => 0 => 'nick')         # this works but the 0 isn't needed
-#   value(bot => 'nick') = 'NewNick'  # assignment
+#   _value('channel')                  # hashref of channels, keyed on name
+#   _value(channel => '#perlbot')      # hashref of single channel's fields
+#   _value(channel => '#perlbot' => 'op')                 # arrayref of ops
+#   foreach (@{_value(channel=>'#perlbot'=>'op')}) {...}  # same
+#   _value(bot => 'nick')              # omitting the 0
+#   _value(bot => 0 => 'nick')         # this works but the 0 isn't needed
+#   _value(bot => 'nick') = 'NewNick'  # assignment
 
 # TODO: make sure that when a non-existent entity is queried, no
 #       hash or array entries spring into existence!
 
-sub value : lvalue {
+sub _value : lvalue {
   my ($self, @keys) = @_;
   my ($current, $key, $type, $ref);
+
+  debug("_value: " . join('=>', @keys), 9);
 
   # $current is a "pointer", iterated down the tree
   $current = $self->_config;
@@ -115,7 +117,7 @@ sub value : lvalue {
       if ($key =~ /\D/) {
         # special case for singleton objects, so the 0 index can be
         # omitted as the second parameter, e.g. this lets you write
-        # value('bot','nick') instead of value('bot',0,'nick)
+        # _value('bot','nick') instead of _value('bot',0,'nick)
         if (@$current == 1) {
           unshift(@keys, $key);
           $key = 0;
@@ -145,6 +147,12 @@ sub value : lvalue {
         $current = $ref = undef;
         last;
       }
+    ### Proxy stuff for the future
+    #} elsif (UNIVERSAL::isa($ref, 'Perlbot::Config::Proxy')) {
+    #  # we've hit a proxy config object.  pass the rest of the keys to
+    #  # it and return whatever it spits back.
+    #  $ref = $ref->get(@keys);
+    #  last;
     } else {
       # if we get here, we've reached a "leaf" in the tree but there are
       # still more keys to deal with... that's bad.  complain and stop
@@ -161,31 +169,85 @@ sub value : lvalue {
   $$ref;
 }
 
-sub set {
-  my ($self) = @_;
-
-  # TODO: implement
-}
-
-sub publish {
+# XXX: temporary stub until ->value calls are removed from the codebase
+sub value {
   my $self = shift;
 
-  foreach my $slave (@{$self->_slaves}) {
-    # publish to slave
-  }
+  debug("value: deprecated method called");
+  $self->_value(@_);
 }
 
+sub get {
+  my $self = shift;
+
+  my $ret = $self->_value(@_);
+  if (ref $ret) {
+    debug("get: request for non-leaf node: ". join('=>', @_));
+  }
+  return $ret;
+}
+
+sub set {
+  my $self = shift;
+  my $value = shift;
+
+  my $ret = $self->_value(@_);
+  if (ref $ret) {
+    debug("set: request for non-leaf node: ". join('=>', @_));
+  }
+  $self->_value(@_) = $value;
+}
+
+# only use the array_ and hash_ methods on arrays of regular scalars
+# (i.e. no sub-objects)
+
+sub array_get {
+  my $self = shift;
+
+  return @{$self->_value(@_)};
+}
+
+sub array_push {
+  my $self = shift;
+  my $value = shift;
+
+  my $arrayref = $self->_value(@_);
+  push @$arrayref, $value;
+}
+
+sub array_delete {
+  my $self = shift;
+  my $value = shift;
+
+  @{$self->_value(@_)} = grep {$_ ne $value} $self->_value(@_);
+}
+
+
+sub hash_get_keys {
+  my $self = shift;
+
+  return keys %{$self->_value(@_)};
+}
+
+# XXX: should this create a full subtree, or just extend an existing branch
+#        by one level as it does now?
+sub hash_create {
+  my $self = shift;
+  my $key = pop;
+
+  my $hashref = $self->_value(@_);
+  $hashref->{$key} = {};
+}
+
+sub hash_delete {
+  my $self = shift;
+  my $key = pop;
+
+  my $hashref = $self->_value(@_);
+  delete $hashref->{$key};
+}
+
+
+
 1;
-
-
-
-
-
-
-
-
-
-
-
-
 
