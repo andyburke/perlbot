@@ -191,7 +191,6 @@ sub logserver {
               })) {
             
             my $padded_day = sprintf("%02d", $day);
-            print "linking day: $padded_day\n";
             $cal->item($day)->wrap_content(HTML::Element->new('a',
                                                               href => "/logserver/display?channel="
                                                               . $options->{channel}
