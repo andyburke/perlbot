@@ -71,8 +71,12 @@ sub password {
   my $self = shift;
   my $password = shift;
 
+  print "password: $password\n";
+
   if(defined($password)) {
+    print "setting password: $password\n";
     $self->config->value(user => $self->name => 'password') = md5_base64($password);
+    print "set to: " . $self->config->value(user => $self->name => 'password') . "\n";
   }
 
   return $self->config->value(user => $self->name => 'password');

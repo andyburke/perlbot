@@ -72,7 +72,7 @@ sub sodoit {
 
   my @words = split(' ', $text);
   my $length = scalar @words;
-  $length = int($length * 1.5);
+  $length = int($length * 1.2);
   undef @words;
 
   if($text !~ /$curnick/i) {
