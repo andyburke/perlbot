@@ -1,0 +1,4 @@
+<help>
+  <overview>This plugin will get the ratings for a movie from rottentomatoes.com</overview>
+  <command name="rt">Gets the ratings for the specified movie.<br/>Usage: rt title</command>
+</help>

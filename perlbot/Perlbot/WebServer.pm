@@ -90,7 +90,11 @@ sub connection {
       my ($garbage, $dispatch, @args) = split('/', $request->uri());
       
       if (!defined($dispatch) or $dispatch eq '') {
-        my $response = "<html><head><title>Perlbot Web Interface</title></head><body><p><ul>";
+        my $response = "<html><head><title>Perlbot Web Interface</title></head><body><center><table width=50% border=1>";
+
+        $response .= "<tr><td><table border=0 width=100%><tr><td><font size=+1>Perlbot Web Services</font></td><td align=right><font size=-1><a href=\"http://www.perlbot.org/\">perlbot v" . $Perlbot::VERSION . "</a></font></td></tr></table></td></tr>";
+
+        $response .= "<tr><td><ul>";
         
         foreach my $link (keys(%{$self->{hooks}})) {
           if(defined($self->{hooks}{$link}[1])) {
@@ -100,7 +104,7 @@ sub connection {
           }
         }
         
-        $response .= "</ul></body></html>";
+        $response .= "</ul></td></tr></table><center></body></html>";
         
         $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
                                                      HTTP::Headers->new(Content_Type => 'text/html'),
