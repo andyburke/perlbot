@@ -55,10 +55,16 @@ sub cal {
     $in =~ s/\`//g; #security?
     $in =~ s/\$//g;
     $in =~ s/\|//g;
-    
-    my @cal = `cal $in`;
-    chomp @cal;
 
+    my @cal;
+    # -y gives a calendar for the whole year.. TOO BIG :)
+    if ($in =~ /-\w*y/) {
+      @cal = ("-y eh?  What are you trying to pull here?");
+    } else {
+      @cal = `cal $in`;
+    }
+
+    chomp @cal;
     foreach(@cal) {
       $conn->privmsg($who, $_);
     }
