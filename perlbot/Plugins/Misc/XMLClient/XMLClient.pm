@@ -15,7 +15,9 @@ sub init {
                                 ':' .
                                 $self->config->value(master => 'port'));
 
-  $self->{perlbot}{user} = XMLin($cli->send_request(RPC::XML::request->new('perlbot.User'))->value->value());
+  my $users = $cli->send_request(RPC::XML::request->new('perlbot.User'));
+
+  $self->{perlbot}->config->value('user') = XMLin($users->value->value());
 
 }
 
