@@ -176,7 +176,9 @@ sub import_from_logs {
   my $logdir = $self->perlbot->config->value(bot => 'logdir');
 
   foreach my $key (keys(%{$self->{channels}})) {
-    delete $self->{channels}{$key};
+    for(my $i=0; $i < 24; $i++) {
+      $self->{channels}{$key}{'hour' . $i} = 0;
+    }
   }
 
   opendir(LOGSDIR, File::Spec->catfile($logdir));
