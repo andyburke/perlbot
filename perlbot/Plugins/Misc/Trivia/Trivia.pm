@@ -150,7 +150,28 @@ sub answer {
   if(length($answer) < 5) {
     if(lc($answer) eq lc($text)) { $correct = 1; }
   } else {
-    if(amatch(lc($answer), lc($text))) { $correct = 1; }
+
+    my $tmpanswer = $answer;
+    my $tmptext = $text;
+
+    $tmpanswer =~ s/the//g;
+    $tmptext =~ s/the//g;
+
+    my @answerwords = split(' ', $tmpanswer);
+    my @guesswords = split(' ', $tmptext);
+
+    if(length(@answerwords) != length(@guesswords)) {
+      return;
+    }
+
+    my $right;
+    for($right = 0; $right < length(@guesswords); $right++) {
+      if(!amatch(lc($answerwords[$right]), lc($guesswords[$right]))) { last; }
+    }
+
+    if($right == length(@answerwords)) {
+      $correct = 1;
+    }
   }
 
   if($correct) {
