@@ -56,6 +56,16 @@ Table of Contents
   System-wide use isn't possible just yet, but we're working towards
   that in future versions.
 
+  However, some work has been done to allow you to run multiple perlbots
+  from a machine if you have root access.  If you create a 'perlbot' user
+  whose home directory is '/home/perlbot', you can add new bots under
+  that directory, for instance: '/home/perlbot/logbot' would contain a
+  perlbot tree.  You can then copy the file 'perlbot.initscript' to
+  /etc/rc.d/init.d/logbot and run
+  'chkconfig --add /etc/rc.d/init.d/logbot' to have the logbot start
+  at boot.  You can also use this script to stop/start the bot.  This is
+  currently experimental, and you probably shouldn't play with it unless
+  you know what you're doing.  (it's also a pretty poor hack :)
 
 3.0 Settings
 ============
