@@ -6,6 +6,8 @@
 
 package Perlbot::Plugin;
 
+use strict;
+
 use Perlbot::Utils;
 use File::Spec;
 
@@ -354,8 +356,8 @@ sub reply {
   # else
   #   send the output via whatever method it came in by
 
-  if($self->perlbot->config->get(bot => max_public_reply_lines) &&
-     @output > $self->perlbot->config->get(bot => max_public_reply_lines)) {
+  if($self->perlbot->config->get(bot => 'max_public_reply_lines') &&
+     @output > $self->perlbot->config->get(bot => 'max_public_reply_lines')) {
     foreach my $line (@output) {
       $self->perlbot->msg($self->{lastnick}, $line);
     }
@@ -402,7 +404,7 @@ sub reply_error {
   # else
   #   send the error back in whatever way we got it
 
-  if($self->perlbot->config->get(bot => send_errors_via_msg)) {
+  if($self->perlbot->config->get(bot => 'send_errors_via_msg')) {
     foreach my $line (@output) {
       $self->perlbot->msg($self->{lastnick}, $line);
     }
@@ -427,8 +429,8 @@ sub addressed_reply {
 
   # adds a preceding nickname to our output, see reply
 
-  if($self->perlbot->config->get(bot => max_public_reply_lines) &&
-     @output > $self->perlbot->config->get(bot => max_public_reply_lines)) {
+  if($self->perlbot->config->get(bot => 'max_public_reply_lines') &&
+     @output > $self->perlbot->config->get(bot => 'max_public_reply_lines')) {
     foreach my $line (@output) {
       $self->perlbot->msg($self->{lastnick}, $self->{lastnick} . ', ' . $line);
     }
@@ -694,7 +696,7 @@ sub _dispatch {
 
     if ($pid) {
       # parent
-      $SIG{CHLD} = IGNORE; #sub { wait };
+      $SIG{CHLD} = 'IGNORE'; #sub { wait };
     } else {
       # child
       $coderef->($self, @params);
