@@ -143,6 +143,8 @@ my %config_handlers =
      # get our plugin prefix char
      $pluginchar = $_[0]->{pluginchar}[0];
      $pluginchar ||= '!';
+     # allow whitespace between char/string and command itself
+     $pluginchar .= '\s*?';
    }
    );
 
