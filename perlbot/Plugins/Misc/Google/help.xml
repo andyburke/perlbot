@@ -1,0 +1,5 @@
+<help>
+  <overview>This plugin performs Google searches.</overview>
+  <command name="google">Returns the first Google hit for the provided terms.</command>
+  <usage name="google">google query terms</usage>
+</help>
