@@ -128,10 +128,10 @@ sub _addremove_handler {
 
   if (defined $bool) {
     if ($bool) {
-      debug("  adding '$event' handler for '$self->name'", 3);
+      debug("  adding '$event' handler for '" . $self->name . "'", 3);
       $self->perlbot->add_handler($event, sub {$self->_process(@_)}, $self->name);
     } else {
-      debug("  removing '$event' handler for '$self->name'", 3);
+      debug("  removing '$event' handler for '" . $self->name . "'", 3);
       $self->perlbot->remove_handler($event, $self->name);
     }
   }
