@@ -9,11 +9,12 @@ use Perlbot::Utils;
 use Perlbot::Config;
 use Perlbot::User;
 use Perlbot::Channel;
+use Perlbot::Logs;
 
 our $VERSION = '1.9.6';
 our $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
 
-use fields qw(starttime configfile config ircobject ircconn msg_queue empty_queue webserver plugins handlers handlers_backup users channels curnick masterpid);
+use fields qw(starttime configfile config ircobject ircconn msg_queue empty_queue webserver plugins handlers handlers_backup users channels logs curnick masterpid);
 
 sub new {
   my $class = shift;
@@ -34,6 +35,7 @@ sub new {
   $self->handlers_backup = undef;
   $self->users = {};
   $self->channels = {};
+  $self->logs = new Perlbot::Logs($self);
   $self->curnick = '';
   $self->masterpid = $$;
 
