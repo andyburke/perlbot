@@ -1,5 +1,9 @@
 CHANGES:
 
+1.2.3 - misc updates/fixes
+- Ian Higgs pointed out some problems with logging channels you've told
+  the bot to join... fixed.
+
 1.2.2 - misc updates, stability fixes, plugin modifications
 - Fixed the flooding crashing the bot bug, stupid fork
 - Now perlbot.pl will print a warning and exit if it doesn't find the

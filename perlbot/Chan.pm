@@ -49,6 +49,7 @@ sub log_write {
     if($self->{logging} eq 'yes') {
 	$self->{log}->write(@_);
     }
+    print "logging for $self->{name}: $self->{logging}\n";
 }
 
 sub name {

@@ -70,16 +70,21 @@ sub open {
     my $self = shift; 
     my $date;
 
+    use Data::Dumper;
+
     # make necessary dirs if they don't exist
     stat $basedir or mkdir($basedir, 0755);
     stat $basedir.$dirsep.from_channel($self->chan) or mkdir($basedir.$dirsep.from_channel($self->chan), 0755);
+    print $basedir.$dirsep.from_channel($self->chan) . "\n";
+
+    print Dumper($self) . "\n";
 
     $date = sprintf("%04d.%02d.%02d", $self->curyr, $self->curmon, $self->curday);
 
     $self->update_date();
     $self->{file}->close if $self->{file}->opened;   # is this necessary?
     $self->{file}->open(">>$basedir".$dirsep.from_channel($self->chan).$dirsep."$date");
-
+    print ">>$basedir".$dirsep.from_channel($self->chan).$dirsep."$date" . "\n";
 }
 
 sub close {
@@ -93,13 +98,15 @@ sub write {
     my ($sec,$min,$hour,$mday,$mon,$year);
     my $date;
 
+    print "Writing to log for channel: " . $self->chan . "\n";
+
     ($sec,$min,$hour,$mday,$mon,$year) = localtime;
     $year += 1900;
     $mon += 1;
     
     # make sure the log file's there...
-    stat ">>basedir".$dirsep.from_channel($self->chan).$dirsep.$self->curyr.'.'.$self->curmon.'.'.$self->curday or
-	$self->open(); 
+    #    stat ">>basedir".$dirsep.from_channel($self->chan).$dirsep.$self->curyr.'.'.$self->curmon.'.'.$self->curday or
+    if(!$self->{file}->opened) { $self->open(); } 
 
     # if the date has changed, roll the log file
     unless ($mday==$self->curday and $mon==$self->curmon and $year==$self->curyr) {

@@ -186,6 +186,8 @@ my %command_handlers =
      } else {
        $priv_conn->privmsg($from, "You are not an owner.");
      }
+     use Data::Dumper;
+     print Dumper(%channels) . "\n";
    },
    part => sub {
      my ($priv_conn, $from, $userhost) = (shift, shift, shift);
@@ -266,7 +268,16 @@ my %command_handlers =
      notify_users($priv_conn, 'logging', "$from requested $chan LOGGING $logging");
      if(host_to_user($userhost) && host_to_user($userhost)->{flags} =~ /w/) {
        if ($channels{$chan}) {
-         $channels{$chan}->logging("$logging");
+         if($logging eq 'yes' or $logging eq 'no') {
+           $channels{$chan}->logging("$logging");
+         }
+         if($logging eq 'on') {
+           $channels{$chan}->logging("yes");
+         } 
+         if($logging eq 'off') {
+           $channels{$chan}->logging("no");
+         }
+         # ugly, ugly hacks make the world go 'round
        } else {
          $priv_conn->privmsg($from, "Not in channel $chan.");
        }
@@ -500,7 +511,7 @@ sub on_public {
   my $text = ($event->args)[0];
   
   update_user($self, $event->nick, $event->userhost);
-  
+ 
   if(exists($channels{to_channel($chan)})) {
     $channels{to_channel($chan)}->log_write("<$nick> $text");
     $channels{to_channel($chan)}->send_redirs($self, $nick, $text);

@@ -35,6 +35,7 @@ bot {
 ###############################
 
 user {
+	flag		w #make this guy an owner of the bot
 	name		leet_admin
 	hostmask	*!*bob@something.foo.com
 	hostmask	*!*robert@somewhere.else.org
