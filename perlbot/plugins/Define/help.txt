@@ -1,0 +1,8 @@
+Defines terms in a database and allows users to look them up.  Also tries to do semi-intelligent matching on NL queries.
+
+define
+define <term> : <definition>\\Defines <term> in the database as <definition>
+
+redefine
+redefine <term> : <definition>\\Overwrites a previous definition of <term> with <definition>
+
