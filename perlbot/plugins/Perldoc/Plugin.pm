@@ -49,7 +49,7 @@ sub perldoc_response {
     #child
 
     ($parms = $event->{args}[0]) =~ s/^!perldoc\s*//;
-    my ($lines, $query) = split(' ', $parms);
+    my ($lines, $query) = split(' ', $parms, 2);
 
     if($lines eq '') { $lines = 10; }
     
@@ -67,7 +67,7 @@ sub perldoc_response {
        # kid
        # Send stderr to stdout, so the bot will report errors back to the user
        open (STDERR, ">&STDOUT") or die "Can't dup stdout: $!\n";
-       exec 'perldoc', $query or die "Can't exec perldoc: $!\n";
+       exec 'perldoc', '-t', $query or die "Can't exec perldoc: $!\n";
     }
 
     chomp @text;
