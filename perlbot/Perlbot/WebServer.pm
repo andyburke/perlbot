@@ -35,7 +35,7 @@ sub AUTOLOAD : lvalue {
     return;
   }
 
-  debug("AUTOLOAD:  Got call for field: $field", 15);
+  debug("Got call for field: $field", 15);
 
   $self->{$field};
 }
@@ -81,7 +81,7 @@ sub connection {
 
   $connection = $server->accept();
     
-  debug("web_service: forking off child", 3);
+  debug("forking off child", 3);
   if (!defined($pid = fork)) {
     return;
   }
@@ -102,7 +102,7 @@ sub connection {
       my ($garbage, $dispatch, @args) = split('/', $request->uri());
       
       if (!defined($dispatch) or $dispatch eq '') {
-        debug("web_service: displaying main index", 3);
+        debug("displaying main index", 3);
 
         my $response =
           qq(<html><head><title>Perlbot Web Interface</title></head><body><center><table width="50%" border="1">
@@ -123,7 +123,7 @@ sub connection {
                                                      HTTP::Headers->new(Content_Type => 'text/html'),
                                                        $response));
       } elsif(exists($self->hooks->{$dispatch})) {
-        debug("web_service: running hook '$dispatch'", 3);
+        debug("running hook '$dispatch'", 3);
         
         my $coderef = $self->hooks->{$dispatch}[0];
         my $description = $self->hooks->{$dispatch}[1];
@@ -176,7 +176,7 @@ sub connection {
         }
       } else {
         # nobody has hooked this path
-        debug("web_service: no such hook '$dispatch'", 3);
+        debug("no such hook '$dispatch'", 3);
 
         $connection->send_error(RC_NOT_FOUND);
       }

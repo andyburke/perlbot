@@ -34,7 +34,7 @@ sub AUTOLOAD : lvalue {
     return;
   }
 
-  debug("AUTOLOAD:  Got call for field: $field", 15);
+  debug("Got call for field: $field", 15);
 
   $self->{$field};
 }

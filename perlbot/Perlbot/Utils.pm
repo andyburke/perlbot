@@ -129,11 +129,11 @@ sub validate_hostmask {
   $hostmask or return 0;
 
   if ($hostmask !~ /^[^!@]+![^!@]+@[^!@]+$/) {
-    debug("validate_hostmask: '$hostmask' has bad syntax");
+    debug("'$hostmask' has bad syntax");
     return undef;
   }
   if ($hostmask =~ /!\*@/ or $hostmask =~ /@[\*\.]*$/) {
-    debug("validate_hostmask: '$hostmask' is an open hostmask (insecure)");
+    debug("'$hostmask' is an open hostmask (insecure)");
     return undef;
   }
   return 1;

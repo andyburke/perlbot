@@ -44,7 +44,7 @@ sub AUTOLOAD : lvalue {
     return;
   }
 
-  debug("AUTOLOAD:  Got call for field: $field", 15);
+  debug("Got call for field: $field", 15);
 
   $self->{$field};
 }
@@ -59,7 +59,7 @@ sub load {
 sub save {
   my ($self) = @_;
 
-  debug("Config::save: attempting to save " . $self->{_filename} . " ...");
+  debug("attempting to save " . $self->{_filename} . " ...");
   if ($self->_readonly) {
     debug("  Config object is read-only; aborting");
     return 0;
@@ -101,7 +101,7 @@ sub _value : lvalue {
   my ($self, @keys) = @_;
   my ($current, $key, $type, $ref);
 
-  debug("_value: " . join('=>', @keys), 9);
+  debug(join('=>', @keys), 9);
 
   # $current is a "pointer", iterated down the tree
   $current = $self->_config;
@@ -157,7 +157,7 @@ sub _value : lvalue {
       # if we get here, we've reached a "leaf" in the tree but there are
       # still more keys to deal with... that's bad.  complain and stop
       # iterating.  we will return undef.
-      debug("_value: extra config keys specified: " . join('=>', $key, @keys));
+      debug("extra config keys specified: " . join('=>', $key, @keys));
       $current = $ref = undef;
       last;
     }
@@ -174,7 +174,7 @@ sub value {
   my $self = shift;
 
   my ($package, $filename, $line) = caller();
-  debug("value: deprecated method called at $filename:$line");
+  debug("deprecated method called at $filename:$line");
   $self->_value(@_);
 }
 
@@ -191,10 +191,10 @@ sub get {
   if (ref $ret) {
     # if an array itself was specified, return element 0
     if (ref $ret eq 'ARRAY') {
-      debug("get: assuming array index 0", 9);
+      debug("assuming array index 0", 9);
       return $self->_value(@_, 0);
     } else {
-      debug("get: request for non-leaf node: ". join('=>', @_));
+      debug("request for non-leaf node: ". join('=>', @_));
     }
   }
   return $ret;
@@ -206,7 +206,7 @@ sub set {
 
   my $ret = $self->_value(@_);
   if (ref $ret) {
-    debug("set: request for non-leaf node: ". join('=>', @_));
+    debug("request for non-leaf node: ". join('=>', @_));
   }
   if (!$self->exists(@_)) {
     my @parent_keys = @_[0..@_-2];

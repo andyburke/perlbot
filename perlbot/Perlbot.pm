@@ -82,7 +82,7 @@ sub AUTOLOAD : lvalue {
     return;
   }
 
-  debug("AUTOLOAD:  Got call for field: $field", 15);
+  debug("Got call for field: $field", 15);
 
   $self->{$field};
 }
@@ -118,7 +118,7 @@ sub start {
   while (!$self->connect($i)) {
     $i++;
     if ($i >= $self->config->array_get('server')) {
-      debug("connect: server list exhausted; sleeping and trying again");
+      debug("server list exhausted; sleeping and trying again");
       $i = 0;
       sleep 5;
     }
@@ -210,7 +210,7 @@ sub process_config {
 
   if ($self->config->exists('user')) {
     foreach my $user ($self->config->hash_keys('user')) {
-      debug("process_config: loading user '$user'");
+      debug("loading user '$user'");
       $self->users->{$user} = new Perlbot::User($user, $self->config);
     }
   }
@@ -225,7 +225,7 @@ sub process_config {
   if ($self->config->exists('channel')) {
     foreach my $channel ($self->config->hash_keys('channel')) {
       $channel = normalize_channel($channel);
-      debug("process_config: loading channel '$channel'");
+      debug("loading channel '$channel'");
       my $chan = new Perlbot::Channel($channel, $self->config, $self);
       $self->channels->{$channel} = $chan;
     }
@@ -278,7 +278,7 @@ sub connect {
     $localaddr ||= '';
     $username ||= '';
 
-    debug("connect: attempting to connect to server $index: $server");
+    debug("attempting to connect to server $index: $server");
 
     $self->ircconn =
         $self->ircobject->newconn(Nick => $nick,
@@ -298,7 +298,7 @@ sub connect {
   # else fail
 
   if ($self->ircconn && $self->ircconn->connected()) {
-    debug("connect: connected to server: $server");
+    debug("connected to server: $server");
 
     if(defined($self->handlers_backup)) {
       debug("reusing old handlers for new connection", 5);
@@ -337,7 +337,7 @@ sub load_all_plugins {
   if ($self->config->exists(bot => 'noload')) {
     foreach my $plugin (@plugins_found) {
       if (grep {lc($plugin) eq lc($_)} $self->config->array_get(bot => 'noload')) {
-        debug("load_all_plugins: Skipping '$plugin': noload");
+        debug("Skipping '$plugin': noload");
       } else {
         push @plugins, $plugin;
       }
@@ -384,18 +384,18 @@ sub find_plugins {
       # ignore non-existent plugin subdirs
       my $dir = File::Spec->catdir($plugindir, $plugin);
       if (! -d $dir) {
-        debug("find_plugins: Ignoring '$plugin': $dir is not a directory");
+        debug("Ignoring '$plugin': $dir is not a directory");
         next;
       }
       # ignore subdirs without a Plugin.pm
       my $module = File::Spec->catfile($dir, "${plugin}.pm");
       if (! -f $module) {
-        debug("find_plugins: Ignoring '$plugin': no ${plugin}.pm in $dir");
+        debug("Ignoring '$plugin': no ${plugin}.pm in $dir");
         next;
       }
 
       # success!
-      debug("find_plugins: Found '$plugin'");
+      debug("Found '$plugin'");
       push @found_plugins, $plugin;
       if(!grep(/$dir/, @INC)) { push @INC, $dir; }
     }
@@ -414,17 +414,17 @@ sub find_plugins {
 sub load_plugin {
   my ($self, $plugin) = @_;
 
-  debug("load_plugin: loading plugin '$plugin'");
+  debug("loading plugin '$plugin'");
   # make sure the plugin isn't already loaded
   if (grep {$plugin eq $_->name} @{$self->plugins}) {
-    debug("load_plugin: plugin '$plugin' already loaded!");
+    debug("plugin '$plugin' already loaded!");
     return 0;
   }
   # try to import the plugin's package
   eval "local \$SIG{__DIE__}='DEFAULT'; require ${plugin}";
   # check for module load error
   if ($@) {
-    debug("load_plugin:   failed to load '$plugin': $@");
+    debug("  failed to load '$plugin': $@");
     return 0;
   }
   # determine path to plugin subdirectory
@@ -434,7 +434,7 @@ sub load_plugin {
   my $pluginref = eval "local \$SIG{__DIE__}='DEFAULT'; new Perlbot::Plugin::${plugin}(\$self, \$pluginpath)";
   # check for constructor error
   if ($@ or !$pluginref) {
-    debug("load_plugin:   failed construction of '$plugin': $@");
+    debug("  failed construction of '$plugin': $@");
     return 0;
   }
 
@@ -451,10 +451,10 @@ sub unload_plugin {
   my ($self, $plugin) = @_;
   my ($pluginref);
 
-  debug("unload_plugin: unloading plugin: $plugin");
+  debug("unloading plugin: $plugin");
   ($pluginref) = grep {$plugin eq $_->name} @{$self->plugins};
   if (!$pluginref) {
-    debug("unload_plugin: plugin '$plugin' not loaded!");
+    debug("plugin '$plugin' not loaded!");
     return 0;
   }
 
@@ -503,7 +503,7 @@ sub add_handler {
   #   add a hook for this event type to the ircconn, point it to our multiplexer
 
   unless ($self->handlers->{$event}) {
-    debug("    add_handler: event:$event plugin:$plugin", 4);
+    debug("    event:$event plugin:$plugin", 4);
     $self->handlers->{$event} = {};
     $self->ircconn->add_handler($event, sub { $self->event_multiplexer(@_) });
   }
@@ -525,7 +525,7 @@ sub remove_handler {
   #   if the given plugin has actually registered a callback for this type
   #     delete that callback
 
-  debug("    remove_handler: event:$event plugin:$plugin", 4);
+  debug("    event:$event plugin:$plugin", 4);
   if ($self->handlers->{$event}) {
     if ($self->handlers->{$event}{$plugin}) {
       delete $self->handlers->{$event}{$plugin};
@@ -564,7 +564,7 @@ sub event_multiplexer {
   #   else
   #     do nothing
 
-  debug("event_multiplexer: Got event '" . $event->type . "'", 3);
+  debug("Got event '" . $event->type . "'", 3);
   foreach my $plugin (keys(%{$self->handlers->{$event->type}})) {
     if (exists($self->handlers->{$event->type}{$plugin})) {
       debug("  -> dispatching to '$plugin'", 3);
@@ -583,11 +583,11 @@ sub event_multiplexer {
 sub webserver_add_handler {
   my $self = shift;
 
-  debug("WebServer: adding handler: " . join(', ', @_), 3);
+  debug("adding handler: " . join(', ', @_), 3);
 
   if (!$self->webserver) {
     # start up the webserver
-    debug('WebServer: Automatically starting web service');
+    debug('Automatically starting web service');
 
     eval 'use Perlbot::WebServer';
     if ($@) {
@@ -597,7 +597,7 @@ sub webserver_add_handler {
 
     $self->webserver = Perlbot::WebServer->new($self);
     if (!$self->webserver->start) {
-      debug('WebServer: Could not start internal web service!');
+      debug('Could not start internal web service!');
       return undef;
     }
   }
@@ -611,7 +611,7 @@ sub webserver_remove_all_handlers {
   my $self = shift;
   my $ret;
 
-  debug("WebServer: removing plugin handlers: " . join(', ', @_), 3);
+  debug("removing plugin handlers: " . join(', ', @_), 3);
 
   if (!$self->webserver) {
     return undef;
@@ -623,11 +623,11 @@ sub webserver_remove_all_handlers {
   my $num_hooks = $self->webserver->num_hooks;
   if ($num_hooks == 0) {
     # shut down the webserver
-    debug('WebServer: Automatically stopping web service');
+    debug('Automatically stopping web service');
     $self->webserver->shutdown();
     $self->webserver = undef;
   } else {
-    debug("WebServer: Still $num_hooks web hooks left", 3);
+    debug("Still $num_hooks web hooks left", 3);
   }
 
   return $ret;
@@ -688,7 +688,7 @@ sub get_user {
     return $tempusers[0];
   } elsif (@tempusers > 1) {
     debug("Multiple users matched $param !");
-    debug(Dumper(@tempusers));
+    debug(\@tempusers);
   }
 
   return undef;
@@ -727,11 +727,11 @@ sub process_queue {
   # be called again in a bit.  otherwise, just set the empty_queue flag.
   my $params = shift(@{$self->msg_queue});
   if ($params) {
-    debug("process_queue: sending head of queue: $params->[0] / $params->[1]", 3);
+    debug("sending head of queue: $params->[0] / $params->[1]", 3);
     $self->ircconn->privmsg(@$params);
     debug("==>" . $self->ircconn->schedule(1, \&process_queue, $self), 3);
   } else {
-    debug("process_queue: queue now empty", 3);
+    debug("queue now empty", 3);
     $self->empty_queue = 1;
   }
 }
