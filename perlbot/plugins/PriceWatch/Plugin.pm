@@ -66,7 +66,7 @@ sub get_pw {
     my @words = split(' ', $args);
     
     my($remote,$port,$iaddr,$paddr,$proto,$line);
-    $remote = "www.pricewatch.com";
+    $remote = "brook.pricewatch.com";
     $port = "80";
     
     if(!defined($iaddr = inet_aton($remote))) {
@@ -175,7 +175,8 @@ sub get_pw {
       $html_string = $html_string . $lala;
     }
 
-    $te = new HTML::TableExtract( headers => [qw(price brand product description shipping)] );
+#    $te = new HTML::TableExtract( depth => 0, count => 0 );
+    $te = new HTML::TableExtract( headers => [qw(Price Brand Product Description Ship)] );
 
     $te->parse($html_string);
 
