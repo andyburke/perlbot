@@ -1,3 +1,10 @@
+# Andrew Burke <burke@bitflood.org>
+#
+# Man, this is way bigger than I thought it would be
+#
+# TODO: make it use channel keys for password protection of the logs... ?
+#       make this thing die cleanly
+
 package Perlbot::Plugin::LogServer;
 
 use Perlbot::Plugin;
@@ -26,21 +33,23 @@ sub logserver {
   my $logdir = $self->{logdir};
   my $server = HTTP::Daemon->new(LocalPort => 9000) || die;
 
+  my $search = 0;
+
   while (my $connection = $server->accept()) {
     while (my $request = $connection->get_request()) {
       if ($request->method() eq 'GET') {
-        my $response = '<html><head><title>Perlbot Logs</title></head><body><center>Perlbot Logs</center><hr>';
+        my $response = '<html><head><title>Perlbot Logs</title></head><body><center><h1>Perlbot Logs</h1></center><hr>';
         my ($garbage, $chan, $year, $month, $day) = split('/', $request->url->path());
 
-        print "chan: $chan year: $year month: $month day: $day\n";
+        if($year eq 'search') {
+          $year = undef;
+          $search = 1;
+        }          
 
-        if(!$chan) {
+        if(!$chan && !$search) {
           if(opendir(DIR, $logdir)) {
             my @channels = readdir(DIR);
             closedir(DIR);
-
-            use Data::Dumper;
-            print Dumper(@channels);
 
             $response .= '<ul>';
             foreach my $channel (@channels) {
@@ -55,10 +64,11 @@ sub logserver {
             $response .= 'Could not open the bot\'s logdir!';
           }
         }
-        if($chan && !$year) {
+        if($chan && !$year && !$search) {
           if(!opendir(LOGLIST, File::Spec->catfile($logdir, $chan))) {
             $response .= "No logs for channel: $chan";
           } else {
+            $response .= "<a href=\"/${chan}/search\">[search]</a><p>";
             my @tmpfiles =  readdir(LOGLIST);
             my @logfiles = sort(@tmpfiles);
             close LOGLIST;
@@ -81,7 +91,9 @@ sub logserver {
             $response .= '</ul>';
           }
         }
-        if($chan && $year && !$month) {
+        if($chan && $year && !$month && !$search) {
+          $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[top]</a><p>";
+
           use HTML::CalendarMonth;
 
           if(!opendir(LOGLIST, File::Spec->catfile($logdir, $chan))) {
@@ -115,7 +127,8 @@ sub logserver {
           }
         }
 
-        if($chan && $year && $month && !$day) {
+        if($chan && $year && $month && !$day && !$search) {
+          $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[top]</a><p>";
           use HTML::CalendarMonth;
 
           if(!opendir(LOGLIST, File::Spec->catfile($logdir, $chan))) {
@@ -142,7 +155,8 @@ sub logserver {
           }
         }
 
-        if($chan && $year && $month && $day) {
+        if($chan && $year && $month && $day && !$search) {
+          $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[top]</a><p>";
           my $filename = File::Spec->catfile($logdir, $chan, "$year.$month.$day");
 
           if(open(FILE, $filename)) {
@@ -162,13 +176,64 @@ sub logserver {
             }
           }
         }                               
-          
+
+        if($search) {
+          if($request->uri() !~ /\?/) {
+            $response .= "<h2>Search logs for channel: $chan</h2><p>";
+            $response .= "<form method=\"get\" action=\"/${chan}/search\">";
+            $response .= "Enter words to search for: <input type=\"text\" name=\"words\"  />";
+            $response .= "<input type=\"submit\" name=\".submit\" />";
+            $response .= "</form>";
+          } else {
+            $response .= "<a href=\"/${chan}/search\">[search]</a> <a href=\"/${chan}\">[top]</a><p>";
+            my ($tmpwords) = $request->uri() =~ /words\=(.*?)(?:\&|$)/;
+            my @words = split(/\+/, $tmpwords);
+
+            if(opendir(DIR, File::Spec->catfile($logdir, $chan))) {
+              @tmp = readdir(DIR);
+              @files = sort(@tmp);
+              
+              foreach $file (@files) {
+                open(FILE, File::Spec->catfile($logdir, $chan, $file));
+                @lines = <FILE>;
+                close FILE;
+                
+                foreach $word (@words) {
+                  @lines = grep(/\Q$word\E/i, @lines);  
+                }
+                
+                foreach (@lines) {
+                  s/</&lt;/g;
+                  s/>/&gt;/g;
+                }
+                
+                if (@lines) {
+                  ($year, $month, $day) = split(/\./, $file);
+                  $response .= "<b><a href=\"/${chan}/${year}/${month}/${day}\">$file</a></b>";
+                  $response .= '<pre>';
+                  foreach my $line (@lines) {
+                    $line =~ s/(\d+:\d+:\d+)/<a href=\"\/${chan}\/${year}\/${month}\/${day}#$1\">$1<\/a>/;
+                    $response .= $line;
+                  }
+                  $response .= '</pre>';
+                }
+              }
+        
+              closedir(DIR);
+            }
+          }
+        }
+
+#        if($chan) {
+#          $response .= "<p><a href=\"/${chan}/search\">Search</a>";
+#        }
 
         $response .= '</body></html>';
         $connection->send_response(HTTP::Response->new(HTTP::Response::RC_OK,
                                                        'yay!',
                                                        HTTP::Headers->new(Content_Type => 'text/html;'),
                                                        $response));
+        $search = 0;
       }
     }
     $connection->close;
