@@ -864,6 +864,14 @@ sub dcc_chat {
   $self->{ircconn}->new_chat(1, $nick, $host);
 }
 
+sub schedule {
+  my $self = shift;
+  my $time = shift;
+  my $coderef = shift;
+
+  $self->{ircconn}->schedule($time, $coderef);
+}
+
 sub get_channel {
   my ($self, $channel) = @_;
 
@@ -876,3 +884,12 @@ sub get_channel {
 }
 
 1;
+
+
+
+
+
+
+
+
+
