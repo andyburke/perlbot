@@ -107,10 +107,18 @@ sub sodoit {
       }
       
       if($timediff > $self->delay($reply)) {
-        $self->reply($reply);
+        if(int(rand(10)) % 2 == 0) {
+          $self->addressed_ reply($reply);
+        } else {
+          $self->reply($reply);
+        }
       } else {
         sleep($self->delay($reply) - $timediff);
-        $self->reply($reply);
+        if(int(rand(10)) % 2 == 0) {
+          $self->addressed_ reply($reply);
+        } else {
+          $self->reply($reply); 
+        }
       }
     }
   } else {
@@ -141,10 +149,24 @@ sub sodoit {
     }
     
     if($timediff > $self->delay($reply)) {
-      $self->addressed_reply($reply);
+      my $replyorder = int(rand(10));
+      if($replyorder == 7) { # 1/10 chance
+        $self->reply($reply); # don't put on a nick
+      } elsif($replyorder % 3 == 0) { # ~ 1/3 chance
+        $self->reply($reply . ", $theirnick"); # put their nick on the end
+      } else { # the rest
+        $self->addressed_reply($reply);
+      }
     } else {
       sleep($self->delay($reply) - $timediff);
-      $self->addressed_reply($reply);
+      my $replyorder = int(rand(10));
+      if($replyorder == 7) { # 1/10 chance
+        $self->reply($reply); # don't put on a nick
+      } elsif($replyorder % 3 == 0) { # ~ 1/3 chance
+        $self->reply($reply . ", $theirnick"); # put their nick on the end
+      } else { # the rest
+        $self->addressed_reply($reply);
+      }
     }
   }
 
