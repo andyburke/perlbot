@@ -19,7 +19,6 @@ use HTTP::Response;
 use HTTP::Headers;
 use HTTP::Status;
 use XML::Simple;
-use Data::Dumper;
 
 our $VERSION = '1.0.0';
 
@@ -42,12 +41,14 @@ sub init {
   $self->want_msg(0);
   $self->want_fork(0);
 
-  # remember we get a 'topic' even on channel joins too, so nothing
-  # extra is needed to capture the initial topic.
+  # remember we get a 'topic' even on channel joins, so nothing extra is
+  # needed to capture the initial topic. (note it's a 'server' type event)
   $self->hook_event('topic', \&set_topic);
+  # ('topicinfo' tells us *who* set the topic, should anyone want to grab that too)
   $self->hook(\&set_lastline);
 
-  $self->{_topic_cache} = {};
+  $self->{_topics} = {};
+
 
   $self->timer;  # fire off the cycle
 }
@@ -88,7 +89,7 @@ sub handle_request {
         my $data = {};
 
         foreach my $channel (values %{$self->perlbot->channels}) {
-          $chan_data = {name => $channel->name, topic => $self->{_topic_cache}{$channel->name}};
+          $chan_data = {name => $channel->name, topic => $self->{_topics}{$channel->name}};
           push @{$data->{channel}}, $chan_data;
         }
 
@@ -113,8 +114,18 @@ sub set_topic {
   my ($event) = @_;
 
   my @args = $event->args;
-  $self->{_topic_cache}{$args[1]} = $args[2];
-  print Dumper $self->{_topic_cache};
+  my ($channel, $topic);
+  if ($event->format eq 'server') {
+    $channel = $args[1];
+    $topic = $args[2];
+  } elsif ($event->format eq 'topic') {
+    $channel = $event->to->[0];
+    $topic = $args[0];
+  } else {
+    debug("StatsServer: unexpected event format");
+  }
+  $topic =~ s/ $//; # strip trailing space
+  $self->{_topics}{$channel} = $topic;
 }
 
 
