@@ -279,13 +279,13 @@ sub special_case_hack {
     my $matched_section;
     my $tmpmatched_section;
     foreach $tempkey (keys(%dict)) {
-      foreach my $word (@words) {
-	if($tempkey eq join(' ', @words)) {
-	  $key = $tempkey;
-	  $matched_section = $key;
-	  last;
-	}
+      if($tempkey eq join(' ', @words)) {
+        $key = $tempkey;
+        $matched_section = $key;
+        last;
+      }
 
+      foreach my $word (@words) {
 	# the \Q and \E keep
 	# $word from being used
 	# as a regexp
@@ -314,9 +314,12 @@ sub special_case_hack {
     $clean_key =~ s/ //g;
 
     if(length($clean_key) > 0) {
-      print "<$key> matched <" . join(' ', @words) . "> with strength: " . length($matched_section) / length($clean_key) . "\n" if $debug;
-      
-      if((length($matched_section) / length($clean_key)) > .5) {
+      my $matchstrength = length($matched_section) / length($clean_key);
+      my $unmatchedstrength = length(join('', @words)) / length ($clean_key);
+
+#      print "<$key> matched <" . join(' ', @words) . "> with strength: " . $strength . " (" . length($matched_section) . " / " . length($clean_key) . " )\n" if $debug;
+
+      if(($matchstrength > .5) && ($unmatchedstrength < 3.1)) {
 	$conn->privmsg($who, "$key $reply_connector $dict{$key}");
       }
     }
