@@ -24,6 +24,8 @@ sub init {
 
   $self->{minquestionsanswered} = 25;
 
+  $self->{gameid} = '';
+
   $self->{question} = -1;
 
   $self->{questions} = {};
@@ -89,6 +91,7 @@ sub starttrivia {
   }
 
   $self->{state} = 'playing';
+  $self->{gameid} = time();
 
   my ($numquestions) = $text =~ /(\d+)/;
   $numquestions ||= 15;
@@ -98,6 +101,8 @@ sub starttrivia {
   $self->reply("  To register to play in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "playing");
   $self->reply("  To stop playing in this game, type " . $self->perlbot->config->value(bot => 'commandprefix') . "stopplaying");
   $self->reply("  Lines beginning with a '.' will not be counted as answers.");
+
+  srand();
 
   $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });
 }
