@@ -9,10 +9,11 @@ use Perlbot::Utils;
 
 sub new {
   my $class = shift;
-  my ($filename) = (@_);
+  my ($filename, $readonly) = (@_);
 
   my $self = {
     _filename => $filename,
+    _readonly => $readonly ? 1 : undef,
     _config => {},
   };
 
@@ -23,7 +24,7 @@ sub new {
   #   try to load the config
   #   if we can't, then return undef
 
-  if(!$filename) {
+  if (!$filename) {
     return $self;
   } else {
     $self->load or $self = undef;
@@ -43,7 +44,14 @@ sub load {
 sub save {
   my ($self) = @_;
 
-  write_generic_config($self->{_filename}, $self->{_config});
+  debug("Config::save: attempting to save $self->{_filename} ...");
+  if ($self->{_readonly}) {
+    debug("  Config object is read-only; aborting");
+    return 0;
+  }
+  my $ret = write_generic_config($self->{_filename}, $self->{_config});
+  debug($ret ? "  success" : "  failure");
+  return $ret;
 }
 
 
