@@ -59,7 +59,7 @@ pretend you're writing a plugin to pull headlines from the (fictional)
 website, www.perlbot-news.com.  You might choose to handle the 'public' and
 'msg' events, and display the headlines if the text from these events begins
 with '!perlbotnews'.  (In practice, your regular expression(s) must use
-$pluginchar, from the Perlbot package, instead of '!', as this is a
+$pluginprefix, from the Perlbot package, instead of '!', as this is a
 configurable option)  This would allow people to say '!perlbotnews' in a
 channel with the bot, or in a private message to it, in order to retrieve
 the headlines.  If someone messages the bot privately, your plugin should
@@ -465,13 +465,13 @@ load plugins.
 - If your plugin listens for users to say a key phrase in the form of
   '!command', then make sure you look for that phrase only at the
   beginning of an event's text (use a regexp like
-  /^${pluginchar}command/ -- OBEY $pluginchar !!!).
+  /^${pluginprefix}command/ -- OBEY $pluginprefix !!!).
 
 - If your plugin scans all public/msg text for certain phrases (for
   example, "what is X" or "where can I find Y") or passes all the text on to
   some entity (such as an artificial intelligence program or module), make
-  sure you do NOT scan or pass on lines that start with $pluginchar or
-  $commandchar, unless you are SURE this is what you want to do.  If you
+  sure you do NOT scan or pass on lines that start with $pluginprefix or
+  $commandprefixr, unless you are SURE this is what you want to do.  If you
   have a plugin that looks for "!spell <a list of words to spellcheck>" and
   another that looks for "what is X" in general speech, you don't want the
   second plugin to trigger when someone says "!spell what is yor questt?" 
