@@ -1,8 +1,10 @@
 package Perlbot::Channel;
 
-use Perlbot::Logs;
+use Perlbot::LogFile;
 use strict;
 
+use vars qw($AUTOLOAD %FIELDS);
+use fields qw(config name log members perlbot);
 
 sub new {
   my $class = shift;
@@ -13,16 +15,30 @@ sub new {
     $singlelogfile = 1;
   }
 
-  my $self = {
-    config   => $config,
-    name     => $name,
-    log      => new Perlbot::Logs($config->value(bot => 'logdir'), $name, $singlelogfile),
-    members  => {},
-    perlbot  => $perlbot
-  };
+  my $self = fields::new($class);
 
-  bless $self, $class;
+  $self->config = $config;
+  $self->name = $name;
+  $self->log = new Perlbot::LogFile($config->value(bot => 'logdir'), $name, $singlelogfile);
+  $self->members = {};
+  $self->perlbot = $perlbot;
+
   return $self;
+}
+
+sub AUTOLOAD : lvalue {
+  my $self = shift;
+  my $field = $AUTOLOAD;
+
+  $field =~ s/.*:://;
+
+  if(!exists($FIELDS{$field})) {
+    return;
+  }
+
+  debug("AUTOLOAD:  Got call for field: $field", 15);
+
+  $self->{$field};
 }
 
 sub log_write {
@@ -30,22 +46,6 @@ sub log_write {
     if ($self->is_logging) {
 	$self->{log}->write(@_);
     }
-}
-
-sub config {
-  my $self = shift;
-  return $self->{config};
-}
-
-# name is read-only!
-sub name {
-    my $self = shift;
-    return $self->{name};
-}
-
-sub perlbot {
-  my $self = shift;
-  return $self->{perlbot};
 }
 
 sub flags {
