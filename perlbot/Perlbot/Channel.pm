@@ -1,7 +1,6 @@
 package Perlbot::Channel;
 
 use Perlbot::Utils;
-use Perlbot::LogFile;
 use strict;
 
 use vars qw($AUTOLOAD %FIELDS);
