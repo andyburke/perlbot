@@ -274,6 +274,20 @@ Table of Contents
             ...
           </bot>
 
+    username
+      - This allows you to set the username that will be displayed
+        on irc on machines not running ident.  Ie, if normally the
+        bot appears as ~you@someplace.com, but setting the username
+        to blahblah, it would appear as ~blahblah@someplace.com
+
+        Example:
+
+          <bot nick="perlbot"
+               username="blahblah">
+            ...
+            ...
+          </bot>
+
   3.2  server
   -----------
 
