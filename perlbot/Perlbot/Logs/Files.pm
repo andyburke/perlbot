@@ -34,7 +34,7 @@ sub AUTOLOAD : lvalue {
 
   debug("Got call for field: $field", 15);
 
-  if(!exists($FIELDS{$field})) {
+  if (!exists($FIELDS{$field})) {
     die "AUTOLOAD: no such method/field '$field'";
   }
 
@@ -91,7 +91,7 @@ sub log_event {
   my $event = new Perlbot::Logs::Event(shift, $self->channel);
   my $base = '%hour:%min:%sec ';
 
-  if (! $self->file->opened) { $self->open(); } 
+  $self->open unless $self->file->opened;
 
   unless (Perlbot::Utils::perlbot_date_filename(time()) eq
           Perlbot::Utils::perlbot_date_filename($self->curtime)) {
@@ -102,7 +102,7 @@ sub log_event {
 
 #  $self->file->print($event->as_string . "\n");
 
-  if($event->type eq 'public') {
+  if ($event->type eq 'public') {
     $self->file->print($event->as_string_formatted($base . '<%nick> %text') . "\n");
   } elsif($event->type eq 'caction') {
     $self->file->print($event->as_string_formatted($base . '* %nick %text') . "\n");
@@ -144,11 +144,11 @@ sub search {
 
   my $channel = Perlbot::Utils::strip_channel($self->channel);
 
-  if(opendir(DIR, File::Spec->catfile($self->directory, $channel))) {
+  if (opendir(DIR, File::Spec->catfile($self->directory, $channel))) {
     my @tmp = readdir(DIR);
     my @files = sort(@tmp);
 
-    foreach my $file (@files) {
+    FILE: foreach my $file (@files) {
       my $initialdate_string = Perlbot::Utils::perlbot_date_filename($initialdate);
       my $finaldate_string = Perlbot::Utils::perlbot_date_filename($finaldate);
 
@@ -176,19 +176,19 @@ sub search {
         my $add_to_result = 1;
 
         foreach my $term (@terms) {
-          if($event->text !~ /$term/i) {
+          if ($event->text !~ /$term/i) {
             $add_to_result = 0;
             last;
           }
         }
 
-        if($add_to_result) {
+        if ($add_to_result) {
           push(@result, $line);
           $resultcount++;
         }
-        last if defined($maxresults) and $resultcount >= $maxresults;
+        last FILE if defined($maxresults) and $resultcount >= $maxresults;
       }
-      last if defined($maxresults) and $resultcount >= $maxresults;
+
     }
   }
 

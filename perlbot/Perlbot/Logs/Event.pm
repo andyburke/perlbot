@@ -25,22 +25,23 @@ sub AUTOLOAD : lvalue {
 
   $field =~ s/.*:://;
 
-  if(!exists($FIELDS{$field})) {
-    return;
-  }
-
   debug("Got call for field: $field", 15);
+
+  if (!exists($FIELDS{$field})) {
+    die "AUTOLOAD: no such method/field '$field'";
+  }
 
   $self->{$field};
 }
 
 sub parse_rawevent() {
   my $self = shift;
-  my $event = $self->rawevent;
+  my $channel = shift;
 
+  my $event = $self->rawevent;
   my $eventclass = ref($event);
 
-  if(!$eventclass) { # scalar
+  if (!$eventclass) { # scalar
     $self->time = ctime_from_perlbot_date_string($event);
 
     $event =~ s/^.*?\s//; # eat the date off it
@@ -52,7 +53,7 @@ sub parse_rawevent() {
     $self->type = lc($self->type);
     $event =~ s/\[.*?\]\s//; # eat off the type
 
-    if($self->type eq 'public') {
+    if ($self->type eq 'public') {
       ($self->nick, $self->text) = $event =~ /^<(.*?)> (.*)$/;
     } elsif($self->type eq 'caction') {
       ($self->nick, $self->text) = $event =~ /^\* (.*?) (.*)$/;
@@ -72,19 +73,19 @@ sub parse_rawevent() {
       ($self->nick, $self->userhost) = $event =~ /^(.*?) \((.*?)\)/;
     }
 
-  } elsif($eventclass eq 'Net::IRC::Event') { # a Net::IRC event
+  } elsif ($eventclass eq 'Net::IRC::Event') { # a Net::IRC event
     $self->time = time();
     $self->type = $event->type;
     $self->nick = $event->nick;
-    $self->channel = shift;
+    $self->channel = $channel;
     $self->text = $event->{args}[0];
     $self->userhost = $event->userhost;
 
     # why can't irc be sane?
 
-    if($self->type eq 'mode') {
+    if ($self->type eq 'mode') {
       $self->text = join(' ', @{$event->{args}});
-    } elsif($self->type eq 'kick') {
+    } elsif ($self->type eq 'kick') {
       $self->target = $event->{to}[0];
       $self->text = $event->{args}[1];
     }
