@@ -93,7 +93,7 @@ sub shutdown {
   }
 
   # save out our in-memory config file
-  $self->config->write;
+  $self->config->save;
 
   # sleep a couple seconds to let everything fall apart
   print "Sleeping 2 seconds...\n" if $DEBUG;

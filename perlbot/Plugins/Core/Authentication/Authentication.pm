@@ -64,7 +64,7 @@ sub password {
 
   $newpassword = crypt($newpassword, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
   $self->{perlbot}->config->value(user => $user->{name} => 'password') = $newpassword;
-  $self->{perlbot}->config->write;
+  $self->{perlbot}->config->save;
   $user->password($newpassword);
 
   $self->reply('Password successfully changed');
@@ -106,7 +106,7 @@ sub addhostmask {
     $self->reply_error("Your user object doesn't exist, that is bad... contact your bot admin");
   } else {
     push(@{$self->{perlbot}->config->value(user => $user->{name} => 'hostmask')}, $hostmask);
-    $self->{perlbot}->config->write;
+    $self->{perlbot}->config->save;
     $user->hostmasks($hostmask);
     $self->reply("Permanently added $hostmask to your list of hostmasks.");
   }
@@ -143,7 +143,7 @@ sub delhostmask {
 
   splice(@{$self->{perlbot}->config->value(user => $user->{name} => 'hostmask')},
          $whichhost, 1);
-  $self->{perlbot}->config->write;
+  $self->{perlbot}->config->save;
   $self->reply("Permanently removed $hostmask from your list of hostmasks.");
 
 }

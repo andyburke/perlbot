@@ -44,7 +44,7 @@ sub useradmin {
   if ($command eq 'add') {
     $self->{perlbot}->config->value(user => $username) = {};
     $self->{perlbot}{users}{$username} = new Perlbot::User($username);
-    $self->{perlbot}->config->write;
+    $self->{perlbot}->config->save;
     $self->reply("Added user: $username");
 
   } elsif ($command eq 'remove') {
@@ -54,7 +54,7 @@ sub useradmin {
     }
     # hash lookup must be performed "outside" of ->value call for delete to work
     delete $self->{perlbot}->config->value('user')->{$username};
-    $self->{perlbot}->config->write;
+    $self->{perlbot}->config->save;
     $self->reply("Removed user: $username");
 
   } elsif ($command eq 'hostmasks') {
@@ -81,7 +81,7 @@ sub useradmin {
     } else {
       push(@{$self->{perlbot}->config->value(user => $username => 'hostmask')},
            $hostmask);
-      $self->{perlbot}->config->write;
+      $self->{perlbot}->config->save;
       $self->{perlbot}{users}{$username}->hostmasks($hostmask);
       $self->reply("Permanently added $hostmask to ${username}'s list of hostmasks.");
     }
@@ -109,7 +109,7 @@ sub useradmin {
     }
     splice(@{$self->{perlbot}->config->value(user => $username => 'hostmask')},
            $whichhost, 1);
-    $self->{perlbot}->config->write;
+    $self->{perlbot}->config->save;
     $self->reply("Permanently removed $hostmask from ${username}'s list of hostmasks.");
 
   } elsif ($command eq 'password') {
@@ -125,7 +125,7 @@ sub useradmin {
     my $newpass = crypt($password, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
     $self->{perlbot}->config->value(user => $username => 'password') = $newpass;
     $self->{perlbot}{users}{$username}{password} = $newpass;
-    $self->{perlbot}->config->write;
+    $self->{perlbot}->config->save;
     $self->reply("Password saved for user: $username");
 
   } elsif($command eq 'addop') {
@@ -150,7 +150,7 @@ sub useradmin {
     push(@{$self->{perlbot}->config->value(channel => $channel => 'op')},
          $username);
     $self->{perlbot}{channels}{$channel}{ops}{$username} = 1;
-    $self->{perlbot}->config->write;
+    $self->{perlbot}->config->save;
     $self->reply("Added $username to the list of ops for $channel");
 
   } else {
