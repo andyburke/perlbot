@@ -1,4 +1,5 @@
 	body {
+                font: 10pt/1.1 Verdana, Arial, Helvetica, sans-serif;
 		color: black; 
 		background: #FFFFFF;
 	}
@@ -28,26 +29,34 @@
 	}
 
 	input,select {
-		font-size: 10px;
+		font-size: smaller;
                 border: 1px solid;
 	}
 
 	.title	{ 
-		font-size: 14px; 
+		font-size: x-large; 
 		font-weight: bold;
+                width: 99%;
+                border-bottom: 1px solid;
 	}			
 		
 	.date	{ 
-		font-size: 14px;
+		font-size: larger;
 		font-weight: bold; 
 		border-bottom: 1px solid;
 	}			
 
         .dateheader {
-                font-size: 14px;
+                font-size: larger;
                 font-weight: bold;
                 border-bottom: 1px solid;
                 width: 95%;
+        }
+
+        .time {
+                font-size: 10pt;
+                font-family: Helvetica, sans-serif;
+                line-heigh: 1.2;
         }
 
         .block {
@@ -59,4 +68,56 @@
                 background: #F9F9F9;
                 border: 1px solid;
                 margin: 10px;
+        }
+
+        .table {
+                background: #FFFFFF;
+        }
+
+        .tableheader {
+                background: #D0D0D0;
+        }
+
+        .tablesubheader {
+                background: #E0E0E0;
+        }
+
+        .irctext {
+                font-size: 10pt;
+                font-family: Courier, monospace;                
+                line-height: 1.2;
+        }
+
+        .public {
+        }
+
+        .caction {
+        }
+
+        .mode {
+                color: orange;
+        }
+
+        .topic {
+                color: green;
+        }
+
+        .join {
+                color: blue;
+        }
+
+        .part {
+                color: blue;
+        }
+
+        .nick {
+                color: brown;
+        }
+
+        .quit {
+                color: purple;
+        }
+
+        .kick {
+                color: red;
         }
