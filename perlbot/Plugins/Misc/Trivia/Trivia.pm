@@ -48,15 +48,19 @@ sub init {
   
   $self->{percentageranks} = {};
   $self->{winsranks} = {};
-  $self->{winstimespercentageranks} = {};
+  $self->{performanceranks} = {};
+
   $self->{percentagerank} = {};
   $self->{winsrank} = {};
-  $self->{winstimespercentagerank} = {};
+  $self->{performancerank} = {};
 
   $self->{askedtime} = 0;
   
   $self->{fastest} = {};
   tie %{$self->{fastestoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'fastestoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+
+  $self->{performance} = {};
+  tie %{$self->{performanceoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'performanceoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
 
   $self->{curquestion} = 1;
@@ -234,8 +238,26 @@ sub answer {
 
     $timerank = $self->{timeranks}{$nick};
 
+    my $numanswerers = @{keys(%{$self->{answeredthisquestion}})};
+    if(!defined($self->{performanceoverall}{$nick})) {
+      $self->{performanceoverall}{$nick} = 0;
+    }
+    $self->{performanceoverall}{$nick} = $self->{performanceoverall}{$nick} + $numanswerers - 1;
+
+    my @perfranks = $self->rankplayersbyperformance($self->getqualifyingplayers());
+    my $oldperfrank = $self->{performanceranks}{$nick};
+    
+    my $perfrank = 1;
+    foreach my $name (@perfranks) {
+      $self->{perfranks}{$name} = $perfrank;
+      $perfrank++;
+    }
+
+    $perfrank = $self->{performanceranks}{$nick};
+
+
     $self->reply("The answer was: $answer");
-    $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} %R:$percentagerank WR:$winsrank TR:$timerank");
+    $self->reply("Winner: $nick  T:$timediff($self->{fastestoverall}{$nick}) S:" . $self->score($nick) . "% W:$self->{correctlyanswered}{$nick} TA:$self->{totalanswered}{$nick} %R:$percentagerank WR:$winsrank TR:$timerank PR:$perfrank");
     $self->reply("        This round: FT:$self->{fastest}{$nick} S:" . sprintf("%0.1f", 100 * ($self->{score}{$nick} / $self->{answeredthisround}{$nick})) . "% W:$self->{score}{$nick} A:$self->{answeredthisround}{$nick}");
 
     if($timediff < $self->{fastest}{$nick}) {
@@ -260,11 +282,18 @@ sub answer {
       $self->reply("Sad day, $nick has dropped from $oldwinsrank to $winsrank in the overall wins standings...");
     }
 
-    if(defined($oldtimerank) && $timerank < $timerank) {
+    if(defined($oldtimerank) && $timerank < $oldtimerank) {
       $self->reply("$nick has moved up in the fastest time standings from $oldtimerank to $timerank!!");
     }
     if(defined($oldtimerank) && $timerank > $oldtimerank) {
       $self->reply("Sad day, $nick has dropped from $oldtimerank to $timerank in the fastest time standings...");
+    }
+
+    if(defined($oldperfrank) && $perfrank < $oldperfrank) {
+      $self->reply("$nick has moved up in the performance standings from $oldperfrank to $perfrank!!");
+    }
+    if(defined($oldperfrank) && $perfrank > $oldperfrank) {
+      $self->reply("Sad day, $nick has dropped from $oldperfrank to $perfrank in the performance standings...");
     }
     
     
@@ -402,7 +431,7 @@ sub triviatop {
   if($num > 10) { $num = 10; }
 
   $self->reply("Top $num trivia players are: (you must answer at least $self->{minquestionsanswered} questions to be ranked!)");
-  my $headers = sprintf("%-18s", '% Rankings:') . sprintf("%-18s", 'Wins Rankings:') . sprintf("%-18s", 'Time Rankings:') . sprintf("%-18s", 'W x % Rankings:');
+  my $headers = sprintf("%-18s", '% Rankings:') . sprintf("%-18s", 'Wins Rankings:') . sprintf("%-18s", 'Time Rankings:') . sprintf("%-18s", 'Performance Rankings:');
   $self->reply($headers);
 
   my @ranks = $self->rankplayersbypercentage($self->getqualifyingplayers());
@@ -433,11 +462,11 @@ sub triviatop {
     }
   }
 
-  @ranks = $self->rankplayersbywinstimespercentage($self->getqualifyingplayers());
+  @ranks = $self->rankplayersbyperformance($self->getqualifyingplayers());
   $rank = 1;
   foreach my $name (@ranks) {
     if($response[$rank - 1]) {
-      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-18s", "$rank " . sprintf("%-8s", $name) . "(" . sprintf("%d", ($self->{correctlyanswered}{$name} * $self->score($name))/100) . ")");
+      $response[$rank - 1] = $response[$rank - 1] . sprintf("%-18s", "$rank " . sprintf("%-8s", $name) . "(" . sprintf("%d", $self->{performanceoverall}{$name}) . ")");
       $rank++;
       if($rank >= $num + 1) { last; }
     }
@@ -492,17 +521,17 @@ sub triviastats {
     $timerank = $self->{timeranks}{$nick};
     $timerank ||= 'n/a';
 
-    my @wpranks = $self->rankplayersbywinstimespercentage($self->getallplayers());
-    my $wprank = 1;
-    foreach my $name (@wpranks) {
-      $self->{winstimespercentageranks}{$name} = $wprank;
-      $wprank++;
+    my @perfranks = $self->rankplayersbyperformance($self->getallplayers());
+    my $perfrank = 1;
+    foreach my $name (@perfranks) {
+      $self->{performanceranks}{$name} = $perfrank;
+      $perfrank++;
     }
 
-    $wprank = $self->{winstimespercentageranks}{$nick};
-    $wprank ||= 'n/a';
+    $perfrank = $self->{performanceranks}{$nick};
+    $perfrank ||= 'n/a';
 
-    $self->reply("$nick: %R:$percentagerank  WR:$winsrank  TR:$timerank  W%R:$wprank  W:$self->{correctlyanswered}{$nick}  TA:$self->{totalanswered}{$nick}  S:" . $self->score($nick) . "%  FT: $self->{fastestoverall}{$nick}");
+    $self->reply("$nick: %R:$percentagerank  WR:$winsrank  TR:$timerank  PR:$perfrank  W:$self->{correctlyanswered}{$nick}  TA:$self->{totalanswered}{$nick}  S:" . $self->score($nick) . "%  FT: $self->{fastestoverall}{$nick}");
   }
 }
 
@@ -565,12 +594,11 @@ sub rankplayersbytime {
   return @ranks;
 }
 
-sub rankplayersbywinstimespercentage {
+sub rankplayersbyperformance {
   my $self = shift;
   my @players = @_;
 
-  my @ranks = sort { $self->score($b)*$self->{correctlyanswered}{$b} <=>
-                     $self->score($a)*$self->{correctlyanswered}{$a} }
+  my @ranks = sort { $self->{performanceoverall}{$a} <=> $self->{performaceoverall}{$b} }
                    @players;
 
   return @ranks;
