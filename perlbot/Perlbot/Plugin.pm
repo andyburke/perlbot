@@ -287,9 +287,6 @@ sub _process { # _process to stay out of people's way
   foreach my $admin_hook (keys(%{$self->{admin_hooks}})) {
     my $regexp = $self->{perlbot}->config(bot => 'commandprefix') . $admin_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
-      use Data::Dumper;
-      print Dumper($user);
-
       if($user && $user->is_admin()) {
         my $texttocallwith = $text;
         $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
