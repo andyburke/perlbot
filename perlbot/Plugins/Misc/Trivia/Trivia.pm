@@ -147,43 +147,45 @@ sub answer {
 
   my $correct = 0;
 
-  if(length($answer) < 5) {
-    if(lc($answer) eq lc($text)) { $correct = 1; }
-  } else {
+  my $tmpanswer = $answer;
+  my $tmptext = $text;
 
-    my $tmpanswer = $answer;
-    my $tmptext = $text;
-
-    $tmpanswer =~ s/(the|a)\s+//g;
-    $tmptext =~ s/(the|a)\s+//g;
-
-    my @answerwords = split(' ', $tmpanswer);
-    my @guesswords = split(' ', $tmptext);
-
-    use Data::Dumper;
-    print "answer: " . Dumper(@answerwords);
-    print "guess : " . Dumper(@guesswords);
-
-    if(length(@answerwords) != length(@guesswords)) {
-      return;
-    }
-
-    if(length(@answerwords) > 1) { 
-      my $right;
-      for($right = 0; $right < length(@guesswords); $right++) {
-        if(defined($answerwords[$right]) && defined($guesswords[$right])) {
-          if(!amatch(lc($answerwords[$right]), lc($guesswords[$right]))) { last; }
+  $tmpanswer =~ s/(the|a)\s+//ig;
+  $tmptext =~ s/(the|a)\s+//ig;
+  
+  my @answerwords = split(' ', $tmpanswer);
+  my @guesswords = split(' ', $tmptext);
+  
+  if(length(@answerwords) != length(@guesswords)) {
+    return;
+  }
+  
+  my $numwords = @answerwords;
+  print "numwords: $numwords\n";
+  my $right = 0;
+  my $i;
+  for($i = 0; $i < $numwords; $i++) {
+    if(defined($answerwords[$i]) && defined($guesswords[$i])) {
+      print "comparing: $answerwords[$i] to guess: $guesswords[$i]\n";
+      if(length($answerwords[$i]) < 5) {
+        if(lc($answerwords[$i]) eq lc($guesswords[$i])) {
+          $right++;
+          print "  short and correct\n";
+        } else {
+          print "  short and incorrect\n";
+        }
+      } else {
+        if(amatch(lc($answerwords[$i]), lc($guesswords[$i]))) {
+          $right++;
+          print "  long and correct\n";
+        } else {
+          print "  long and incorrect\n";
         }
       }
-
-      if($right == length(@answerwords)) {
-        $correct = 1;
-      }
-    } else {
-      if(!amatch(lc($answerwords[0]), lc($guesswords[0]))) { $correct = 1; }
     }
-
   }
+
+  if($right == $numwords) { $correct = 1; }
 
   if($correct) {
     my $timediff = sprintf("%0.2f", time() - $self->{askedtime});
