@@ -15,6 +15,7 @@ sub init {
   $self->want_fork(0);
 
   $self->hook_event('public', \&update);
+  $self->hook_event('msg', \&update);
   $self->hook_event('caction', \&update);
   $self->hook_event('join', \&update);
   $self->hook_event('part', \&update);
@@ -119,7 +120,7 @@ sub update {
   } 
 
   if ($user) {
-    $user->curnick($nick);
+    $user->curnick = $nick;
   }
 
   return $user;
