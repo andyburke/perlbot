@@ -1,1 +1,1 @@
-Prints out a calendar for the current month,\\or the specified month/year.\\syntax: !cal [[month] [year]]\\  (-m and -j also work as in the unix cal program)
+Prints out a calendar for the current month,\\or the specified month/year.\\syntax: !cal [month year]\\  (you need to specify both or nothing)

@@ -50,18 +50,19 @@ sub cal {
   } else {
     # child...
 
-    ($in = $event->{args}[0]) =~ s/^!cal\s*//;
+    # strip !cal command, and leading/trailing spaces
+    ($in = $event->{args}[0]) =~ s/^!cal\s*(.*?)\s*/$1/;
 
     $in =~ s/\`//g; #security?
     $in =~ s/\$//g;
     $in =~ s/\|//g;
 
     my @cal;
-    # -y gives a calendar for the whole year.. TOO BIG :)
-    if ($in =~ /-\w*y/) {
-      @cal = ("-y eh?  What are you trying to pull here?");
-    } else {
-      @cal = `cal $in`;
+    # no options allowed.  if month is to be specified,
+    # year must be specified as well.
+    my ($params) = $in =~ /^(\d+\s+\d+)$/;
+    if ($params !~ /-/) {
+      @cal = `cal $params`;
     }
 
     chomp @cal;
