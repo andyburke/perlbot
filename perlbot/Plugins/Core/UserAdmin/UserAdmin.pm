@@ -43,8 +43,10 @@ sub useradmin {
     return;
   }
 
+  $command = lc($command);
+
   my $other_user = $self->perlbot->get_user($username);
-  if (grep {$_ eq $command} qw(remove hostmasks addhostmask delhostmask password addop)) {
+  if (grep {$_ eq $command} qw(remove hostmasks addhostmask removehostmask password addop removeop addadmin removeadmin)) {
     if (!$other_user) {
       $self->reply("$username is not a known user!");
       return;
@@ -86,14 +88,14 @@ sub useradmin {
       $self->reply("Permanently added $hostmask to ${username}'s list of hostmasks.");
     }
 
-  } elsif ($command eq 'delhostmask') {
+  } elsif ($command eq 'removehostmask') {
     my $hostmask = $arguments;
     if (!$hostmask) {
-      $self->reply('You must specify a hostmask to delete!');
+      $self->reply('You must specify a hostmask to remove!');
       return;
     }
     my $old_num = $other_user->hostmasks;
-    $other_user->del_hostmask($hostmask);
+    $other_user->remove_hostmask($hostmask);
     if ($old_num == $other_user->hostmasks) {
       $self->reply("$hostmask is not in ${username}'s list of hostmasks!");
     } else {
@@ -135,7 +137,7 @@ sub useradmin {
       $self->reply("Could not add $username to the list of ops for $channame");
     }
 
-  } elsif ($command eq 'delop') {
+  } elsif ($command eq 'removeop') {
     my $channame = Perlbot::Utils::normalize_channel($arguments);
     if (!$channame || !$username) {
       $self->reply_error('You must specify both a channel and a username!');
@@ -157,6 +159,20 @@ sub useradmin {
     } else {
       $self->reply("Could not remove $username from the list of ops for $channame");
     }
+  } elsif($command eq 'addadmin') {
+    if($self->perlbot->is_admin($other_user)) {
+      $self->reply_error("$username is already a bot admin!");
+    } else {
+      $self->perlbot->add_admin($other_user);
+      $self->reply("Added $username as a bot admin!");
+    }
+  } elsif($command eq 'removeadmin') {
+    if($self->perlbot->is_admin($other_user)) {
+      $self->perlbot->remove_admin($other_user);
+      $self->reply("Removed $username from the list of bot admins!");
+    } else {
+      $self->reply_error("$username is not in the list of bot admins!");
+    }
   } else {
     $self->reply_error("Unknown command: $command");
     return;
@@ -168,3 +184,10 @@ sub useradmin {
 
 
 1;
+
+
+
+
+
+
+
