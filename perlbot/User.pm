@@ -95,13 +95,10 @@ sub hostmasks {
         $hostmask =~ s/\02/[}\\]]/g;
         $hostmask =~ s/\03/[|\\\\]/g;
 
-use Data::Dumper;
         if(!grep { /^\Q$hostmask\E$/ } @{$self->{hostmasks}}) { # don't add duplicates
           push @{$self->{hostmasks}}, $hostmask;
         }
     }
-
-print Dumper($self);
 
     return $self->{hostmasks};
 }
