@@ -7,7 +7,7 @@
 #
 # Ported to the new plugin interface by burke@bitflood.org
 
-package Internals::Plugin;
+package Perlbot::Plugin::Internals;
 
 use Plugin;
 @ISA = qw(Plugin);

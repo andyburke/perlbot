@@ -2,7 +2,7 @@
 #
 # This will get you the latest, lowest price from www.pricewatch.com
 
-package PriceWatch::Plugin;
+package Perlbot::Plugin::PriceWatch;
 
 use Plugin;
 @ISA = qw(Plugin);

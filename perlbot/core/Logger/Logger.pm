@@ -1,6 +1,6 @@
-package Logger::Plugin;
+package Perlbot::Plugin::Logger;
 
-use PerlbotUtils;
+use Perlbot::Utils;
 use Perlbot;
 use User;
 use Plugin;

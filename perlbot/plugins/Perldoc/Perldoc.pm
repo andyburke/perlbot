@@ -1,13 +1,12 @@
 # Perldoc
 # Andrew Burke burke@bitflood.org
 
-package Perldoc::Plugin;
+package Perlbot::Plugin::Perldoc;
 
 use Plugin;
 @ISA = qw(Plugin);
 
-use Perlbot;
-use PerlbotUtils;
+use Perlbot::Utils;
 
 sub init {
   my $self = shift;
@@ -25,7 +24,7 @@ sub perldoc {
 
   $max ||= 10;
 
-  my @result = PerlbotUtils::exec_command('perldoc', $text);
+  my @result = Perlbot::Utils::exec_command('perldoc', $text);
 
   my $linenum = 0;
   foreach my $line (@result) {

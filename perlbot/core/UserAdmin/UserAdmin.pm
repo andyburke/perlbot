@@ -3,12 +3,12 @@
 # This plugin munges the in-memory config and writes it back out,
 # careful
 
-package UserAdmin::Plugin;
+package Perlbot::Plugin::UserAdmin;
 
 use Plugin;
 @ISA = qw(Plugin);
 
-use PerlbotUtils;
+use Perlbot::Utils;
 use User;
 
 sub init {

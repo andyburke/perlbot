@@ -5,13 +5,10 @@
 # Kevin Lenzo and friends are the ones responsible for this in the
 # first place, check their stuff out at www.infobot.org
 
-package InfoBot::Plugin;
+package Perlbot::Plugin::InfoBot;
 
 use Plugin;
 @ISA = qw(Plugin);
-
-use Perlbot;
-use PerlbotUtils;
 
 sub init {
   my $self = shift;

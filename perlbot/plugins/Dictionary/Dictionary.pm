@@ -2,15 +2,13 @@
 #
 # dictionary
 
-package Dictionary::Plugin;
+package Perlbot::Plugin::Dictionary;
 
 use Plugin;
 @ISA = qw(Plugin);
 
 use strict;
 
-use Perlbot;
-use PerlbotUtils;
 use LWP::Simple;
 
 sub init {

@@ -6,7 +6,7 @@
 # originally ported/mangled from:
 # infobot copyright (C) kevin lenzo 1997-98
 
-package Math::Plugin;
+package Perlbot::Plugin::Math;
 
 use Plugin;
 @ISA = qw(Plugin);

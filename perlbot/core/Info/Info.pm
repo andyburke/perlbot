@@ -1,4 +1,4 @@
-package Info::Plugin;
+package Perlbot::Plugin::Info;
 
 use Perlbot;
 use User;

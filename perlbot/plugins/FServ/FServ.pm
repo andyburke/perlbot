@@ -1,7 +1,7 @@
 # Andrew Burke <burke@bitflood.org>
 #
 
-package FServ::Plugin;
+package Perlbot::Plugin::FServ;
 
 use Plugin;
 @ISA = qw(Plugin);

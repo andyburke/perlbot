@@ -1,4 +1,4 @@
-package Protection::Plugin;
+package Perlbot::Plugin::Protection;
 
 use Plugin;
 @ISA = qw(Plugin);

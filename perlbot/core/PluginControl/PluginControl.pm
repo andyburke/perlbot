@@ -1,4 +1,4 @@
-package PluginControl::Plugin;
+package Perlbot::Plugin::PluginControl;
 
 use Perlbot;
 use User;

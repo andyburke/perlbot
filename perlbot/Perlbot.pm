@@ -1,6 +1,6 @@
 package Perlbot;
 
-use PerlbotUtils;
+use Perlbot::Utils;
 use Net::IRC;
 use Data::Dumper;
 
@@ -74,13 +74,13 @@ sub shutdown {
 sub read_config {
   my $self = shift;
 
-  $self->{config} = PerlbotUtils::read_generic_config($self->{configfile});
+  $self->{config} = Perlbot::Utils::read_generic_config($self->{configfile});
 }
 
 sub write_config {
   my $self = shift;
 
-  PerlbotUtils::write_generic_config($self->{configfile}, $self->{config});
+  Perlbot::Utils::write_generic_config($self->{configfile}, $self->{config});
 }
 
 sub reload_config {
@@ -177,7 +177,7 @@ sub process_config {
 
   }
 
-  push @INC, $self->config(bot => 'plugindir');
+#  push @INC, $self->config(bot => 'plugindir');
 }
 
 sub connect {
@@ -262,15 +262,16 @@ sub find_plugins {
         next;
       }
       # ignore subdirs without a Plugin.pm
-      my $module = File::Spec->catfile($dir, 'Plugin.pm');
+      my $module = File::Spec->catfile($dir, "${plugin}.pm");
       if (! -f $module) {
-        print "find_plugins: Ignoring '$plugin': no Plugin.pm in $dir\n" if $DEBUG;
+        print "find_plugins: Ignoring '$plugin': no ${plugin}.pm in $dir\n" if $DEBUG;
         next;
       }
 
       # success!
       print "find_plugins: Found '$plugin'\n" if $DEBUG;
       push @found_plugins, $plugin;
+      push @INC, $dir;
     }
     closedir(PDH);
   }
@@ -288,17 +289,17 @@ sub load_plugin {
   my ($self, $plugin) = @_;
 
   print "load_plugin: loading plugin: $plugin\n" if $DEBUG;
-  eval "require ${plugin}::Plugin";  # try to import the plugin's package
+  eval "require ${plugin}";  # try to import the plugin's package
   # check for module load error
   if ($@) {
     print $@ if $DEBUG;
     return 0;
   }
   # determine path to plugin subdirectory
-  my $pluginfile = $INC{File::Spec->catfile($plugin,'Plugin.pm')};
+  my $pluginfile = $INC{"${plugin}.pm"};
   my (undef,$pluginpath,undef) = File::Spec->splitpath($pluginfile);
   $pluginpath = File::Spec->canonpath($pluginpath);
-  my $pluginref = eval "new ${plugin}::Plugin(\$self, \$pluginpath)";
+  my $pluginref = eval "new Perlbot::Plugin::${plugin}(\$self, \$pluginpath)";
   # check for constructor error
   if ($@) {
     print $@ if $DEBUG;

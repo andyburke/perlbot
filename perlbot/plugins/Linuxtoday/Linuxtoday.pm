@@ -8,7 +8,7 @@
 # Updated by Andrew Burke (burke@bitflood.org)
 #  to use the new plugin interface
 
-package Linuxtoday::Plugin;
+package Perlbot::Plugin::Linuxtoday;
 
 use Plugin;
 @ISA = qw(Plugin);

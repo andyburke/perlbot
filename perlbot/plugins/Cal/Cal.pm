@@ -3,13 +3,12 @@
 # 
 # updated: Andrew Burke burke@bitflood.org
 
-package Cal::Plugin;
+package Perlbot::Plugin::Cal;
 
 use Plugin;
 @ISA = qw(Plugin);
 
-use Perlbot;
-use PerlbotUtils;
+use Perlbot::Utils;
 
 sub init {
   my $self = shift;
@@ -22,7 +21,7 @@ sub host {
   my $user = shift;
   my $text = shift;
 
-  my @result = PerlbotUtils::exec_command('cal', $text);
+  my @result = Perlbot::Utils::exec_command('cal', $text);
 
   foreach my $line (@result) {
     $self->reply($line);

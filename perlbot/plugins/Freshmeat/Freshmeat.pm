@@ -2,13 +2,10 @@
 #
 # This gets the latest Freshmeat entries.
 
-package Freshmeat::Plugin;
+package Perlbot::Plugin::Freshmeat;
 
 use Plugin;
 @ISA = qw(Plugin);
-
-use Perlbot;
-use PerlbotUtils;
 
 use LWP::Simple;
 
@@ -41,9 +38,6 @@ sub freshmeat {
   my $formatteddate = '';
   
   $self->reply('Freshmeat Headlines:');
-  
-  use Data::Dumper;
-  print Dumper(@html);
   
   my $i = 1;
   while ($i <= $max) {

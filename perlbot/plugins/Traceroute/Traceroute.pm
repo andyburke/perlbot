@@ -1,18 +1,17 @@
 # Traceroute plugin
 # Andrew Burke burke@bitflood.org
 
-package Traceroute::Plugin;
+package Perlbot::Plugin::Traceroute;
 
 use Plugin;
 @ISA = qw(Plugin);
 
-use Perlbot;
-use PerlbotUtils;
-
-my $traceroutebinary = '/usr/sbin/traceroute';
+use Perlbot::Utils;
 
 sub init {
   my $self = shift;
+
+  $self->{traceroutebinary} = '/usr/sbin/traceroute';
 
   $self->hook('traceroute', \&host);
   $self->hook('tr', \&host);
@@ -23,7 +22,7 @@ sub host {
   my $user = shift;
   my $text = shift;
 
-  my @result = PerlbotUtils::exec_command($traceroutebinary, $text);
+  my @result = Perlbot::Utils::exec_command($self->{traceroutebinary}, $text);
 
   foreach my $line (@result) {
     $self->reply($line);

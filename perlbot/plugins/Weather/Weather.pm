@@ -2,7 +2,7 @@
 #
 # Gets the weather...
 
-package Weather::Plugin;
+package Perlbot::Plugin::Weather;
 
 use Plugin;
 @ISA = qw(Plugin);

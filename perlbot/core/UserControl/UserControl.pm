@@ -1,7 +1,7 @@
-package UserControl::Plugin;
+package Perlbot::Plugin::UserControl;
 
 use Perlbot;
-use PerlbotUtils;
+use Perlbot::Utils;
 use Chan;
 use Plugin;
 

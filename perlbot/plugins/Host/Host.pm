@@ -1,13 +1,12 @@
 # Host plugin
 # Andrew Burke burke@bitflood.org
 
-package Host::Plugin;
+package Perlbot::Plugin::Host;
 
 use Plugin;
 @ISA = qw(Plugin);
 
-use Perlbot;
-use PerlbotUtils;
+use Perlbot::Utils;
 
 sub init {
   my $self = shift;
@@ -25,7 +24,7 @@ sub host {
     $self->reply('You must specify a hostname to look up!');
   } else {
 
-    my @result = PerlbotUtils::exec_command('host', $text);
+    my @result = Perlbot::Utils::exec_command('host', $text);
 
     foreach my $line (@result) {
       $self->reply($line);

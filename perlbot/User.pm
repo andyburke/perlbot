@@ -2,7 +2,7 @@ package User;
 
 use Note;
 use strict;
-use PerlbotUtils;
+use Perlbot::Utils;
 
 sub new {
     my $class = shift;

@@ -1,13 +1,12 @@
 # Dig plugin
 # Andrew Burke burke@bitflood.org
 
-package Dig::Plugin;
+package Perlbot::Plugin::Dig;
 
 use Plugin;
 @ISA = qw(Plugin);
 
-use Perlbot;
-use PerlbotUtils;
+use Perlbot::Utils;
 
 sub init {
   my $self = shift;
@@ -20,7 +19,7 @@ sub host {
   my $user = shift;
   my $text = shift;
 
-  my @result = PerlbotUtils::exec_command('dig', $text);
+  my @result = Perlbot::Utils::exec_command('dig', $text);
 
   foreach my $line (@result) {
     $self->reply($line);

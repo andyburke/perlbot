@@ -6,13 +6,13 @@
 
 package Plugin;
 
-use PerlbotUtils;
+use Perlbot::Utils;
 
 sub new {
   my $class = shift;
   my $perlbot = shift;
   my $directory = shift;
-  my ($name) = $class =~ /^(.*?)::Plugin/;
+  my ($name) = $class =~ /Plugin::(.*?)$/;
 
   my $self = {
     name => $name,

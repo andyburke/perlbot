@@ -1,6 +1,6 @@
-package UserUpdater::Plugin;
+package Perlbot::Plugin::UserUpdater;
 
-use PerlbotUtils;
+use Perlbot::Utils;
 use Perlbot;
 use User;
 use Plugin;

@@ -1,4 +1,4 @@
-package Notes::Plugin;
+package Perlbot::Plugin::Notes;
 
 use Perlbot;
 use User;

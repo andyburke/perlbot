@@ -1,6 +1,6 @@
-package ConnectionManagement::Plugin;
+package Perlbot::Plugin::ConnectionManagement;
 
-use PerlbotUtils;
+use Perlbot::Utils;
 use Perlbot;
 use Plugin;
 

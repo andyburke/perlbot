@@ -9,7 +9,7 @@
 # based on:
 # infobot copyright (C) kevin lenzo 1997-98
 
-package SpelCheck::Plugin;
+package Perlbot::Plugin::SpelCheck;
 
 use Plugin;
 @ISA = qw(Plugin);

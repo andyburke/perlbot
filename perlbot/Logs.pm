@@ -1,6 +1,6 @@
 package Logs;
 
-use PerlbotUtils;
+use Perlbot::Utils;
 use strict;
 
 # note: This used to be called 'Log' instead of 'Logs', but when we put

@@ -2,7 +2,7 @@
 #   
 # Andrew Burke (burke@bitflood.org)
 
-package Slashdot::Plugin;
+package Perlbot::Plugin::Slashdot;
 
 use Plugin;
 @ISA = qw(Plugin);
