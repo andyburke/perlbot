@@ -6,10 +6,8 @@ use Perlbot::Plugin;
 sub init {
   my $self = shift;
 
-  my $config = $self->read_config();
-
   use Data::Dumper;
-  print Dumper($config);
+  print Dumper($self->config);
 
 }
 

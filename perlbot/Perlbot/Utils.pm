@@ -5,6 +5,7 @@ use strict;
 use IO::File;
 use File::Spec;
 use XML::Simple;
+use Carp;
 
 use vars qw(
             @ISA @EXPORT
@@ -27,14 +28,14 @@ require Exporter;
 $DEBUG = $ENV{PERLBOT_DEBUG};
 $DEBUG ||= 0;
 
+
 sub read_generic_config {
   my ($filename) = @_;
 
   my $fh = new IO::File($filename);
 
-  if($fh) {
-    return XMLin($fh,
-                 forcearray => 1);
+  if ($fh) {
+    return XMLin($fh, forcearray => 1);
   } else {
     return undef;
   }
@@ -45,9 +46,10 @@ sub write_generic_config {
 
   ($filename && $hashref) or return 0;
 
-  my $xml = XMLout($hashref,
-                   rootname => 'config');
-  open(CONFIG, ">$filename");
+  my $xml = XMLout($hashref, rootname => 'config');
+  if (! open(CONFIG, ">$filename")) {
+    return undef;
+  }
   print CONFIG $xml;
   close CONFIG;
 }

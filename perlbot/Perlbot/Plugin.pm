@@ -18,7 +18,7 @@ sub new {
     name => $name,
     perlbot => $perlbot,
     directory => $directory,
-    config => {},
+    config => undef,
     helpitems => {},
     hooks => {},
     hookres => {},
@@ -46,7 +46,7 @@ sub new {
   # try to read their config file
   # try to read their help file
 
-  $self->{config} = $self->read_config();
+  $self->{config} = new Perlbot::Config('config');
   $self->{helpitems} = $self->read_help();
 
   return $self;
@@ -214,8 +214,8 @@ sub reply {
   # else
   #   send the output via whatever method it came in by
 
-  if($self->{perlbot}->config(bot => max_public_reply_lines) &&
-     @output > $self->{perlbot}->config(bot => max_public_reply_lines)) {
+  if($self->{perlbot}->config->get(bot => max_public_reply_lines) &&
+     @output > $self->{perlbot}->config->get(bot => max_public_reply_lines)) {
     foreach my $line (@output) {
       $self->{perlbot}->msg($self->{lastnick}, $line);
     }
@@ -262,7 +262,7 @@ sub reply_error {
   # else
   #   send the error back in whatever way we got it
 
-  if($self->{perlbot}->config(bot => send_errors_via_msg)) {
+  if($self->{perlbot}->config->get(bot => send_errors_via_msg)) {
     foreach my $line (@output) {
       $self->{perlbot}->msg($self->{lastnick}, $line);
     }
@@ -286,9 +286,9 @@ sub addressed_reply {
   }
 
   # adds a preceding nickname to our output, see reply
-  
-  if($self->{perlbot}->config(bot => max_public_reply_lines) &&
-     @output > $self->{perlbot}->config(bot => max_public_reply_lines)) {
+
+  if($self->{perlbot}->config->get(bot => max_public_reply_lines) &&
+     @output > $self->{perlbot}->config->get(bot => max_public_reply_lines)) {
     foreach my $line (@output) {
       $self->{perlbot}->msg($self->{lastnick}, $self->{lastnick} . ', ' . $line);
     }
@@ -331,25 +331,21 @@ sub _process { # _process to stay out of people's way
   my $user  = shift;
   my $text  = shift;
 
-  # if the type of event isn't a message
-  #   if the channel this event came from has ignoreplugins configured
-  #     if the current plugin is listed amongst those to be ignored
-  #       return without doing anything
-
-  if($event->type() ne 'msg') {
-    if(defined($self->{perlbot}{config}{channel}{normalize_channel($event->{to}[0])}{ignoreplugin})) {
-      if(grep { $_ eq $self->{name}} @{$self->{perlbot}{config}{channel}{normalize_channel($event->{to}[0])}{ignoreplugin}}) {
-        return;
-      }
-    }
+  # if the type of event isn't a message and the current plugin is listed in
+  # this channel's ignoreplugins list, return without doing anything
+  my $chan_name = normalize_channel($event->{to}[0]);
+  if ($event->type ne 'msg' and
+      grep {$_ eq $self->{name}}
+           $self->{perlbot}->config->get(channel => $chan_name => 'ignoreplugin')) {
+    return;
   }
 
   $text ||= '';
 
   # set a couple of history things for our reply* methods
 
-  $self->{lastnick} = $event->nick();
-  $self->{lasthost} = $event->host();
+  $self->{lastnick} = $event->nick;
+  $self->{lasthost} = $event->host;
 
   # foreach normal hook we have
   #   append the command prefix to it
@@ -362,7 +358,7 @@ sub _process { # _process to stay out of people's way
   #     dispatch this event to the appropriate handler with the right args
 
   foreach my $hook (keys(%{$self->{hooks}})) {
-    my $regexp = $self->{perlbot}->config(bot => 'commandprefix') . $hook;
+    my $regexp = $self->{perlbot}->config->get(bot => 'commandprefix') . $hook;
     if($text =~ /^\Q${regexp}\E?(?:\s+|$)/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
@@ -410,7 +406,7 @@ sub _process { # _process to stay out of people's way
   # person generating the event is an admin
 
   foreach my $admin_hook (keys(%{$self->{admin_hooks}})) {
-    my $regexp = $self->{perlbot}->config(bot => 'commandprefix') . $admin_hook;
+    my $regexp = $self->{perlbot}->config->get(bot => 'commandprefix') . $admin_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       if($user && $user->is_admin()) {
         my $texttocallwith = $text;
@@ -431,7 +427,7 @@ sub _process { # _process to stay out of people's way
   # here we just return the event in addition to the other stuff
 
   foreach my $advanced_hook (keys(%{$self->{advanced_hooks}})) {
-    my $regexp = $self->{perlbot}->config(bot => 'commandprefix') . $advanced_hook;
+    my $regexp = $self->{perlbot}->config->get(bot => 'commandprefix') . $advanced_hook;
     if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
@@ -510,22 +506,13 @@ sub shutdown {
 
 }
 
-sub read_config {
-  my $self = shift;
-  my $filename = shift;
-  $filename or $filename = 'config';
 
-  return read_generic_config(File::Spec->catfile($self->{directory}, $filename));
+sub config {
+  my ($self) = @_;
+
+  return $self->{config};
 }
 
-sub write_config {
-  my $self = shift;
-  my $hash = shift;
-  my $filename = shift;
-  $filename or $filename = 'config';
-
-  return write_generic_config(File::Spec->catfile($self->{directory}, $filename), $hash);
-}
 
 sub read_help {
   my $self = shift;

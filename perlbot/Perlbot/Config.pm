@@ -18,7 +18,7 @@ sub new {
 
   bless $self, $class;
 
-  $self->load;
+  $self->load or $self = undef; # return undef if loading fails
 
   return $self;
 }
@@ -27,7 +27,7 @@ sub new {
 sub load {
   my ($self) = @_;
 
-  $self->{_config} = read_generic_config($self->{_filename});
+  return $self->{_config} = read_generic_config($self->{_filename});
 }
 
 
@@ -62,26 +62,29 @@ sub save {
 #   get(bot => 'nick')          # omitting the 0
 #   get(bot => 0 => 'nick')     # this works but the 0 isn't needed
 
-sub get {
+# TODO: make sure that when a non-existent entity is queried, no
+#       hash or array entries spring into existence!
+
+sub get : lvalue {
   my ($self, @keys) = @_;
-  my ($current, $key, $ref, $level);
+  my ($current, $key, $type, $ref);
 
   # $current is a "pointer", iterated down the tree
   $current = $self->{_config};
-  # $level keeps track of how far down the tree we are
-  $level = 0;
+  # $ref is a reference to whatever $current is storing
+  $ref = \$self->{_config};
 
   # loop over the list of keys we got
   while (defined ($key = shift @keys)) {
     # grab what kind of reference the current thing is
-    $ref = ref($current);
-    if ($ref eq 'ARRAY') {
+    $type = ref($current);
+    if ($type eq 'ARRAY') {
       # check to see if $key is a non-integer (ints required for array indexing)
-      if (int($key) ne $key) {
-        # special case for singleton top-level objects, so the 0 index can be
+      if ($key =~ /\D/) {
+        # special case for singleton objects, so the 0 index can be
         # omitted as the second parameter, e.g. this lets you write
         # get('bot','nick') instead of get('bot',0,'nick)
-        if ($level == 1 and @$current == 1) {
+        if (@$current == 1) {
           unshift(@keys, $key);
           $key = 0;
         } else {
@@ -91,20 +94,22 @@ sub get {
         }
       }
       # "move pointer" down to next level
+      $ref = \$current->[$key];
       $current = $current->[$key];
-    } elsif ($ref eq 'HASH') {
+    } elsif ($type eq 'HASH') {
       # no validity checks here; a hash key could be anything
       # "move pointer" down to next level
+      $ref = \$current->{$key};
       $current = $current->{$key};
     } else {
       # if we get here, we've reached a "leaf" in the tree but there are
       # still more keys to deal with... that's bad.  complain and stop
-      # iterating.  we will return the (scalar) value we've got here at
-      # the leaf.
-      carp "extra config keys specified (" . join(", ", $key, @keys), ")";
+      # iterating.  we will return undef.
+      carp "extra config keys specified (" . join(", ", $key, @keys), ") - returning undef";
+      $current = undef;
+      $ref = undef;
       last;
     }
-    $level++;
   }
 
   # if the thing that was asked for is an array, and the call was in array
@@ -112,14 +117,18 @@ sub get {
   # the reference as is.
   if (ref($current) eq 'ARRAY' and wantarray) {
     return @$current;
-  } else {
-    return $current;
   }
+
+  # Dereferencing $ref (and omitting 'return') is how we get the lvalue
+  # stuff to work, so don't touch this unless you know what you're doing!
+  $$ref;
 }
 
 
 sub set {
   my ($self) = @_;
+
+  # TODO: implement
 }
 
 

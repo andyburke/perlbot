@@ -26,13 +26,13 @@ sub auth {
     my $event = shift;
     my $userhost = $event->from();
     my ($username, $password) = split(' ', shift, 2);
-    
+
     if(!$username || !$password || $password eq "''") {
 	#FIXME: make this return the help shit
 	$self->reply('usage: auth <username> <password>');
 	return;
     }
-    
+
     if($self->{perlbot}{users}{$username}) {
 	if($self->{perlbot}{users}{$username}->password()
 	   && (crypt($password, $self->{perlbot}{users}{$username}->password()) eq $self->{perlbot}{users}{$username}->password())) {
@@ -52,19 +52,19 @@ sub password {
   my $user = shift;
   my $newpassword = shift;
 
-  if(!$newpassword) {
+  if (!$newpassword) {
     $self->reply_error('Must specify a new password!');
     return;
   }
 
-  if(!$user) {
+  if (!$user) {
     $self->reply_error('Not a known user, try auth first!');
     return;
   }
 
-  $newpassword =  crypt($newpassword, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
-  $self->{perlbot}{config}{user}{$user->{name}}{password} = $newpassword;
-  $self->{perlbot}->write_config();
+  $newpassword = crypt($newpassword, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
+  $self->{perlbot}->config->get(user => $user->{name} => 'password') = $newpassword;
+  $self->{perlbot}->config->write;
   $user->password($newpassword);
 
   $self->reply('Password successfully changed');
@@ -74,41 +74,39 @@ sub hostmasks {
   my $self = shift;
   my $user = shift;
 
-  if(!$user) {
+  if (!$user) {
     $self->reply_error('Not a known user, try auth first!');
     return;
   }
 
-  my $tmpconfig = $self->{perlbot}->read_config();
-
-  foreach my $hostmask (@{$tmpconfig->{'user'}->{$user->name}->{'hostmask'}}) {
+  foreach my $hostmask ($self->{perlbot}->config->get(user => $user->name => 'hostmask')) {
     $self->reply($hostmask);
   }
-     
+
 }
 
 sub addhostmask {
   my $self = shift;
   my $user = shift;
   my $hostmask = shift;
-  
-  if(!$hostmask) {
+
+  if (!$hostmask) {
     $self->reply_error('You must specify a hostmask to add!');
     return;
   }
-  
-  if(!$user) {
+
+  if (!$user) {
     $self->reply_error('You are not a known user!');
     return;
   }
 
-  if(!validate_hostmask($hostmask)) {
+  if (!validate_hostmask($hostmask)) {
     $self->reply_error("Invalid hostmask: $hostmask");
-  } elsif(!$self->{perlbot}{config}{user}{$user->{name}}) {
+  } elsif (!$self->{perlbot}->config->get(user => $user->{name})) {
     $self->reply_error("Your user object doesn't exist, that is bad... contact your bot admin");
   } else {
-    push(@{$self->{perlbot}{config}{user}{$user->{name}}{hostmask}}, $hostmask);
-    $self->{perlbot}->write_config();
+    push(@{$self->{perlbot}->config->(user => $user->{name} => 'hostmask')}, $hostmask);
+    $self->{perlbot}->config->write;
     $user->hostmasks($hostmask);
     $self->reply("Permanently added $hostmask to your list of hostmasks.");
   }
@@ -131,20 +129,20 @@ sub delhostmask {
   }
 
   my $whichhost = 0;
-  foreach my $confighostmask (@{$self->{perlbot}{config}{user}{$user->{name}}{hostmask}}) {
-    if($confighostmask eq $hostmask) {
+  foreach my $confighostmask ($self->{perlbot}->config->get(user => $user->{name} => 'hostmask')) {
+    if ($confighostmask eq $hostmask) {
       last;
     }
     $whichhost++;
   }
 
-  if($whichhost > @{$self->{perlbot}{config}{user}{$user->{name}}{hostmask}}) {
+  if ($whichhost > @{$self->{perlbot}->config->get(user => $user->{name} => 'hostmask')}) {
     $self->reply("$hostmask not in your list of hostmasks!");
     return;
   }
 
-  splice(@{$self->{perlbot}{config}{user}{$user->{name}}{hostmask}}, $whichhost, 1);
-  $self->{perlbot}->write_config();
+  splice($self->{perlbot}->config->get(user => $user->{name} => 'hostmask'), $whichhost, 1);
+  $self->{perlbot}->config->write;
   $self->reply("Permanently removed $hostmask from your list of hostmasks.");
 
 }

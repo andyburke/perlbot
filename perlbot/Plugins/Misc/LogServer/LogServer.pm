@@ -27,8 +27,7 @@ sub init {
   $self->want_msg(0);
   $self->want_public(0);
 
-  $self->{config} = $self->read_config();
-  $self->{logdir} = $self->{perlbot}->config('bot' => 'logdir');
+  $self->{logdir} = $self->{perlbot}->config->get(bot => 'logdir');
 
   $self->hook_event('endofmotd', sub { $self->logserver });
   $self->hook_event('nomotd', sub { $self->logserver });
@@ -39,8 +38,8 @@ sub logserver {
   my $self = shift;
   my $logdir = $self->{logdir};
 
-  my $server = HTTP::Daemon->new(LocalAddr => $self->{config}{server}[0]{hostname}[0],
-                                 LocalPort => $self->{config}{server}[0]{port}[0]);
+  my $server = HTTP::Daemon->new(LocalAddr => $self->config->get(server => 'hostname'),
+                                 LocalPort => $self->config->get(server => 'port'));
 
   if(!$server) {
     if($DEBUG) {

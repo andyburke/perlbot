@@ -1,9 +1,10 @@
 package Perlbot;
 
-use Perlbot::Utils;
 use Net::IRC;
 use Data::Dumper;
 
+use Perlbot::Utils;
+use Perlbot::Config;
 use Perlbot::User;
 use Perlbot::Chan;
 
@@ -16,8 +17,8 @@ sub new {
 
   my $self = {
     starttime => time(),
-    config => {},
-    configfile => $configfile, 
+    configfile => $configfile,
+    config => undef,
     ircobject => undef,
     ircconn => undef,
     msg_queue => [],
@@ -42,17 +43,29 @@ sub start {
   my $self = shift;
 
   # this reads our config and puts it into $self->{config}
-  $self->read_config or die "Couldn't read $self->{configfile}!!\n";
+  $self->{config} = new Perlbot::Config($self->{configfile})
+      or die "Couldn't read main config file '$self->{configfile}'\n";
 
   # this will pull some stuff out of our config and create
   # appropriate objects in the bot
   $self->process_config;
+
+  # config file must at the very least define a bot section and a server
+  $self->config->get('bot')
+      or die "No bot section in config file '$self->{configfile}'\n";
+  $self->config->get('server')
+      or die "No servers specified in config file '$self->{configfile}'\n";
   
-  # here we loop over our defined servers attempting to connect
+  # here we loop over our defined servers attempting to connect.  we pause
+  # after trying all the servers, before trying the first one again.
   my $i = 0;
-  while(!$self->connect($i)) {
+  while (!$self->connect($i)) {
     $i++;
-    $i = $i % $self->config('server');
+    if ($i >= @{$self->config->get('server')}) {
+      print "connect: server list exhausted; sleeping and trying again\n" if $DEBUG;
+      $i = 0;
+      sleep 5;
+    }
   }
 
   # once we've connected, we load our plugins
@@ -80,7 +93,7 @@ sub shutdown {
   }
 
   # save out our in-memory config file
-  write_config($self->{configfile}, $self->{config});
+  $self->config->write;
 
   # sleep a couple seconds to let everything fall apart
   print "Sleeping 2 seconds...\n" if $DEBUG;
@@ -91,21 +104,6 @@ sub shutdown {
   exit 0;
 }
 
-# reads the bot's config and stores it in $self->{config}
-sub read_config {
-  my $self = shift;
-
-  # Perlbot::Utils::read_generic_config just reads XML, basically
-  $self->{config} = Perlbot::Utils::read_generic_config($self->{configfile});
-}
-
-# writes out the bot's in-memory config
-sub write_config {
-  my $self = shift;
-
-  # Perlbot::Utils::write_generic_config just dumps XML
-  Perlbot::Utils::write_generic_config($self->{configfile}, $self->{config});
-}
 
 sub reload_config {
   my $self = shift;
@@ -115,52 +113,11 @@ sub reload_config {
 
 
 sub config {
-  my ($self, $class, $key, $field) = @_;
-  my $ref;
+  my ($self) = @_;
 
-  $ref = $self->{config};
-  if (!defined $class) {
-    # return entire config
-    return $ref;
-  }
-
-  $ref = $ref->{$class};
-  if (!defined $key) {
-    # return array or hashref of all objects in a given class
-    if (ref($ref) eq 'ARRAY') {
-      return @{$ref};
-    } else {
-      return $ref;
-    }
-  }
-
-  if (ref($ref) eq 'ARRAY') {
-    if (@{$ref} == 1 and $key =~ /\D/) {
-      $field = $key;
-      $key = 0;
-    }
-    $ref = $ref->[$key];
-  } else {
-    $ref = $ref->{$key};
-  }
-  if (!defined $field) {
-    # return a given object in a given class
-    return $ref;
-  }
-
-  # return array of all fields in a given object in a given class,
-  # or a single value if there is only one
-  $ref = $ref->{$field};
-  if (ref($ref) eq 'ARRAY') {
-    if (@{$ref} == 1) {
-      return $ref->[0];
-    } else {
-      return @{$ref};
-    }
-  } else {
-    return $ref;
-  }
+  return $self->{config};
 }
+
 
 # this steps through the config, creating objects when appropriate
 sub process_config {
@@ -178,15 +135,15 @@ sub process_config {
   #       if this user is an admin
   #         set his/her admin flag
 
-  if($self->config('user')) {
-    foreach my $user (keys(%{$self->config('user')})) {
+  if ($self->config->get('user')) {
+    foreach my $user (keys(%{$self->config->get('user')})) {
       print "process_config: loading user '$user'\n" if $DEBUG;
       $self->{users}{$user} =
           new Perlbot::User($user,
-                            $self->config(user => $user => 'flags'),
-                            $self->config(user => $user => 'password'),
-                            $self->config(user => $user => 'hostmask'));
-      foreach my $admin ($self->config(bot => 'admin')) {
+                            $self->config->get(user => $user => 'flags'),
+                            $self->config->get(user => $user => 'password'),
+                            @{$self->config->get(user => $user => 'hostmask')});
+      foreach my $admin ($self->config->get(bot => 'admin')) {
         if($admin eq $user) {
           print "process_config: $admin  is an admin\n" if $DEBUG;
           $self->{users}{$user}->admin(1);
@@ -202,17 +159,17 @@ sub process_config {
   #       add them as an op if they exist as a user
   #     put the channel into the bot object
   
-  if($self->config('channel')) {  
-    foreach my $channel (keys(%{$self->config('channel')})) {
+  if ($self->config->get('channel')) {  
+    foreach my $channel (keys(%{$self->config->get('channel')})) {
       print "process_config: loading channel '$channel'\n" if $DEBUG;
       my $chan =
-          new Perlbot::Chan(name => normalize_channel($channel),
-                            flags => $self->config(channel => $channel => 'flags'),
-                            key => $self->config(channel => $channel => 'key'),
-                            logging => $self->config(channel => $channel => 'logging'),
-                            logdir => $self->config(bot => 'logdir'));
+          new Perlbot::Chan(name    => normalize_channel($channel),
+                            flags   => $self->config->get(channel => $channel => 'flags'),
+                            key     => $self->config->get(channel => $channel => 'key'),
+                            logging => $self->config->get(channel => $channel => 'logging'),
+                            logdir  => $self->config->get(bot => 'logdir'));
       
-      foreach my $op ($self->config(channel => $channel => 'op')) {
+      foreach my $op ($self->config->get(channel => $channel => 'op')) {
         $op or next;
         $chan->add_op($op) if (exists($self->{users}{$op}));
       }
@@ -222,6 +179,7 @@ sub process_config {
     }
   }
 }
+
 
 # connects the bot to irc, takes an index into the list of servers
 sub connect {
@@ -237,13 +195,13 @@ sub connect {
   my $handlers;
 
   # make an ircobject if one doesn't exist yet
-  if(!$self->{ircobject}) {
+  if (!$self->{ircobject}) {
     $self->{ircobject} = new Net::IRC;
     $self->{ircobject}{_debug} = 1 if $DEBUG >= 10;
   }
 
   # if we already have a connection, back up our handlers
-  if($self->{ircconn}) { # had a connection
+  if ($self->{ircconn}) { # had a connection
     $handlers = $self->{ircconn}{_handler};
   }
 
@@ -251,12 +209,17 @@ sub connect {
   #   set all our variables
   #   set our ircconn object to the new one
 
-  if($self->config(server => $index)) {
-    $server = $self->config(server => $index => 'address'); # or die ("Server $i has no address specified\n");
-    $port = $self->config(server => $index => 'port'); $port ||= 6667;
-    $nick = $self->config(bot => 'nick'); $nick ||= 'perlbot';
-    $ircname = $self->config(bot => 'ircname'); $ircname ||= 'imabot';
-    $password = $self->config(server => $index => 'password') ; $password ||= '';
+  if ($self->config->get(server => $index)) {
+    $server   = $self->config->get(server => $index => 'address'); # or die ("Server $i has no address specified\n");
+    $port     = $self->config->get(server => $index => 'port');
+    $password = $self->config->get(server => $index => 'password');
+    $nick     = $self->config->get(bot => 'nick');
+    $ircname  = $self->config->get(bot => 'ircname');
+
+    $port ||= 6667;
+    $password ||= '';
+    $nick ||= 'perlbot';
+    $ircname ||= 'imabot';
 
     print "connect: attempting to connect to server: $server\n" if $DEBUG;
 
@@ -275,14 +238,14 @@ sub connect {
   #   return the connection
   # else fail
 
-  if($self->{ircconn} && $self->{ircconn}->connected()) {
+  if ($self->{ircconn} && $self->{ircconn}->connected()) {
     print "connect: connected to server: $server\n" if $DEBUG;
 
     if($handlers) { $self->{ircconn}{_handler} = $handlers; }
 
     $self->{curnick} = $nick;
 
-    foreach my $hostmask (@{$self->{config}{bot}[0]{ignore}}) {
+    foreach my $hostmask ($self->config->get(bot => 'ignore')) {
       $self->{ircconn}->ignore('all', $hostmask);
     }
 
@@ -291,6 +254,7 @@ sub connect {
     return undef;
   }
 }
+
 
 sub plugins {
   my ($self) = @_;
@@ -304,7 +268,7 @@ sub load_all_plugins {
 
   my @plugins;
   my @plugins_found = $self->find_plugins;
-  my @noload = $self->config(bot => 'noload');
+  my @noload = $self->config->get(bot => 'noload');
 
   # foreach plugin
   #   if it's listed in @noload
@@ -350,7 +314,7 @@ sub find_plugins {
   #     close the dir
   #   return our found plugins
   
-  foreach my $plugindir ($self->config(bot => 'plugindir')) {
+  foreach my $plugindir ($self->config->get(bot => 'plugindir')) {
     opendir(PDH, $plugindir);
     foreach my $plugin (readdir(PDH)) {
       # ignore '.' and '..' silently

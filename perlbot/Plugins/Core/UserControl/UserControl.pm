@@ -49,29 +49,30 @@ sub join {
   my ($channel, $key) = split(' ', shift, 2);
 
   $channel = normalize_channel($channel);
+  my $config = $self->{perlbot}->config;
 
-  my $config = $self->{perlbot}->read_config();
-  my $chan_hash = $config->{channel}{$channel};
-  if($chan_hash) {
-    my $chan = new Perlbot::Chan(name => $channel,
-                                 flags => $chan_hash->{flags},
-                                 key => $chan_hash->{key},
-                                 logging => $chan_hash->{logging},
-                                 logdir => $self->{perlbot}{config}{bot}{logdir});
-    foreach my $op (@{$chan_hash->{op}}) {
-      $chan->add_op($op) if (exists($self->{perlbot}{users}{$op}));
+  if ($self->{perlbot}->config->get(channel => $channel) {
+
+    my $chan = new Perlbot::Chan(name    => $channel,
+                                 flags   => $config->get(channel => $channel => 'flags'),
+                                 key     => $config->get(channel => $channel => 'key'},
+                                 logging => $config->get(channel => $channel => 'logging'},
+                                 logdir  => $config->get(bot => 'logdir'));
+    foreach my $op ($config->get(channel => $channel => 'op')) {
+      $chan->add_op($op) if exists $self->{perlbot}{users}{$op};
     }
 
     $self->{perlbot}{channels}{$chan->{name}} = $chan;
     $self->{perlbot}->join($chan);
     
-    return;
-  }
-  my $chan = new Perlbot::Chan(name => normalize_channel($channel),
-                               key => $key);
+  } else {
+
+    my $chan = new Perlbot::Chan(name => normalize_channel($channel), key => $key);
                         
-  $self->{perlbot}{channels}{$chan->{name}} = $chan;
-  $self->{perlbot}->join($chan);
+    $self->{perlbot}{channels}{$chan->{name}} = $chan;
+    $self->{perlbot}->join($chan);
+
+  }
 }
 
 sub part {
@@ -81,9 +82,9 @@ sub part {
 
   $channel = normalize_channel($channel);
 
-  if($self->{perlbot}->{channels}->{$channel}) {
-    $self->{perlbot}->part($self->{perlbot}->{channels}->{$channel});
-    delete $self->{perlbot}->{channels}->{$channel};
+  if ($self->{perlbot}{channels}{$channel}) {
+    $self->{perlbot}->part($self->{perlbot}{channels}{$channel});
+    delete $self->{perlbot}{channels}{$channel};
   } else {
     $self->reply("I am not currently in $channel");
   }
@@ -96,7 +97,7 @@ sub cycle {
 
   $channel = normalize_channel($channel);
 
-  if($self->{perlbot}->{channels}->{$channel}) {
+  if ($self->{perlbot}{channels}{$channel}) {
     $self->part($user, $channel);
     $self->join($user, $channel);
   } else {
@@ -127,29 +128,29 @@ sub op {
   my $user = shift;
   my $channel = shift;
 
-  if(!$channel) {
+  if (!$channel) {
     # FIXME: tell them about help here
     return;
   }
 
   $channel = normalize_channel($channel);
 
-  if(!$user) {
+  if (!$user) {
     $self->reply('You are not a known user, authenticate yourself first!');
     return;
   }
 
-  if(!$self->{perlbot}->{channels}->{$channel}) {
+  if (!$self->{perlbot}{channels}{$channel}) {
     $self->reply("No such channel: $channel");
     return;
   }
 
-  if(!exists($self->{perlbot}->{channels}->{$channel}->{ops}->{$user->name()})) {
+  if (!exists($self->{perlbot}{channels}{$channel}{ops}{$user->name})) {
     $self->reply("You are not a valid op for channel $channel");
-    return;
   } else {
     $self->{perlbot}->op($channel, $user->{curnick});
   }
 }
+
 
 1;

@@ -17,16 +17,11 @@ sub init {
 
   $self->{facts} = {};
 
-  $self->read_config();
-
   $self->load_dbs();
 
   $self->hook_addressed(\&addressed);
   $self->hook_regular_expression('.*?', \&normal);
 
-}
-
-sub read_config {
 }
 
 sub load_dbs {
