@@ -6,7 +6,7 @@ use strict;
 use File::Spec;
 
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(config chan curyr curmon curday file);
+use fields qw(config chan curtime file);
 
 # note: This used to be called 'Log' instead of 'Logs', but when we put
 # perlbot into CVS, Log created problems with keyword substitution.
@@ -17,17 +17,11 @@ sub new {
   my ($class, $chan, $config) = @_;
   my ($mday,$mon,$year);
 
-  (undef,undef,undef,$mday,$mon,$year) = localtime;
-  $year += 1900; #yay, y2k!
-  $mon += 1;
-
   my $self = fields::new($class);
   
   $self->chan = $chan;
   $self->config = $config;
-  $self->curyr = $year;
-  $self->curmon = $mon;
-  $self->curday = $mday;
+  $self->curtime = time();
   $self->file = new IO::File;
 
   return $self;
@@ -50,17 +44,8 @@ sub AUTOLOAD : lvalue {
 
 sub update_date {
   my $self = shift;
-  my ($mday,$mon,$year);
-  
-  (undef,undef,undef,$mday,$mon,$year) = localtime;
-  $year += 1900; #yay, y2k!
-  $mon += 1;
-  
-  debug("Updating date to: $year.$mon.$mday for channel: " . $self->chan);
-  
-  $self->curyr = $year;
-  $self->curmon = $mon;
-  $self->curday = $mday;
+
+  $self->curtime = time();
 }
 
 # *class* function to get the logdir from a config, with a default of 'logs'
@@ -85,17 +70,19 @@ sub singlelogfile {
 
 sub open {
   my $self = shift; 
-  my $date;
+  my $filename;
 
   if ($self->singlelogfile) {
     # user wants a single logfile per channel, not one file per day
     $self->close;
 
     stat $self->directory or mkdir($self->directory, 0755);
+    
+    $filename = File::Spec->catfile($self->directory, strip_channel($self->chan) . '.log');
 
-    debug("Opening log file: " . File::Spec->catfile(strip_channel($self->chan) . '.log'), 2);
-    my $result = $self->file->open(">>" . File::Spec->catfile($self->directory, strip_channel($self->chan) . '.log'));
-    $result or debug("Could not open logfile " . File::Spec->catfile($self->directory, strip_channel($self->chan) . '.log') . ": $!");
+    debug("Opening log file: $filename", 2);
+    my $result = $self->file->open(">>$filename");
+    $result or debug("Could not open logfile: $filename: $!");
   } else {
     # this is the standard behavior, one logfile per day
     # make necessary dirs if they don't exist
@@ -105,11 +92,11 @@ sub open {
       or mkdir(File::Spec->catfile($self->directory, strip_channel($self->chan)), 0755);
     
     $self->update_date();
-    $date = sprintf("%04d.%02d.%02d", $self->curyr, $self->curmon, $self->curday);
+    $filename = File::Spec->catfile($self->directory, strip_channel($self->chan), Perlbot::Utils::perlbot_date_filename($self->curtime));
     
-    debug("Opening log file: " . File::Spec->catfile(strip_channel($self->chan) , $date), 2);
-    my $result = $self->file->open(">>" . File::Spec->catfile($self->directory, strip_channel($self->chan), "$date"));
-    $result or debug("Could not open logfile " . File::Spec->catfile($self->directory, strip_channel($self->chan), "$date") . ": $!");
+    debug("Opening log file: $filename", 2);
+    my $result = $self->file->open(">>$filename");
+    $result or debug("Could not open logfile $filename: $!");
   }
 
 }
@@ -122,10 +109,9 @@ sub close {
 sub write {
   my $self = shift;
   my $logentry = shift;
-  my ($sec,$min,$hour,$mday,$mon,$year);
-  my $date;
-  
-  ($sec,$min,$hour,$mday,$mon,$year) = localtime;
+  my $time = time();
+  my ($sec,$min,$hour,$mday,$mon,$year) = localtime($time);
+
   $year += 1900;
   $mon += 1;
   
@@ -133,13 +119,14 @@ sub write {
 
   if (! $self->singlelogfile) {
     # if the date has changed, roll the log file
-    unless ($mday==$self->curday and $mon==$self->curmon and $year==$self->curyr) {
+    unless (Perlbot::Utils::perlbot_date_filename($time) eq
+            Perlbot::Utils::perlbot_date_filename($self->curtime)) {
       debug("Rolling log file", 2);
       $self->open();
     }
   }
   
-  $date = sprintf("%02d:%02d:%02d", $hour, $min, $sec);
+  my $date = Perlbot::Utils::perlbot_date_string($time);
   $logentry =~ s/\n//g;
   $self->file->print("$date " . $logentry . "\n");
   $self->file->flush();
