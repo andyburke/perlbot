@@ -93,16 +93,17 @@ Table of Contents
 
   Example:
 
-    convertconfig config > config.new
+    convertconfig config > config.xml
 
   Would convert the perlbot 1.x config in 'config' to XML and write it to
-  'config.new'.  This will bring over a great deal of the configuration you've
-  done for your 1.x bot, hopefully saving you some time.
+  'config.xml'.  This will bring over a great deal of the configuration
+  you've done for your 1.x bot, hopefully saving you some time.
 
-  **You still need to look over the generated XML and make some minor changes.**
+  **You still need to look over the generated XML and make some minor
+  changes.**
 
-  - Any channel flags you specified in your 1.x configuration will be gone.  They
-    should be respecified ala the instructions below.
+  - Any channel flags you specified in your 1.x configuration will be gone.
+    They should be respecified ala the instructions below.
 
   - Your plugindir specifications will almost certainly need to be corrected.
 
@@ -111,9 +112,9 @@ Table of Contents
 3.0 Settings
 ============
 
-  You should create and edit perlbot-<version>/config to suit your needs.  
-  This file is XML and uses XML syntax.  The provided config-sample should
-  be a good place to start.
+  You should create and edit perlbot-<version>/config.xml to suit your
+  needs. This file is XML and uses XML syntax.  The provided
+  config-sample.xml should be a good place to start.
 
   3.1  bot
   --------

@@ -13,7 +13,7 @@ $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
 
 sub new {
   my $class = shift;
-  my $configfile = shift; $configfile ||= './config';
+  my $configfile = shift; $configfile ||= './config.xml';
 
   my $self = {
     starttime => time(),       # bot startup time, used for uptime
