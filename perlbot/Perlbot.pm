@@ -222,21 +222,22 @@ sub validate_hostmask {
 }
 
 sub host_to_user {
-  my $realmask = shift;
+  my $hostmask = shift;
   my @tempusers;
 
   foreach my $user (values(%users)) {
-    foreach my $testmask (@{$user->{hostmasks}}) {
-      push(@tempusers, $user) if ($realmask =~ /^$testmask$/i);
-      last; # don't care about multiple same hostmasks, but those
-            # should be eaten by User::hostmasks() anyways
+    foreach my $tempmask (@{$user->{hostmasks}}) {
+      if($hostmask =~ /^$tempmask$/i) {
+        push(@tempusers, $user);
+        last;
+      }
     }
   }
 
   if(@tempusers == 1) {
     return $tempusers[0];
   } elsif(@tempusers > 1) {
-    if($debug) { print "Multiple users matched $realmask !\n"; }
+    if($debug) { print "Multiple users matched $hostmask !\n"; use Data::Dumper; print Dumper(@tempusers); }
   }
   return undef;
 }
