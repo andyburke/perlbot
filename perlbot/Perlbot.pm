@@ -3,7 +3,7 @@ package Perlbot;
 use 5.8.0;
 
 use strict;
-require Net::IRC;
+use Net::IRC;
 use Data::Dumper;
 use Symbol;
 
