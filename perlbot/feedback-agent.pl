@@ -150,6 +150,12 @@ if($viewxml eq 'y') {
   print "\n\n" . $xml . "\n\n";
 }
 
+my $send;
+while($send ne 'y' && $send ne 'n') {
+  print "All data ready, send to perlbot developers? [y/n] ";
+  $send = lc(<STDIN>);
+  chomp $send;
+}
 
 my($remote,$port,$iaddr,$paddr,$proto,$line);
 $remote = "www.fdntech.com";
@@ -209,7 +215,7 @@ open(USERID, ">.perlbot_user_id");
 print USERID $userid;
 close(USERID);
 
-
+print "All data sent, thank you for helping us meet the needs of perlbot users!\n";
 
 
 
