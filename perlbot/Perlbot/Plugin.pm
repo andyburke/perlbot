@@ -19,6 +19,7 @@ sub new {
     perlbot => $perlbot,
     directory => $directory,
     config => {},
+    helpitems => {},
     hooks => {},
     hookres => {},
     addressed_hooks => [],
@@ -41,6 +42,7 @@ sub new {
   $self->want_reply_via_msg(0);
 
   $self->{config} = $self->read_config();
+  $self->{helpitems} = $self->read_help();
 
   return $self;
 }
@@ -186,17 +188,21 @@ sub advanced_hook {
 
 sub reply {
   my $self = shift;
-  my $text = shift;
+  my @text = @_;
+  my @output;
 
-  my @lines = split('\n', $text);
+  foreach my $textline (@text) {
+    my @lines = split('\n', $textline);
+    push(@output, @lines);
+  }
 
   if($self->{perlbot}->config(bot => max_public_reply_lines) &&
-     @lines > $self->{perlbot}->config(bot => max_public_reply_lines)) {
-    foreach my $line (@lines) {
+     @output > $self->{perlbot}->config(bot => max_public_reply_lines)) {
+    foreach my $line (@output) {
       $self->{perlbot}->msg($self->{lastnick}, $line);
     }
   } else {
-    foreach my $line (split('\n', $text)) {
+    foreach my $line (@output) {
       $self->{perlbot}->msg($self->{lastcontact}, $line);
     }
   }
@@ -235,7 +241,22 @@ sub addressed_reply {
   }
 }
 
+sub _help {
+  my $self = shift;
+  my $command = shift;
+  my @result;
 
+  if($command eq $self->{name}) {
+    if($self->{helpitems}{overview}[0]) {
+      push(@result, @{$self->{helpitems}{overview}});
+      push(@result, @{$self->{helpitems}{commandlist}});
+    }
+  } elsif($self->{helpitems}{command}{$command}) {
+    push(@result, @{$self->{helpitems}{command}{$command}{content}});
+  }
+
+  return @result;
+}
 
 sub _process { # _process to stay out of people's way
   my $self  = shift;
@@ -396,6 +417,14 @@ sub write_config {
   $filename or $filename = 'config';
 
   return write_generic_config(File::Spec->catfile($self->{directory}, $filename), $hash);
+}
+
+sub read_help {
+  my $self = shift;
+  my $filename = shift;
+  $filename ||= 'help.xml';
+
+  return read_generic_config(File::Spec->catfile($self->{directory}, $filename));
 }
 
 1;
