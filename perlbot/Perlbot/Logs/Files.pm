@@ -17,7 +17,7 @@ sub new {
   my ($mday,$mon,$year);
 
   my $self = fields::new($class);
-  
+
   $self->perlbot = $perlbot;
   $self->channel = $channel;
   $self->curtime = time();
@@ -58,7 +58,7 @@ sub directory_from_config {
 # object method to get the logdir for this object
 sub directory {
   my $self = shift;
- 
+
   directory_from_config($self->perlbot->config);
 }
 
@@ -70,12 +70,12 @@ sub open {
   stat $self->directory or mkdir($self->directory, 0755);
   stat File::Spec->catfile($self->directory, strip_channel($self->channel))
       or mkdir(File::Spec->catfile($self->directory, strip_channel($self->channel)), 0755);
-    
+
   $self->update_date();
   $filename = File::Spec->catfile($self->directory,
                                   Perlbot::Utils::strip_channel($self->channel),
                                   Perlbot::Utils::perlbot_date_filename($self->curtime));
-    
+
   debug("Opening log file: $filename", 2);
   my $result = $self->file->open(">>$filename");
   $result or debug("Could not open logfile $filename: $!");
@@ -98,7 +98,7 @@ sub log_event {
     debug("Rolling log file", 2);
     $self->open();
   }
-  
+
 
 #  $self->file->print($event->as_string . "\n");
 
@@ -115,14 +115,67 @@ sub log_event {
   } elsif($event->type eq 'quit') {
     $self->file->print($event->as_string_formatted($base . '[%type] %nick quit: %text') . "\n");
   } elsif($event->type eq 'kick') {
-    $self->file->print($event->as_string_formatted($base . '[%type] %target was kicked by %nick') . "\n");
+    $self->file->print($event->as_string_formatted($base . '[%type] %target was kicked by %nick (%text)') . "\n");
   } elsif($event->type eq 'join') {
     $self->file->print($event->as_string_formatted($base . '%nick (%userhost) joined %channel') . "\n");
   } elsif($event->type eq 'part') {
     $self->file->print($event->as_string_formatted($base . '%nick (%userhost) left %channel') . "\n");
   }
-    
+
   $self->file->flush();
+}
+
+
+# This is hairy.  The regexps below need to match the above formatted
+# log printing lines, 1 to 1.  Otherwise, log lines won't be parsed
+# correctly for input.
+#
+# params:
+#   - a line from a log
+#   - the date string for the line (in perlbot format)
+#
+sub parse_log_entry {
+  my $self = shift;
+  my ($text, $date_string) = @_;
+  my $rawevent;
+
+  # must have a timestamp!
+  $text =~ s/^(\d\d:\d\d:\d\d) // or return undef;
+  $rawevent->{time} = Perlbot::Utils::ctime_from_perlbot_date_string("$date_string-$1");
+
+  if      ($text =~ /^<(.*?)> (.*)$/) {
+    @$rawevent{qw(type nick text)} = ('public', $1, $2);
+
+  } elsif ($text =~ /^\* (.*?) (.*)$/) {
+    @$rawevent{qw(type nick text)} = ('caction', $1, $2);
+
+  } elsif ($text =~ /^(.*?) set mode: (.*)$/) {
+    @$rawevent{qw(type nick text)} = ('mode', $1, $2);
+
+  } elsif ($text =~ /^\[TOPIC\] (.*?): (.*)$/) {
+    @$rawevent{qw(type nick text)} = ('topic', $1, $2);
+
+  } elsif ($text =~ /^\[NICK\] (.*?) changed nick to: (.*)$/) {
+    @$rawevent{qw(type nick text)} = ('nick', $1, $2);
+
+  } elsif ($text =~ /^\[QUIT\] (.*?) quit: (.*)$/) {
+    @$rawevent{qw(type nick text)} = ('quit', $1, $2);
+
+  } elsif ($text =~ /^\[KICK\] (.*?) was kicked by (.*?) \((.*)\)$/) {
+    @$rawevent{qw(type target nick text)} = ('kick', $1, $2, $3);
+
+  } elsif ($text =~ /^(.*?) \((.*?)\) joined .*$/) {
+    @$rawevent{qw(type nick userhost)} = ('join', $1, $2);
+
+  } elsif ($text =~ /^(.*?) \((.*?)\) left .*$/) {
+    @$rawevent{qw(type nick userhost)} = ('part', $1, $2);
+
+  }
+
+  $rawevent->{channel} = $self->channel;
+  debug($rawevent);
+
+  return $rawevent;
 }
 
 sub search {
@@ -133,7 +186,7 @@ sub search {
   print Dumper $args;
 
   my $maxresults = $args->{maxresults};
-  my $termsref = $args->{terms}; my @terms = @{$termsref};
+  my $terms = $args->{terms};
   my $nick = $args->{nick};
   my $type = $args->{type};
   my $initialdate = $args->{initialdate} || 1;
@@ -152,6 +205,9 @@ sub search {
       my $initialdate_string = Perlbot::Utils::perlbot_date_filename($initialdate);
       my $finaldate_string = Perlbot::Utils::perlbot_date_filename($finaldate);
 
+      my $filedate_string = $file;
+      $filedate_string =~ s|\.|/|g; # convert filename to date string
+
       next if $file lt $initialdate_string;
       last if $file gt $finaldate_string;
 
@@ -164,8 +220,9 @@ sub search {
 
       foreach my $line (@lines) {
         chomp $line;
-        my $event = new Perlbot::Logs::Event($line, $self->channel);
-        print $event->as_string() . "\n";
+        my $rawevent = $self->parse_log_entry($line, $filedate_string);
+        my $event = new Perlbot::Logs::Event($rawevent);
+        debug($event->as_string);
 
         next if $event->time < $initialdate;
         last if $event->time > $finaldate;
@@ -175,8 +232,8 @@ sub search {
 
         my $add_to_result = 1;
 
-        foreach my $term (@terms) {
-          if ($event->text !~ /$term/i) {
+        foreach my $term (@$terms) {
+          if (defined $event->text and $event->text !~ /$term/i) {
             $add_to_result = 0;
             last;
           }
