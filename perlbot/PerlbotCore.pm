@@ -475,7 +475,7 @@ my %command_handlers =
      my $password = shift;
 
      if(!$username || !$password || $password eq "''") {
-       $conn->privmsg($from, "usage: ${commandprefix}auth <username> <password>");
+       $conn->privmsg($from, "usage: auth <username> <password>");
        return;
      }
 

@@ -61,18 +61,20 @@ sub curnick {
 
 sub hostmasks {
     my $self = shift;
-    foreach (@_) {
+    my @hostmasks = @_;
+
+    foreach my $hostmask (@hostmasks) {
         # make sure the hostmask is OK before adding it
-	validate_hostmask($_) or return;
+	validate_hostmask($hostmask) or return;
 
         # Substitutions to take a standard IRC hostmask and convert it to
         #   a regexp.  I thought this was pretty clever...  :)
 
         # escape periods becuse they shouldn't be treated as wildcards
-        s/\./\\./g;
+        $hostmask =~ s/\./\\./g;
 
         # * in a hostmask means "any string of chars" which becomes .* in a regexp
-        s/\*/.*/g;
+        $hostmask =~ s/\*/.*/g;
 
         # {}| are really the lowercase equivalents of []\  (Don't ask me... read RFC1459) 
         # The result of this is that { is equivalent to [ in a nick, etc.
@@ -85,16 +87,22 @@ sub hostmasks {
         #   regexp in a second pass.
         # First pass: convert each instance of a char (upper or lower) to some
         #   'impossible' character.  (ascii 01, 02, and 03)
-        s/[{[](?=.*!)/\01/g;
-        s/[}\]](?=.*!)/\02/g;
-        s/[|\\](?=.*!)/\03/g;
+        $hostmask =~ s/[{[](?=.*!)/\01/g;
+        $hostmask =~ s/[}\]](?=.*!)/\02/g;
+        $hostmask =~ s/[|\\](?=.*!)/\03/g;
         # Second pass: convert each impossible char to the appropriate regexp
-        s/\01/[{[]/g;
-        s/\02/[}\\]]/g;
-        s/\03/[|\\\\]/g;
+        $hostmask =~ s/\01/[{[]/g;
+        $hostmask =~ s/\02/[}\\]]/g;
+        $hostmask =~ s/\03/[|\\\\]/g;
 
-        push @{$self->{hostmasks}}, $_;
+use Data::Dumper;
+        if(!grep { /^\Q$hostmask\E$/ } @{$self->{hostmasks}}) { # don't add duplicates
+          push @{$self->{hostmasks}}, $hostmask;
+        }
     }
+
+print Dumper($self);
+
     return $self->{hostmasks};
 }
 

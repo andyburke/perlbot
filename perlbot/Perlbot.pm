@@ -228,6 +228,8 @@ sub host_to_user {
   foreach my $user (values(%users)) {
     foreach my $testmask (@{$user->{hostmasks}}) {
       push(@tempusers, $user) if ($realmask =~ /^$testmask$/i);
+      last; # don't care about multiple same hostmasks, but those
+            # should be eaten by User::hostmasks() anyways
     }
   }
 
