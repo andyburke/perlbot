@@ -65,15 +65,17 @@ sub connection {
   my $self = shift;
   my $server = shift;
 
-  my $pid;
+  my ($pid, $connection);
 
+  $connection = $server->accept();
+    
+  debug("web_service: forking off child", 3);
   if (!defined($pid = fork)) {
     return;
   }
 
   if ($pid) {
     # parent
-
     $SIG{CHLD} = IGNORE;
 
   } else {
@@ -81,20 +83,19 @@ sub connection {
 
     $self->perlbot->ircconn->{_connected} = 0;
     
-    my $connection = $server->accept();
-    
     my $request = $connection->get_request();
-    
-    if ($request->method eq 'GET') {
       
+    if ($request and $request->method eq 'GET') {
       my ($garbage, $dispatch, @args) = split('/', $request->uri());
       
       if (!defined($dispatch) or $dispatch eq '') {
-        my $response = "<html><head><title>Perlbot Web Interface</title></head><body><center><table width=50% border=1>";
+        debug("web_service: displaying main index", 3);
 
-        $response .= "<tr><td><table border=0 width=100%><tr><td><font size=+1>Perlbot Web Services</font></td><td align=right><font size=-1><a href=\"http://www.perlbot.org/\">perlbot v" . $Perlbot::VERSION . "</a></font></td></tr></table></td></tr>";
-
-        $response .= "<tr><td><ul>";
+        my $response =
+          qq(<html><head><title>Perlbot Web Interface</title></head><body><center><table width="50%" border="1">
+             <tr><td><table border="0" width="100%"><tr><td><font size="+1">Perlbot Web Services</font></td>
+             <td align="right"><font size="-1"><a href="http://www.perlbot.org/">perlbot v${Perlbot::VERSION}</a>
+             </font></td></tr></table></td></tr><tr><td><ul>);
         
         foreach my $link (keys(%{$self->{hooks}})) {
           if(defined($self->{hooks}{$link}[1])) {
@@ -104,16 +105,17 @@ sub connection {
           }
         }
         
-        $response .= "</ul></td></tr></table><center></body></html>";
-        
+        $response .= qq(</ul></td></tr></table><center></body></html>);
         $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
                                                      HTTP::Headers->new(Content_Type => 'text/html'),
                                                        $response));
       } elsif(exists($self->{hooks}{$dispatch})) {
+        debug("web_service: running hook '$dispatch'", 3);
+        
         my $coderef = $self->{hooks}{$dispatch}[0];
         my $description = $self->{hooks}{$dispatch}[1];
         my ($contenttype, $content) = $coderef->(@args);
-        
+
         if(defined($contenttype) && defined($content)) {
           $connection->send_response(HTTP::Response->new(RC_OK, status_message(RC_OK),
                                                        HTTP::Headers->new(Content_Type => $contenttype),
@@ -124,12 +126,15 @@ sub connection {
         }
       } else {
         # nobody has hooked this path
+        debug("web_service: no such hook '$dispatch'", 3);
+
         $connection->send_error(RC_NOT_FOUND);
       }
     }
+
     $connection->force_last_request;
     $connection->close;
-    exit;
+    $self->perlbot->shutdown;
   }
 }
 
