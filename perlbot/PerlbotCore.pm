@@ -448,12 +448,12 @@ my %command_handlers =
      my $user = host_to_user($userhost);
 
      if(!$channel) {
-       $conn->privmsg($from, "usage: ${commandprefix}op <channel>");
+       $conn->privmsg($from, "usage: op <channel>");
        return;
      }
 
      if(!$user) {
-       $conn->privmsg($from, "You are not a known user, perhaps you need to ${commandprefix}auth?");
+       $conn->privmsg($from, "You are not a known user, perhaps you need to auth?");
        return;
      }
 
