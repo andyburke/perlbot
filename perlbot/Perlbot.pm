@@ -146,7 +146,7 @@ sub shutdown {
   $quitmsg ||= 'goodbye';
 
   # we sign off of irc here
-  $self->ircconn->quit($quitmsg);
+  $self->ircconn->quit($quitmsg) if $self->irconn;
 
   # we go through and call shutdown on each of our plugins
   my @plugins_copy = @{$self->plugins};
