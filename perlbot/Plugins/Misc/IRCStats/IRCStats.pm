@@ -15,6 +15,7 @@ use fields qw(datafile channels);
 use XML::Simple;
 use Perlbot::Utils;
 use File::Spec;
+use Time::Local;
 
 our $VERSION = '1.0.0';
 
@@ -93,8 +94,11 @@ sub ircstats {
     $response .= "<tr height=100>";
     
     my $totallines = 0;
-    foreach my $hour (keys(%{$self->{channels}{$chan}})) {
-      $totallines += $self->{channels}{$chan}{$hour};
+    foreach my $hour (0..23) {
+      $hour = sprintf("%02d", $hour);
+      if(exists($self->{channels}{$chan}{'hour' . $hour})) {
+        $totallines += $self->{channels}{$chan}{'hour' . $hour};
+      }
     }
 
     my $highest_percentage = 0;
@@ -189,52 +193,31 @@ sub action {
 
 }
 
-sub logdir {
-  my $self = shift;
-
-  return Perlbot::LogFile::directory_from_config($self->perlbot->config);
-}
-
 sub import_from_logs {
   my $self = shift;
 
   $self->reply("Updating stats from logs...");
 
-  foreach my $chan (keys(%{$self->{channels}})) {
+  foreach my $channel (values(%{$self->perlbot->channels})) {
+    my $channelname = Perlbot::Utils::strip_channel($channel->name);
     for(my $i=0; $i < 24; $i++) {
       my $hour = sprintf("%02d", $i);
-      $self->{channels}{$chan}{'hour' . $hour} = 0;
+      $self->{channels}{$channelname}{'hour' . $hour} = 0;
     }
-  }
 
-  opendir(LOGSDIR, File::Spec->catfile($self->logdir));
-  my @dirs = grep { !/^\./ } readdir(LOGSDIR);
-  close(LOGSDIR);
+    my (undef, undef, undef, $iday, $imonth, $iyear) = localtime($channel->logs->initial_entry_time());
+    my $curtime = timelocal(0, 0, 0, $iday, $imonth, $iyear);
+    my $finaldate = $channel->logs->final_entry_time();
 
-  foreach my $channel (@dirs) {
-    opendir(CHANLOGS, File::Spec->catfile($self->logdir, $channel));
-    my @logs = grep { !/^\./ } readdir(CHANLOGS);
-    close(CHANLOGS);
-    foreach my $log (@logs) {
-      open(LOG, File::Spec->catfile($self->logdir, $channel, $log));
-      while(my $line = <LOG>) {
-        if ($line =~ /^(\d\d):\d\d:\d\d\s<.*?>\s.+$/) {
-          my $hour = $1;
-          if(exists($self->{channels}{$channel}{'hour' . $hour})) {
-            $self->{channels}{$channel}{'hour' . $hour}++;
-          } else {
-            $self->{channels}{$channel}{'hour' . $hour} = 1;
-          }
-        } elsif ($line =~ /^(\d\d):\d\d:\d\d\s\*\s\S+\s.+$/) {
-          my $hour = $1;
-          if(exists($self->{channels}{$channel}{'hour' . $hour})) {
-            $self->{channels}{$channel}{'hour' . $hour}++;
-          } else {
-            $self->{channels}{$channel}{'hour' . $hour} = 1;
-          }
-        }
+    while($curtime < $finaldate) {
+      foreach my $hour (0..23) {
+        $hour = sprintf("%02d", $hour);
+        $self->{channels}{$channelname}{'hour' . $hour} +=
+            $channel->logs->search({initialdate => $curtime + ($hour * 3600),
+                                    finaldate => $curtime + (($hour + 1) * 3600),
+                                    type => 'public'});
       }
-      close(LOG);
+      $curtime += 86400;
     }
   }
 

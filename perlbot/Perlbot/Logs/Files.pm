@@ -303,6 +303,10 @@ sub search {
       chomp $line;
       my $datestring = $self->filename_to_datestring($filename);
       my $rawevent = $self->parse_log_entry($line, $datestring);
+      if(!$rawevent) {
+        debug("log parse failure in file $filename: $line");
+        next;
+      }
       my $event = new Perlbot::Logs::Event($rawevent);
 
       next if $event->time < $initialdate;
