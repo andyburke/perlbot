@@ -62,19 +62,31 @@ sub directory {
   directory_from_config($self->perlbot->config);
 }
 
-sub open {
-  my $self = shift; 
-  my $filename;
+# returns the filename we should be logging to at the moment
+sub filename {
+  my $self = shift;
 
-  $self->close;
+  return File::Spec->catfile($self->directory,
+                             Perlbot::Utils::strip_channel($self->channel),
+                             Perlbot::Utils::perlbot_date_filename($self->curtime));
+}
+
+sub make_directories {
+  my $self = shift;
+
   stat $self->directory or mkdir($self->directory, 0755);
   stat File::Spec->catfile($self->directory, strip_channel($self->channel))
       or mkdir(File::Spec->catfile($self->directory, strip_channel($self->channel)), 0755);
+}
 
-  $self->update_date();
-  $filename = File::Spec->catfile($self->directory,
-                                  Perlbot::Utils::strip_channel($self->channel),
-                                  Perlbot::Utils::perlbot_date_filename($self->curtime));
+sub open {
+  my $self = shift;
+  my $filename;
+
+  $self->close;
+  $self->make_directories;
+  $self->update_date;
+  $filename = $self->filename;
 
   debug("Opening log file: $filename", 2);
   my $result = $self->file->open(">>$filename");
@@ -86,21 +98,38 @@ sub close {
   $self->file->close if $self->file and $self->file->opened;
 }
 
+# returns true if we need to roll to another logfile
+sub should_roll {
+  my $self = shift;
+
+  return Perlbot::Utils::perlbot_date_filename(time()) ne
+    Perlbot::Utils::perlbot_date_filename($self->curtime);
+}
+
+sub line_prefix {
+  my $self = shift;
+
+  return '%hour:%min:%sec ';  # the space is by design
+}
+
+sub filename_to_datestring {
+  my $self = shift;
+  my $filename = shift;
+
+  $filename =~ s|^.*(\d\d\d\d).(\d\d)\.(\d\d)$|$1/$2/$3|;
+  return $filename;
+}
+
 sub log_event {
   my $self = shift;
   my $event = new Perlbot::Logs::Event(shift, $self->channel);
-  my $base = '%hour:%min:%sec ';
+  my $base = $self->line_prefix;
 
   $self->open unless $self->file->opened;
-
-  unless (Perlbot::Utils::perlbot_date_filename(time()) eq
-          Perlbot::Utils::perlbot_date_filename($self->curtime)) {
+  if ($self->should_roll) {
     debug("Rolling log file", 2);
-    $self->open();
+    $self->open;
   }
-
-
-#  $self->file->print($event->as_string . "\n");
 
   if ($event->type eq 'public') {
     $self->file->print($event->as_string_formatted($base . '<%nick> %text') . "\n");
@@ -122,7 +151,7 @@ sub log_event {
     $self->file->print($event->as_string_formatted($base . '%nick (%userhost) left %channel') . "\n");
   }
 
-  $self->file->flush();
+  $self->file->flush;
 }
 
 
@@ -173,17 +202,43 @@ sub parse_log_entry {
   }
 
   $rawevent->{channel} = $self->channel;
-  debug($rawevent);
 
   return $rawevent;
+}
+
+sub get_filelist {
+  my $self = shift;
+  my ($initialdate, $finaldate) = @_;
+  my @files;
+  my $channel = Perlbot::Utils::strip_channel($self->channel);
+
+  if (! opendir(DIR, File::Spec->catfile($self->directory, $channel))) {
+    return [];
+  }
+
+  while (my $file = readdir(DIR)) {
+    $file =~ /\d\d\d\d\.\d\d\.\d\d/ or next;
+
+    my $initialdate_string = Perlbot::Utils::perlbot_date_filename($initialdate);
+    my $finaldate_string = Perlbot::Utils::perlbot_date_filename($finaldate);
+
+    my $filedate_string = $file;
+    $filedate_string =~ s|\.|/|g; # convert filename to date string
+
+    if ($file ge $initialdate_string and $file le $finaldate_string) {
+      push @files, File::Spec->catfile($self->directory, $channel, $file);
+    }
+  }
+
+  closedir(DIR);
+
+  @files = sort @files;
+  return \@files;
 }
 
 sub search {
   my $self = shift;
   my $args = shift;
-
-  use Data::Dumper;
-  print Dumper $args;
 
   my $maxresults = $args->{maxresults};
   my $terms = $args->{terms};
@@ -195,59 +250,48 @@ sub search {
   my @result;
   my $resultcount = 0;
 
-  my $channel = Perlbot::Utils::strip_channel($self->channel);
+  my $files = $self->get_filelist($initialdate, $finaldate);
 
-  if (opendir(DIR, File::Spec->catfile($self->directory, $channel))) {
-    my @tmp = readdir(DIR);
-    my @files = sort(@tmp);
+ FILE: foreach my $filename (@$files) {
 
-    FILE: foreach my $file (@files) {
-      my $initialdate_string = Perlbot::Utils::perlbot_date_filename($initialdate);
-      my $finaldate_string = Perlbot::Utils::perlbot_date_filename($finaldate);
+    if (! CORE::open(FILE, $filename)) {
+      debug("failed to open '$filename' for searching: $!");
+      next FILE;
+    }
 
-      my $filedate_string = $file;
-      $filedate_string =~ s|\.|/|g; # convert filename to date string
+    while (my $line = <FILE>) {
+      chomp $line;
+      my $datestring = $self->filename_to_datestring($filename);
+      my $rawevent = $self->parse_log_entry($line, $datestring);
+      my $event = new Perlbot::Logs::Event($rawevent);
 
-      next if $file lt $initialdate_string;
-      last if $file gt $finaldate_string;
+      next if $event->time < $initialdate;
+      last if $event->time > $finaldate;
 
-      CORE::open(FILE, File::Spec->catfile($self->directory, $channel, $file));
-      my @lines = <FILE>;
-      CORE::close FILE;
+      next if $nick and $event->nick ne $nick;
+      next if $type and $event->type ne $type;
 
-      $initialdate_string = Perlbot::Utils::perlbot_date_string($initialdate);
-      $finaldate_string = Perlbot::Utils::perlbot_date_string($finaldate);
-
-      foreach my $line (@lines) {
-        chomp $line;
-        my $rawevent = $self->parse_log_entry($line, $filedate_string);
-        my $event = new Perlbot::Logs::Event($rawevent);
-        debug($event->as_string);
-
-        next if $event->time < $initialdate;
-        last if $event->time > $finaldate;
-
-        next if $nick and $event->nick ne $nick;
-        next if $type and $event->type ne $type;
-
-        my $add_to_result = 1;
-
-        foreach my $term (@$terms) {
-          if (defined $event->text and $event->text !~ /$term/i) {
-            $add_to_result = 0;
-            last;
-          }
-        }
-
-        if ($add_to_result) {
-          push(@result, $line);
-          $resultcount++;
-        }
-        last FILE if defined($maxresults) and $resultcount >= $maxresults;
+      if (@$terms) {
+        defined($event->text) or next;
       }
 
+      my $add_to_result = 1;
+      foreach my $term (@$terms) {
+        if ($event->text !~ /$term/i) {
+          $add_to_result = 0;
+          last;
+        }
+      }
+
+      if ($add_to_result) {
+        push(@result, $line);
+        $resultcount++;
+      }
+      last FILE if defined($maxresults) and $resultcount >= $maxresults;
     }
-  }
+
+    CORE::close FILE;
+ }
 
   return @result;
 }
