@@ -74,7 +74,7 @@ sub sodoit {
   $length = int($length * 1.5);
   undef @words;
 
-  if($text !~ /$curnick/) {
+  if($text !~ /$curnick/i) {
     $text =~ s/^.*?(?:,|:)\s*//;
 
     my $starttime = time();
