@@ -278,7 +278,6 @@ my %command_handlers =
    listchans => sub {
      my ($conn, $from, $userhost) = (shift, shift, shift);
      my $channel_list;
-     notify_users($conn, 'part', "$from requested LISTCHANS");
      foreach my $chan (keys(%channels)) {
        $chan =~ s/\#//g;
        $channel_list .= "$chan ";

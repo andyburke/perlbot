@@ -13,7 +13,10 @@ cycle
 cycle <channel>\\Causes the bot to part then immediately rejoin <channel>.\\(owners only)
 
 listchans
-listchans\\Returns the bot's current channels (where it is).\\(owners only)
+listchans\\Returns the bot's current channels (where it is).
+
+listusers
+listusers\\Returns the bot's current users
 
 logging
 logging <channel> (yes|no)\\Enables (yes) or disables (no) logging for <channel>.\\Anything other than "yes" will be treated as "no".\\(owners only)
