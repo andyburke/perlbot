@@ -103,7 +103,6 @@ sub is_logging {
 sub add_member {
   my $self = shift;
   my $nick = shift;
-  my $oldnick = shift;
 
   $self->{members}{$nick} = 1;
 }
@@ -178,6 +177,8 @@ sub part {
 }
 
 1;
+
+
 
 
 
