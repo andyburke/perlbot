@@ -34,6 +34,8 @@ sub init {
   $self->{players} = {};
   tie %{$self->{playersoverall}},  'DB_File', File::Spec->catfile($self->{directory}, 'playersoveralldb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
+  tie %{$self->{ranks}},  'DB_File', File::Spec->catfile($self->{directory}, 'ranksdb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
+
   $self->{askedtime} = 0;
   
   $self->{usersfastest} = {};
@@ -47,6 +49,7 @@ sub init {
 
   $self->hook('trivia', \&starttrivia);
   $self->hook('stoptrivia', \&stoptrivia);
+  $self->hook('topten', \&topten);
   $self->hook(\&answer);
 
 }
@@ -107,17 +110,34 @@ sub answer {
       $self->{usersfastestoverall}{$nick} = $timediff;
     }
     
-#    foreach my $tmpnick (keys(%{$self->{playersoverall}})) {
-#
-#    }
+    my @ranks = sort { $self->{playersoverall}{$b} <=> $self->{playersoverall}{$a} } keys(%{$self->{playersoverall}});
+
+    my $oldrank = $self->{ranks}{$nick};
     
-    my $rank = '-1';
+    my $rank = 1;
+    foreach my $name (@ranks) {
+      $self->{ranks}{$name} = $rank;
+      $rank++;
+    }
+
+    $rank = $self->{ranks}{$nick};
     $self->reply("The answer was: $answer");
     $self->reply("Winner: $nick  Time: $timediff (This Round: Fastest: $self->{usersfastest}{$nick} Wins: $self->{players}{$nick}) Overall: Fastest: $self->{usersfastestoverall}{$nick} Wins: $self->{playersoverall}{$nick} Rank: $rank");
+
     if($timediff < $self->{usersfastest}{$nick}) {
       $self->{usersfastest}{$nick} = $timediff;
-      $self->{usersfastestoverall}{$nick} = $timediff;
     }
+    if($timediff < $self->{usersfastestoverall}{$nick}) {
+      $self->{usersfastestoverall}{$nick} = $timediff;
+      $self->reply("That's a new speed record for $nick!");
+    }
+    if(defined($oldrank) && $rank < $oldrank) {
+      $self->reply("$nick has moved up in the standings from $oldrank to $rank!!");
+    }
+    if(defined($oldrank) && $rank > $oldrank) {
+      $self->reply("Sad day, $nick has dropped from $oldrank to $rank...");
+    }
+    
     
     $self->{curquestion}++;
     $self->perlbot->ircconn->schedule(10, sub { $self->askquestion() });    
@@ -220,6 +240,18 @@ sub endofgame {
   my $fastest = $self->{usersfastest}{$winner};
 
   $self->reply("Trivia Winner for this round is: $winner with $winnerscore wins and a fastest time of $fastest!");
+}
+
+sub topten {
+  my $self = shift;
+  
+  my @ranks = sort { $self->{playersoverall}{$b} <=> $self->{playersoverall}{$a} } keys(%{$self->{playersoverall}});
+  my $rank = 1;
+  foreach my $name (@ranks) {
+    $self->reply("$rank -- $name");
+    $rank++;
+    if($rank >= 10) { last; }
+  }
 }
 
 sub check_pid {

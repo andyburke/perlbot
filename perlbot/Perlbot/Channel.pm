@@ -26,7 +26,7 @@ sub new {
 
 sub log_write {
     my $self = shift;
-    if ($self->logging eq 'yes') {
+    if ($self->logging && $self->logging eq 'yes') {
 	$self->{log}->write(@_);
     }
 }
