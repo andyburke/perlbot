@@ -784,6 +784,14 @@ sub msg {
   
 }
 
+sub notice {
+  my $self = shift;
+  my $target = shift;
+  my $text = shift;
+
+  $self->{ircconn}->notice($target, $text);
+}
+
 # joins a channel
 sub join {
   my $self = shift;
