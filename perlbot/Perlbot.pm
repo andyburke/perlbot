@@ -1,7 +1,7 @@
 package Perlbot;
 
 use strict;
-use Net::IRC;
+require Net::IRC;
 use Data::Dumper;
 use Symbol;
 
@@ -244,6 +244,8 @@ sub connect {
   my $ircname;
   my $localaddr;
   my $username;
+  my $ssl;
+  my $pacing;
 
   my $handlers;
 
@@ -266,6 +268,8 @@ sub connect {
     $server    = $self->config->get(server => $index => 'address');
     $port      = $self->config->get(server => $index => 'port');
     $password  = $self->config->get(server => $index => 'password');
+    $ssl       = $self->config->get(server => $index => 'ssl');
+    $pacing    = $self->config->get(server => $index => 'pacing');
     $nick      = $self->config->get(bot => 'nick');
     $ircname   = $self->config->get(bot => 'ircname');
     $localaddr = $self->config->get(bot => 'localaddr');
@@ -277,6 +281,8 @@ sub connect {
     $ircname ||= 'imabot';
     $localaddr ||= '';
     $username ||= '';
+    $ssl ||= 0;
+    $pacing || = 0;
 
     debug("attempting to connect to server $index: $server");
 
@@ -287,7 +293,10 @@ sub connect {
                                   Password => $password,
                                   Ircname => $ircname,
                                   LocalAddr => $localaddr,
-                                  Username => $username);
+                                  Username => $username,
+                                  SSL => $ssl,
+                                  Pacing => $pacing,
+                                  );
   }
   
   # if our connection exists and it's actually connected
@@ -641,21 +650,23 @@ sub webserver_remove_all_handlers {
 }
 
 # removes all handlers and sends all waiting events, used prior to shutdown
-#sub emptyqueue {
-#  my ($self) = @_;
-#  my $lines;
+sub emptyqueue {
+  my ($self) = @_;
+  my $lines;
 
 ### commented out until Net::IRC supports pacing
-#  $lines = $self->ircobject->queue;
-#  # abort if no lines in queue, or pacing not enabled
-#  $lines and $self->ircobject->pacing or return;
-#
-#  delete $self->handlers;  # make sure no handlers are triggered while we do this
-#  debug("empty_queue: outputing $lines events", 3);
-#  while ($self->ircobject->queue) {
-#    $self->ircobject->do_one_loop;
-#  }
-#}
+### ... and now it does, because we maintain it. :)
+
+  $lines = $self->ircobject->queue;
+  # abort if no lines in queue, or pacing not enabled
+  $lines and $self->ircobject->pacing or return;
+
+  delete $self->handlers;  # make sure no handlers are triggered while we do this
+  debug("emptyqueue: outputing $lines events", 3);
+  while ($self->ircobject->queue) {
+    $self->ircobject->do_one_loop;
+  }
+}
 
 # takes a username or hostmask and returns a user if one exists that matches
 sub get_user {
