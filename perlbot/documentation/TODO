@@ -4,11 +4,10 @@ for 2.0 (i.e. ASAP):
 
 - Plugin::property probably won't set the value if the value evaluates as false
   ('', 0, undef...).
+  - I think this is fixed, but it needs more rigorous testing -- andy
 - Write a script to generate a list of plugins and their help.xml overview
   sections, and include the output of the script in documentation/ and on the
   webpage.
-- check that values in Weather plugin are numeric before multiplying (lots
-  of warnings without this check)
 - clean up code, make -w clean, etc.
 - User and Chan objects should know how to build a skeleton version of
   themselves in the config if their entry doesn't already exist

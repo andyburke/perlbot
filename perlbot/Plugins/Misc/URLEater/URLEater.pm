@@ -83,11 +83,15 @@ sub regurgitate_web {
   foreach my $channel (keys(%urls)) {
     if($channel =~ /\s/) { next; }
     $response .= "<p><b>$channel:</b><p>";
+    my @urls;
     for(my $i = 0; $i < 5; $i++) {
       if(defined($urls{$channel}[$i])) {
         my ($nick, $time, $url) = @{$urls{$channel}[$i]};
-        $response .= "<a href=\"$url\">$url</a> -- $nick<br>";
+        unshift @urls, "<a href=\"$url\">$url</a> -- $nick<br>";
       }
+    }
+    foreach my $url (@urls) {
+      $response .= $url;
     }
   }
 
