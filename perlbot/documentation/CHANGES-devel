@@ -1,9 +1,8 @@
 CHANGES:
 
 1.9.6 - new Config API, cleanups
-- New Config API provides more robust access to config data.  Methods are:
-  get set array_get array_initialize array_push array_delete hash_keys
-  hash_initialize hash_delete
+- New Config API provides more robust access to config data.  See
+  plugins-authoring.txt section 4 for details.
 - All code uses 'strict' and compiles cleanly with -w
 - Nicer debugging output.  Prints PID and calling package/sub on each line.
   If the env. var. PERLBOT_DEBUG_LINENUMBERS is set, filename/line num. will
