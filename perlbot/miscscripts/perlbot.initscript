@@ -15,7 +15,7 @@ case "$1" in
     su perlbot -s /bin/tcsh -c "cd /home/perlbot/$NAME/ ;\
                   /home/perlbot/$NAME/perlbot.pl >& /dev/null &"
     sleep 1
-    pidof -x perlbot.pl | xargs ps | grep $0 | cut -f 1 -d ' ' > /var/run/$NAME.pid
+    pidof -x perlbot.pl | xargs ps | grep $NAME | cut -b -5 > /var/run/$NAME.pid
     ;;
 
   stop)
