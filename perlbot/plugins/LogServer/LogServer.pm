@@ -258,6 +258,7 @@ sub logserver {
                                                          'yay!',
                                                          HTTP::Headers->new(Content_Type => 'text/html;'),
                                                          $response));
+          undef($response);
           $search = 0;
         }
       }
@@ -269,4 +270,3 @@ sub logserver {
 }
 
 1;
-

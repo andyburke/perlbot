@@ -87,7 +87,9 @@ sub redirects {
 
 sub add_op {
     my $self = shift;
-    $self->{ops}->{$_[0]} = defined;
+    my $user = shift;
+
+    $self->{ops}{$user} = 1;
     # return the current number of ops (values() returns an array, but
     # since it's in a scalar context, add_op returns the size of the array)
     return scalar(values(%{$self->{ops}}));

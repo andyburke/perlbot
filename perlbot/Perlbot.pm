@@ -169,7 +169,7 @@ sub process_config {
                         logging => $self->config(channel => $channel => 'logging'),
                         logdir => $self->config(bot => 'logdir'));
 
-    foreach my $op (@{$self->config(channel => $channel => 'op')}) {
+    foreach my $op ($self->config(channel => $channel => 'op')) {
       $chan->add_op($op) if (exists($self->{users}{$op}));
     }
 
