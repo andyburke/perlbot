@@ -2,42 +2,43 @@ package User;
 
 use Note;
 use strict;
-use Perlbot;
-
+use PerlbotUtils;
 
 sub new {
     my $class = shift;
-    my ($nick, $flags) = (shift, shift);
+    my ($nick, $flags, $password) = (shift, shift, shift);
+    my @hostmasks = @_;
     my $curnick = $nick; #for now...
 
     my $self = {
-	name	 => $nick,
-	nick     => $nick,
-	curnick  => $curnick,
-	curchans => [],
-	hostmasks => [],
-	flags    => $flags,
-	lastnick => undef,
-	notes    => [],
-	notified => 0,
+	name	   => $nick,
+	nick       => $nick,
+	curnick    => $curnick,
+	curchans   => [],
+	hostmasks  => [],
+        admin      => 0,
+	flags      => $flags,
+	lastnick   => undef,
+	notes      => [],
+	notified   => 0,
 
-	realname => '',
-	workphone => '',
-	homephone => '',
-	email    => '',
-	location => '',
-	mailingaddy => '',
-	
-	lastseen => 'never',
+	realname   => '',
+	workphone  => '',
+	homephone  => '',
+	email      => '',
+	location   => '',
+	mailaddr   => '',
+
+	lastseen   => 'never',
 	signoffmsg => '',
 
-	password => '',
-	allowed => {}
-	
+	password   => $password,
+	allowed    => {}
+
 	};
 
     bless $self, $class;
-    $self->hostmasks(@_);
+    $self->hostmasks(@hostmasks);
     return $self;
 }
 
@@ -65,7 +66,10 @@ sub hostmasks {
 
     foreach my $hostmask (@hostmasks) {
         # make sure the hostmask is OK before adding it
-	validate_hostmask($hostmask) or return;
+	if (!validate_hostmask($hostmask)) {
+          print "User '$self->{name}': refusing to add invalid hostmask: $hostmask\n" if $DEBUG;
+          return;
+        }
 
         # Substitutions to take a standard IRC hostmask and convert it to
         #   a regexp.  I thought this was pretty clever...  :)
@@ -101,6 +105,17 @@ sub hostmasks {
     }
 
     return $self->{hostmasks};
+}
+
+sub admin {
+  my $self = shift;
+  $self->{admin} = shift if @_;
+  return $self->{admin};
+}
+
+sub is_admin {
+  my $self = shift;
+  return $self->admin();
 }
 
 sub flags {
@@ -148,60 +163,51 @@ END_DUMP
 
 sub listnotes {
     my $self = shift;
-    my $priv_conn = shift;
     my $notestring = '';
     my $notenum = 1;
 
     if(@{$self->{notes}} == 0) {
-	$priv_conn->privmsg($self->{curnick}, "No current notes.\n");
-	return 1;
+      $notestring = 'No current notes.';
+    } else {
+      foreach(@{$self->{notes}}) {
+        $notestring .= "$notenum) $_->{from} - $_->{date}\n";
+        $notenum++;
+      }
     }
-
-    foreach(@{$self->{notes}}) {
-	$notestring = $notestring . "$notenum) $_->{from} - $_->{date}\n";
-	$priv_conn->privmsg($self->{curnick}, $notestring);
-	$notenum++;
-	$notestring = '';
-    }
-    return 1;
-}	
+    return $notestring;
+}
 
 sub readnote {
     my $self = shift;
-    my $priv_conn = shift;
-    my $notenum = shift;
+    my ($notenum) = (shift =~ /(\d+)/);
     my $note;
     my $notetext = '';
 
     if(defined($notenum)) { $notenum--; } #change it to be a real index into the array
 
     if(@{$self->{notes}} == 0) {
-	$self->{notified} = 0;
-	$priv_conn->privmsg($self->{curnick}, "No more notes.\n");
-	return 0;
-    }
-
-    if(defined($notenum)) {
-	if($notenum >= 0 && @{$self->{notes}}[$notenum]) {
-	    ($note) = splice(@{$self->{notes}}, $notenum, 1);
-	    
-	    $priv_conn->privmsg($self->{curnick}, "$note->{from} - $note->{date}:\n");
-	    $priv_conn->privmsg($self->{curnick}, "  $note->{text}\n");
-	} else {
-	    $notenum++;
-	    $priv_conn->privmsg($self->{curnick}, "No such note: $notenum\n");
-	}
+        $self->{notified} = 0;
+        $notetext = 'No more notes.';
     } else {
-	# notes should be a queue and not a stack, so use shift instead of pop
-	$note = shift(@{$self->{notes}});
+      if(defined($notenum)) {
+        if($notenum >= 0 && @{$self->{notes}}[$notenum]) {
+            ($note) = splice(@{$self->{notes}}, $notenum, 1);
+            $notetext = "$note->{from} - $note->{date}:\n  $note->{text}";
+        } else {
+            $notenum++;
+            $notetext = "No such note: $notenum";
+        }
+      } else {
+        # notes should be a queue and not a stack, so use shift instead of pop
+        $note = shift(@{$self->{notes}});
 
-	if($note) {
-	    $priv_conn->privmsg($self->{curnick}, "$note->{from} - $note->{date}:\n");
-	    $priv_conn->privmsg($self->{curnick}, "  $note->{text}\n");
-	}
+        if($note) {
+          $notetext = "$note->{from} - $note->{date}:\n  $note->{text}";
+        }
+      }
     }
-
-    return 1;
+    
+    return $notetext;
 }
 
 sub add_note {
@@ -210,12 +216,12 @@ sub add_note {
     my $note;
 
     if($from && $text) {
-	$self->{notified} = 0;
-	print "= saving note to $self->{name} from $from: $text\n" if ($debug);
-	$note = new Note($from, $text);
-	push @{$self->{notes}}, $note;
+        $self->{notified} = 0;
+        print "= saving note to $self->{name} from $from: $text\n" if ($DEBUG);
+        $note = new Note($from, $text);
+        push @{$self->{notes}}, $note;
     }
-
+    
     # return the current number of stored notes
     return scalar(@{$self->{notes}});
 }

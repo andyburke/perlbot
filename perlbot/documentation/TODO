@@ -1,20 +1,28 @@
 TODO:
+
+for 2.0:
+
+- make the bot quit gracefully and catch all the right signals
+- load/reload config files
+- let admins change user's passwords, hostmasks, etc. via irc
+- output buffering
+- add a robust help system, possibly using xml
+- move everything into a Perlbot:: namespace
+- rearrange plugins namespace to be like Perlbot::Plugin::Foo
+- port plugins
+- create a plugin that publishes our config via RPC::XML::Server
+  so we can make a botnet
+- move Note.pm into the Notes plugin
+- flock the config file when reading/writing
+
+when we can:
+
 - per-channel option to auto-rejoin when kicked
 - write help files for all the plugins that are included in the base
   distribution.
-- the bot's own words are not logged.  they should be.  right now the
-  only bot action that shows up in a bot's own logs is when it joins
-  a channel.  public and action, and I guess part should get logged too.
-- sprinkle more debugging output stuff around, particularly in the
-  class modules (User.pm, Chan.pm, etc.) since there's not much
-  there right now.  if a user uncovers a problem in there, the
-  debugging output won't pinpoint it.
 - implement user-defined formats for things like logfile names and
   logfile entries.  could use % codes, like %y.%m.%d for
   year.mon.day .
-- Allow configuration of which events justify notifying the owners.
-  Also, possibly allow owners to specify which types of notifications
-  they do and don't want to get.
 - make the User package more robust...
   - users should have more info that other users with the
     appropriate flags should be able to access, ie:

@@ -1,4 +1,0 @@
-Searches the logs your bot keeps.
-
-logsearch
-logsearch <channel> [<maxresults>] [<initialdate> [<finaldate>]] <terms>\\Seaches the logs for <channel> for <terms>\\<maxresults> is optional, it limits the maximum results to return\\<initialdate> is optional and is the date at which to begin the search ie: 2000-11-31\\<finaldate> is the optional date to end the search, you must specify an <initialdate> to use this field

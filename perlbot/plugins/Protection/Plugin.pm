@@ -1,67 +1,46 @@
 package Protection::Plugin;
 
-my $last_mode_change_time;
-my %last_mode_changer;
+use Plugin;
+@ISA = qw(Plugin);
 
-sub get_hooks {
-    return { mode => \&modechange };
+sub init {
+  my $self = shift;
+
+  $self->want_fork(0);
+
+  $self->{config} = $self->read_config();
+  $self->{deoppers} = {};
+
+  $self->{perlbot}->add_handler('mode', sub {$self->modechange(@_) }, $self->{name});
 }
 
 sub modechange {
-    my $conn = shift;
-    my $event = shift;
-    my $current_mode_change_time;
-    my $mintime = 10;
-    my $maxdeops = 2;
-    my $timedif = 0;
-    
-    my $deop_ratio = $maxdeops / $mintime;
-    
-    my $curnick = (split('!', $event->{from}))[0];
-    
-    my $curchan = $event->{to}[0];
-    
-    my $curmode = $event->{args}[0];
-    my $curtarget = $event->{args}[1];
-    
-    my $deops = length(($curmode =~ /-(o+)/g)[0]);
+  my $self = shift;
+  my $event = shift;
+  my $modestring = $event->{args}[0];
 
-    if(!$deops) { # they didn't deop anyone, we can ignore
-      return;
+  my $deopper = $event->nick();
+
+  if($deopper eq $self->{perlbot}{curnick}) { return; }
+
+  if($modestring =~ /-o/) {
+    my $numdeops = length(($modestring =~ /-(o+)/g)[0]);
+
+    if($numdeops > 1 && $self->{config}{mintimebetweendeops}[0] > 0) {
+      $self->{perlbot}->deop($event->{to}[0], $event->nick());
+    } elsif($self->{deoppers}{$deopper} &&
+            (time() - $self->{deoppers}{$event->nick()}) < $self->{config}{mintimebetweendeops}[0]) {
+      $self->{perlbot}->deop($event->{to}[0], $event->nick());
     }
 
-    $current_mode_change_time = time();
-    
-    if(!$last_mode_change_time || !%last_mode_changer) {
-	$last_mode_change_time = $current_mode_change_time;
-	
-	$last_mode_changer{'nick'} = $curnick;
-	$last_mode_changer{'chan'} = $curchan;
-	$last_mode_changer{'mode'} = $curmode;
-	$last_mode_changer{'target'} = $curtarget;
-        $last_mode_changer{'deops'} = $deops;
-    }
-    
-    $timedif = $current_mode_change_time - $last_mode_change_time;
-    if($timedif < 1) { $timedif = 1; }
-    
-    if($last_mode_changer{'nick'} eq $curnick) {
-	if(($deops / $timedif) > $deop_ratio) {
-	    $conn->mode($curchan, "-o", $curnick);
-	}
-    }
+    $self->{deoppers}{$event->nick()} = time();
 
-    $last_mode_change_time = $current_mode_change_time;
-    
-    $last_mode_changer{'nick'} = $curnick;
-    $last_mode_changer{'chan'} = $curchan;
-    $last_mode_changer{'mode'} = $curmode;
-    $last_mode_changer{'target'} = $curtarget;
-    if($last_mode_changer{'nick'} eq $curnick) {
-	$last_mode_changer{'deops'} += $deops;
-    } else {
-	$last_mode_changer{'deops'} = 0;
+    foreach my $deopper (keys(%{$self->{deoppers}})) {
+      if(time() - $self->{deoppers}{$deopper} > $self->{config}{mintimebetweendeops}[0]) {
+        delete $self->{deoppers}{$deopper};
+      }
     }
+  }
 }
 
 1;

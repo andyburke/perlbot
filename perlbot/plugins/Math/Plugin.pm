@@ -1,4 +1,4 @@
-# Andrew Burke <burke@bitflood.org>
+# Andrew Burke <burke@pas.rochester.edu>
 #
 # This plugin does math using bc.  Prolly needs to be on
 # a unix system...
@@ -8,81 +8,30 @@
 
 package Math::Plugin;
 
+use Plugin;
+@ISA = qw(Plugin);
+
+use strict;
+
 use Perlbot;
-use POSIX;
+use Safe;
 
-sub get_hooks {
-  return { public => \&on_public, msg => \&on_msg };
-}
+sub init {
+  my $self = shift;
 
-sub on_public {
-  my $conn = shift;
-  my $event = shift;
-  my $who = $event->{to}[0];
-
-  if ($event->{args}[0] =~ /^${pluginprefix}math/) {
-    math($conn, $event, $who);
-  }
-
-}
-
-sub on_msg {
-  my $conn = shift;
-  my $event = shift;
-  my $who = $event->nick;
-
-  if($event->{args}[0] =~ /^${pluginprefix}math/) {
-    math($conn, $event, $who);
-  }
+  $self->hook('math', \&math);
 }
 
 sub math {
-    # Math handling.
-  my $conn = shift;
-  my $event = shift;
-  my $who = shift;
+  my $self = shift;
+  my $user = shift;
+  my $text = shift;
 
-  if (!defined($pid = fork)) {
-    $conn->privmsg($who, "error in bc, or something...");
-    $conn->{_connected} = 0;
-    exit 1;
-  }
+  my $compartment = new Safe();
+  $compartment->permit_only(qw(:base_core));
 
-  if ($pid) {
-    # parent
-
-    $SIG{CHLD} = sub { wait; };
-    return;
-
-  } else {
-    # child...
-    
-    my $args;
-    ($args = $event->{args}[0]) =~ s/^${pluginprefix}math\s*//;
-    
-    $args =~ s/\s*//g;     #eat whitespace
-    
-    $args =~ s/arctan/a/g; #arctan->a
-    $args =~ s/cos/c/g;    #cos->c (the bc function)
-    $args =~ s/tan/t/g;    #tan->t
-    $args =~ s/sin/s/g;    #sin->s
-    $args =~ s/log/l/g;    #log->l
-
-    $args =~ s/\`//g;  #security... ?
-    $args =~ s/\$//g;
-    $args =~ s/\|//g;
-    
-    my @bc = `echo "$args"|bc -l 2>&1`;
-    foreach $line (@bc) {
-      chomp $line;
-      $conn->privmsg($who, $line);
-    }
-
-    $conn->{_connected} = 0;
-
-    exit 0;
-
-  }
+  my $result = $compartment->reval($text);
+  $self->reply($result);
 }
 
 1;

@@ -1,16 +1,14 @@
 package Logs;
 
-use Perlbot;
+use PerlbotUtils;
 use strict;
-# basedir is a global used to store the location of the channel logs
-use vars qw($basedir);
 
 # note: This used to be called 'Log' instead of 'Logs', but when we put
 # perlbot into CVS, Log created problems with keyword substitution.
 # So it's called Logs now.
 
 sub new {
-    my ($class, $chan) = @_;
+    my ($class, $logdir, $chan) = @_;
     my ($mday,$mon,$year);
 
     (undef,undef,undef,$mday,$mon,$year) = localtime;
@@ -18,6 +16,7 @@ sub new {
     $mon += 1;
 
     my $self = {
+        logdir => $logdir,
 	chan   => $chan,
 	curyr  => $year,
 	curmon => $mon,
@@ -61,7 +60,7 @@ sub update_date {
     $year += 1900; #yay, y2k!
     $mon += 1;
 
-    if($debug) {
+    if($DEBUG) {
       print "Updating date to: $year.$mon.$mday\n";
     }
 
@@ -75,21 +74,21 @@ sub open {
     my $date;
 
     # make necessary dirs if they don't exist
-    stat $basedir or mkdir($basedir, 0755);
-    stat $basedir.$dirsep.from_channel($self->chan) or mkdir($basedir.$dirsep.from_channel($self->chan), 0755);
+    stat $self->{logdir} or mkdir($self->{logdir}, 0755);
+    stat $self->{logdir}.$DIRSEP.strip_channel($self->chan) or mkdir($self->{logdir}.$DIRSEP.strip_channel($self->chan), 0755);
 
     $self->update_date();
     $date = sprintf("%04d.%02d.%02d", $self->curyr, $self->curmon, $self->curday);
 
-    if($debug) {
+    if($DEBUG) {
       print "Opening log file: " . $self->curyr . "." . $self->curmon . "." . $self->curday . "\n";
     }
 
 
     $self->{file}->close if $self->{file}->opened;   # is this necessary?
-    my $result = $self->{file}->open(">>$basedir".$dirsep.from_channel($self->chan).$dirsep."$date");
+    my $result = $self->{file}->open(">>$self->{logdir}".$DIRSEP.strip_channel($self->chan).$DIRSEP."$date");
     if (!$result) {
-      print "Could not open logfile '$date': $!\n" if $debug;
+      print "Could not open logfile " . $self->{logdir}.$DIRSEP.strip_channel($self->chan).$DIRSEP."$date" . ": $!\n" if $DEBUG;
     }
 }
 
@@ -109,16 +108,16 @@ sub write {
     $mon += 1;
     
     # make sure the log file's there...
-    #    stat ">>basedir".$dirsep.from_channel($self->chan).$dirsep.$self->curyr.'.'.$self->curmon.'.'.$self->curday or
+    #    stat ">>$self->{logdir}".$DIRSEP.strip_channel($self->chan).$DIRSEP.$self->curyr.'.'.$self->curmon.'.'.$self->curday or
     if(!$self->{file}->opened) { $self->open(); } 
 
-    if($debug > 1) {
+    if($DEBUG > 1) {
       print "Logging at: real: $year.$mon.$mday / internal: " . $self->curyr . "." . $self->curmon . "." . $self->curday . "\n";
     }
 
     # if the date has changed, roll the log file
     unless ($mday==$self->curday and $mon==$self->curmon and $year==$self->curyr) {
-	print "Rolling log file\n" if $debug;
+	print "Rolling log file\n" if $DEBUG;
 	$self->open();
     }
 

@@ -1,1 +1,0 @@
-Prints out a calendar for the current month,\\or the specified month/year.\\syntax: !cal [month year]\\  (you need to specify both or nothing)

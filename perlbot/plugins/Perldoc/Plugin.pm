@@ -1,97 +1,41 @@
-# Andrew Burke <burke@bitflood.org>
-#
-# This looks up a perl function...
+# Perldoc
+# Andrew Burke burke@bitflood.org
 
 package Perldoc::Plugin;
 
+use Plugin;
+@ISA = qw(Plugin);
+
 use Perlbot;
-use POSIX;
+use PerlbotUtils;
 
-sub get_hooks {
-  return { public => \&on_public, msg => \&on_msg };
+sub init {
+  my $self = shift;
+
+  $self->hook('perldoc', \&perldoc);
 }
 
-sub on_public {
-  my $conn = shift;
-  my $event = shift;
+sub perldoc {
+  my $self = shift;
+  my $user = shift;
+  my $text = shift;
 
-  if ($event->{args}[0] =~ /^${pluginprefix}perldoc/) {
-    perldoc_response($conn, $event, $event->{to}[0]);
-  }
-}
+  my ($max) = ($text =~ /(\d+)\s*$/);
+  $text =~ s/\d+\s*$//;
 
-sub on_msg {
-  my $conn = shift;
-  my $event = shift;
+  $max ||= 10;
 
-  if($event->{args}[0] =~ /^${pluginprefix}perldoc/) {
-    perldoc_response($conn, $event, $event->nick);
-  }
-}
+  my @result = PerlbotUtils::exec_command('perldoc', $text);
 
-sub perldoc_response {
-  my $conn = shift;
-  my $event = shift;
-  my $who = shift;
-
-  if(!defined($pid = fork)) {
-    $conn->privmsg($who, "error in forking perldoc...");
-    return;
-  }
-
-  if ($pid) {
-    #parent
-
-    $SIG{CHLD} = sub { wait; };
-    return;
-
-  } else {
-    #child
-
-    ($parms = $event->{args}[0]) =~ s/^${pluginprefix}perldoc\s*//;
-    my ($query) = $parms;
-    my $lines = '';
-
-    if($query =~ /\d+$/) {
-      $lines = $query;
-      $lines =~ s/.*?(\d+)$/$1/;
-    }
-    $query =~ s/\d+$//;
-
-    if($lines eq '') { $lines = 10; }
-    
-    die "Can't fork: $!" unless defined($pid = open(KID, "-|"));
-
-    # Safer way of running perldoc
-    #
-    # Thanks to: Mike Edwards <pf-perlbot@mirkwood.net> 
-
-    if ($pid) {
-       # parent
-       @text = <KID>;
-       close KID;
+  my $linenum = 0;
+  foreach my $line (@result) {
+    if($linenum <= $max) {
+      $self->reply($line);
     } else {
-       # kid
-       # Send stderr to stdout, so the bot will report errors back to the user
-       open (STDERR, ">&STDOUT") or die "Can't dup stdout: $!\n";
-       exec 'perldoc', '-t', split(' ', $query) or die "Can't exec perldoc: $!\n";
+      $self->reply('[[ ' . (@result - $linenum) . ' lines not displayed ]]');
+      last;
     }
-
-    chomp @text;
-
-    my $i = 0;
-    foreach (@text) {
-      $conn->privmsg($who, $_);
-      if($i > $lines) { last; };
-      $i++;
-    }
-    
-    $conn->{_connected} = 0;
-    exit 0;
+    $linenum++;
   }
 }
-
-1;
-
-
 

@@ -39,9 +39,7 @@ Table of Contents
        package is still sort of in development, and we're not afraid to
        make use of features in the newest version.  Bugfixes here are
        important too.
-    -> === IMPORTANT IMPORTANT IMPORTANT ===
-       Net::ICQ 0.70 appears to be buggy, so stick with 0.63 for now.
-
+  - XML::Simple (http://www.cpan.org/modules/by-module/XML/)
   - Plugins may have their own requirements, and we trust plugin authors
     to put that in their documentation.
 

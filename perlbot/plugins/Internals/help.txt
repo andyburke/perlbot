@@ -1,2 +1,0 @@
-Internal data printer (bot owners only)\\syntax: !internal <variable> [msg]\\  Returns contents of variable to console, Data::Dumper style.\\  If 'msg' is last argument, sends output to msg instead.
-

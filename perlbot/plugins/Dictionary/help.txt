@@ -1,7 +1,0 @@
-Looks up a word using ibiblio.org.
-
-dictionary
-dictionary <word>\\Looks <word> up at ibiblio.org and responds with the resultant output.
-
-dict
-dict <word>\\A shorthand for the dictionary command.

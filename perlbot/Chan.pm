@@ -1,47 +1,27 @@
 package Chan;
 
 use Logs;
-use Perlbot;
 use strict;
 
 
 sub new {
-    my ($class, $name, $flags, $key) = (shift, shift, shift, shift);
+  my $class = shift;
+  my (%chanhash) = @_;
 
-    my $self = {
-      name     => $name,
-      flags    => $flags ? join('', @{$flags}) : '',
-      key      => $key,
-      log      => new Logs($name),
-      logging  => 'no', #don't log by default...
-      ops      => {},
-      redirects => {}
-      };
+  my $self = {
+    name     => $chanhash{'name'},
+    flags    => $chanhash{'flags'},
+    key      => $chanhash{'key'},
+    log      => new Logs($chanhash{'logdir'}, $chanhash{'name'}),
+    logging  => $chanhash{'logging'}, 
+    limit    => $chanhash{'limit'},
+    ops      => {},
+    redirects => {},
+    members  => {},
+  };
     
-    bless $self, $class;
-    return $self;
-}
-
-sub join {
-    my $self = shift;
-    my $priv_conn = shift;
-
-    if($self->{logging} eq 'yes') {
-	$self->{log}->open;
-    }
-    if($self->{key} ne '') {
-      $priv_conn->join($self->{name}, $self->{key});
-    } else {
-      $priv_conn->join($self->{name});
-    }
-}
-
-sub part {
-    my $self = shift;
-    my $priv_conn = shift;
-    
-    $priv_conn->part($self->{name});
-    $self->{log}->close;
+  bless $self, $class;
+  return $self;
 }
 
 sub log_write {
@@ -74,6 +54,32 @@ sub ops {
     return $self->{ops};
 }
 
+sub add_member {
+  my $self = shift;
+  my $nick = shift;
+  my $oldnick = shift;
+
+  $self->{members}{$nick} = 1;
+}
+
+sub remove_member {
+  my $self = shift;
+  my $nick = shift;
+
+  delete $self->{members}{$nick};
+}
+
+sub is_member {
+  my $self = shift;
+  my $nick = shift;
+
+  if($self->{members}{$nick}) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 sub redirects {
     my $self = shift;
     return $self->{redirects};
@@ -90,7 +96,7 @@ sub add_op {
 sub add_redir {
     my $self = shift;
     foreach(@_) {
-#	push @{$self->{redirects}}, to_channel($_);
+#	push @{$self->{redirects}}, normalize_channel($_);
 	${$self->{redirects}}{$_} = $_;
 
     }
@@ -112,7 +118,7 @@ sub send_redirs {
     my $chan_or_nick;
 
     foreach my $redir (values(%{$self->{redirects}})) {
-	$priv_conn->privmsg(to_channel($redir), "[$self->{name}] <$nick> @_");
+	$priv_conn->privmsg(normalize_channel($redir), "[$self->{name}] <$nick> @_");
 #	$priv_conn->privmsg($redir, "[$self->{name}] <$nick> @_");
     }
 }

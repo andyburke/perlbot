@@ -1,2 +1,0 @@
-DO NOT load this plugin if you don't have guile.  You will end up with
-zombie processes and a poorly behaving bot.

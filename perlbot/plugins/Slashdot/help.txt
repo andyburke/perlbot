@@ -1,4 +1,0 @@
-Gateway to slashdot.org\\syntax: !slashdot [max]\\  Returns 10 headlines, or <max> if max is given.
-
-search
-syntax: !slashdot search term1 [term2...] [: max]\\  Searches for the specified terms and returns a maximum of 3 results, or <max> if max is given.

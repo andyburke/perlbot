@@ -1,71 +1,35 @@
-###############################
-# chan objects
-###############################
-
-chan {
-	key		
-	name		#perlbot
-	flag		+t
-	logging	        yes	
-	limit		0
-	op		leet_admin
-	op		lame_user
-}
-
-###############################
-# bot objects
-###############################
-
-bot {
-	logdir		./logs
-	noload		MegaHal
-	noload		Guile
-	nickappend	_
-	nick		perlbot
-	plugindir	./plugins
-	crashlogdir	.
-	ircname		imabot
-	commandprefix	#
-	pluginprefix	!
-
-        # other possible command/plugin prefixes:
-        #commandprefix  \\
-        #pluginprefix   \/
-        #
-        #commandprefix  .*?botname,\s+
-        #pluginprefix   (?:botname|idiotface)
-        #
-        # if this makes no sense, just don't define them
-}
-
-
-###############################
-# user objects
-###############################
-
-user {
-	flag		w #make this guy an owner of the bot
-	name		leet_admin
-# note: the password is crypted and perlbot expects this to be the case!
-        password        vvTHJiOIQW.vV
-	hostmask	*!*bob@something.foo.com
-	hostmask	*!*robert@somewhere.else.org
-}
-
-user {
-	name		lame_user
-# THIS WOULD BE INSECURE: the host range is very wide and the user
-#                         has no password set.
-	hostmask	*!*lamer@*.aol.com
-}
-
-
-###############################
-# server objects
-###############################
-
-server {
-	name		example
-	addr		example.ircnetwork.net
-}
+<config>
+  <channel name="#perlbot">
+    <flags>+t-ns</flags>
+    <logging>yes</logging>
+    <op>someone</op>
+    <op>otherperson</op>
+    <limit>0</limit>
+  </channel>
+  <bot>
+    <plugindir>./core</plugindir>
+    <plugindir>./plugins</plugindir>
+    <nick>uncfgpb</nick>
+    <crashlogdir>.</crashlogdir>
+    <logdir>./logs</logdir>
+    <noload>MegaHal</noload>
+    <noload>Guile</noload>
+    <noload>Babelfish</noload>
+    <noload>Test</noload>
+    <commandprefix>!</commandprefix>
+    <nickappend>_</nickappend>
+    <ircname>imabot</ircname>
+    <admin>someone</admin>
+  </bot>
+  <server address="irc.fdntech.com" />
+  <server address="localhost" />
+  <user name="someone">
+    <hostmask>*!*someone@*.somewhere.com</hostmask>
+    <password>wD887HJnHHjKA</password>
+  </user>
+  <user name="otherperson">
+    <hostmask>*!*other@*.person.edu</hostmask>
+    <password>4./tyldWElAKk</password>
+  </user>
+</config>
 

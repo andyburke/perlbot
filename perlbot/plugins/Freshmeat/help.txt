@@ -1,4 +1,0 @@
-Gateway to freshmeat.net\\syntax: ![freshmeat|fm] [max]\\  Returns 5 headlines, or <max> if max is given.
-
-search
-syntax: ![freshmeat|fm] search term1 [term2...] [: max]\\  Searches for the specified terms and returns a maximum of 3 results, or <max> if max is given.
