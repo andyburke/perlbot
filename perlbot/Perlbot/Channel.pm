@@ -28,11 +28,15 @@ sub new {
   #             use that
   #           else
   #             use 'Files'
-  my $logtype = $self->config->exists(channel => $self->name => 'logtype') ?
+  my $logtypestring = $self->config->exists(channel => $self->name => 'logtype') ?
     $self->config->get(channel => $self->name => 'logtype') :
     ( $self->config->exists(bot => 'defaultlogtype') ?
       $self->config->get(bot => 'defaultlogtype') :
       'Files' );
+
+  my ($logtype, $arguments) = split(';', $logtypestring, 2);
+  $arguments ||= '';
+
   $logtype =~ /^\w+(::\w+)*$/ or die "Channel $name: Invalid logtype '$logtype'";
   debug("loading Logs package '$logtype'");
 
@@ -48,10 +52,17 @@ sub new {
     return undef;
   }
 
+  my ($dbtype, $dbname, $dbuser, $dbpassword) = split(';', $arguments);
+
   # try to construct the Logs object
   $self->logs = eval "
     local \$SIG{__DIE__}='DEFAULT';
-    new Perlbot::Logs::${logtype}(\$self->perlbot, \$self->name);
+    new Perlbot::Logs::${logtype}(\$self->perlbot,
+                                  \$self->name,
+                                  \$dbtype,
+                                  \$dbname,
+                                  \$dbuser,
+                                  \$dbpassword);
   ";
   if ($@ or !$self->logs) {
     debug("  failed construction of '$logtype': $@");
