@@ -249,7 +249,7 @@ sub array_delete {
   my $value = pop;
 
   $self->exists(@_) or return;
-  @{$self->_value(@_)} = grep {$_ ne $value} $self->_value(@_);
+  @{$self->_value(@_)} = grep {$_ ne $value} $self->array_get(@_);
 }
 
 
