@@ -2,6 +2,7 @@ package Perlbot::Config;
 
 
 use strict;
+use Perlbot;
 use Carp;
 use XML::Simple;
 use Perlbot::Utils;

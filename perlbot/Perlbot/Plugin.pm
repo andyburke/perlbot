@@ -7,6 +7,7 @@
 package Perlbot::Plugin;
 
 use Perlbot::Utils;
+use File::Spec;
 
 sub new {
   my $class = shift;
@@ -46,7 +47,7 @@ sub new {
   # try to read their config file
   # try to read their help file
 
-  $self->{config} = new Perlbot::Config('config');
+  $self->{config} = new Perlbot::Config(File::Spec->catfile($self->{directory}, 'config'));
   $self->{helpitems} = $self->read_help();
 
   return $self;
