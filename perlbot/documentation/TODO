@@ -2,6 +2,7 @@ TODO:
 
 for 2.0:
 
+- MAKE A UNIFIED SYSTEM FOR ACCESS TO THE IN-MEMORY CONFIG
 - make the bot quit gracefully and catch all the right signals
 - output buffering
 - port plugins

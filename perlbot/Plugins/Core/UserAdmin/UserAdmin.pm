@@ -18,6 +18,7 @@ sub init {
 
   $self->want_fork(0);
   $self->want_reply_via_msg(1);
+  $self->want_public(0);
 
   $self->hook_admin('useradmin', \&useradmin);
 
@@ -29,8 +30,6 @@ sub useradmin {
   my $text = shift;
 
   my ($command, $username, $arguments) = split(' ', $text, 3);
-
-  print "IN USERADMIN: $command $username $arguments\n\n";
 
   if(!$command) {
     $self->reply('You must specify a command!');
