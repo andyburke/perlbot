@@ -14,7 +14,7 @@ use Perlbot::Logs;
 our $VERSION = '1.9.7';
 our $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
 
-use fields qw(starttime configfile config ircobject ircconn msg_queue empty_queue webserver plugins handlers handlers_backup users channels logs curnick masterpid);
+use fields qw(starttime configfile config ircobject ircconn msg_queue webserver plugins handlers handlers_backup users channels logs curnick masterpid);
 
 sub new {
   my $class = shift;
@@ -28,7 +28,6 @@ sub new {
   $self->ircobject = undef;
   $self->ircconn = undef;
   $self->msg_queue = [];
-  $self->empty_queue = 1;
   $self->webserver = undef;
   $self->plugins = [];
   $self->handlers = {};
@@ -119,14 +118,20 @@ sub start {
 sub shutdown {
   my ($self, $quitmsg, $is_crash) = @_;
 
+  debug("Shutting down...") if $$ == $self->masterpid;
+
+  # make sure no handlers are triggered while we do this
+  $self->handlers = {};  
+
+  debug("Flushing output queue (this may take a moment)...");
+  $self->empty_queue;
+
   # if this isn't the master process, just silently exit.
-  if ($$ ne $self->masterpid) {
+  if ($$ != $self->masterpid) {
     $self->ircconn->{_connected} = 0;
     $self->channels = undef; # !!! ?
     exit;
   }
-
-  debug("Shutting down...");
 
   $quitmsg ||= 'goodbye';
 
@@ -282,7 +287,7 @@ sub connect {
     $localaddr ||= '';
     $username ||= '';
     $ssl ||= 0;
-    $pacing || = 0;
+    #$pacing || = 0;
 
     debug("attempting to connect to server $index: $server");
 
@@ -650,18 +655,14 @@ sub webserver_remove_all_handlers {
 }
 
 # removes all handlers and sends all waiting events, used prior to shutdown
-sub emptyqueue {
+sub empty_queue {
   my ($self) = @_;
   my $lines;
-
-### commented out until Net::IRC supports pacing
-### ... and now it does, because we maintain it. :)
 
   $lines = $self->ircobject->queue;
   # abort if no lines in queue, or pacing not enabled
   $lines and $self->ircobject->pacing or return;
 
-  delete $self->handlers;  # make sure no handlers are triggered while we do this
   debug("emptyqueue: outputing $lines events", 3);
   while ($self->ircobject->queue) {
     $self->ircobject->do_one_loop;
@@ -737,22 +738,6 @@ sub remove_admin {
   $self->config->array_delete(bot => 'admin', $user->name);
 }
 
-# sends out the msg on the front of the queue and (re-)schedules itself
-sub process_queue {
-  my ($self) = @_;
-
-  # if there's something on the queue, send it and schedule this method to
-  # be called again in a bit.  otherwise, just set the empty_queue flag.
-  my $params = shift(@{$self->msg_queue});
-  if ($params) {
-    debug("sending head of queue: $params->[0] / $params->[1]", 3);
-    $self->ircconn->privmsg(@$params);
-    debug("==>" . $self->ircconn->schedule(1, \&process_queue, $self), 3);
-  } else {
-    debug("queue now empty", 3);
-    $self->empty_queue = 1;
-  }
-}
 
 # some utility functions
 
@@ -784,16 +769,6 @@ sub msg {
   my $target = shift;
   my $text = shift;
 
-  # push msg on the queue, and process the queue if it was previously empty
-  # (then flag the queue as non-empty)
-#  push(@{$self->msg_queue}, [$target, $text]);
-#  print "msg: queueing $target / $text\n" if $DEBUG >= 3;
-#  if ($self->empty_queue) {
-#    print "  queue was empty, processing\n" if $DEBUG >= 3;
-#    $self->process_queue;
-#    $self->empty_queue = 0;
-#  }
-  
   $self->ircconn->privmsg($target, $text);
   
 }

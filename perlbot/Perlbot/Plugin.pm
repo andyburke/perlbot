@@ -644,7 +644,6 @@ sub _dispatch {
     } else {
       # child
       $coderef->($self, @params);
-      $self->perlbot->empty_queue; # send all waiting events
       $self->_shutdown();
       $self->perlbot->shutdown();
     }
