@@ -20,6 +20,8 @@ sub seen {
   my $user = shift;
   my $name = shift;
 
+  ($name) = split(' ', $name);
+
   if(defined($self->{seen}{$name})) {
     my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
         localtime($self->{seen}{$name}{seentime});

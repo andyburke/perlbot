@@ -63,7 +63,7 @@ sub update_date {
     $mon += 1;
 
     if($DEBUG) {
-      print "Updating date to: $year.$mon.$mday\n";
+      print "Updating date to: $year.$mon.$mday for channel: $self->{chan}\n";
     }
 
     $self->curyr($year);
@@ -83,7 +83,7 @@ sub open {
     $date = sprintf("%04d.%02d.%02d", $self->curyr, $self->curmon, $self->curday);
 
     if($DEBUG) {
-      print "Opening log file: " . $self->curyr . "." . $self->curmon . "." . $self->curday . "\n";
+      print "Opening log file: " . File::Spec->catfile(strip_channel($self->{chan}) , $self->curyr . "." . $self->curmon . "." . $self->curday) . "\n";
     }
 
 

@@ -190,7 +190,11 @@ sub lookup {
   my $self = shift;
   my $term = shift;
 
-  return $self->{facts}{$term};
+  if($term) {
+    return $self->{facts}{$term};
+  } else {
+    return undef;
+  }
 }
 
 
