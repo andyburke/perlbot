@@ -35,10 +35,10 @@ sub open_hal {
   `echo "cd $plugindir/MegaHal" >> $plugindir/MegaHal/run-hal`;
   `echo "./megahal" >> $plugindir/MegaHal/run-hal`;
   `chmod u+x $plugindir/MegaHal/run-hal`;
+  `chmod u+x $plugindir/MegaHal/megahal`;
 
   $proc_pid = open2( \*read, \*write, "$plugindir/MegaHal/run-hal");
   my $he_said = <read>;
-  chomp $he_said;
   
   $read = \*read;
   $write = \*write;
@@ -61,7 +61,7 @@ sub on_msg {
 
   my $who = $event->nick;
 
-  if($event->{args}[0] =~ /^\!quithal/) {
+  if($event->{args}[0] =~ /^${pluginchar}quithal/) {
     if($write) {
       print $write "#quit\n\n";
       $conn->privmsg($who, "Hal should have quit...");
@@ -71,7 +71,7 @@ sub on_msg {
       $conn->privmsg($who, "Hal not running?");
     }
   }
-  if($event->{args}[0] =~ /^\!starthal/) {
+  if($event->{args}[0] =~ /^${pluginchar}starthal/) {
     if($write || $read) {
       print $write "#quit\n\n";
       $conn->privmsg($who, "Hal was running or something?");
@@ -80,17 +80,17 @@ sub on_msg {
     }
     open_hal($conn, $event);
   }
-  if($event->{args}[0] =~ /^\!save/) {
+  if($event->{args}[0] =~ /^${pluginchar}save/) {
     if($write) {
       print $write "#save\n\n";
       $conn->privmsg($who, "Hal's brain should have been saved...");
     }
   }
-  if($event->{args}[0] =~ /^!trigger/) {
-    ($trigger_lines) = ($event->{args}[0] =~ /^!trigger\s+(\d+)/);
+  if($event->{args}[0] =~ /^${pluginchar}trigger/) {
+    ($trigger_lines) = ($event->{args}[0] =~ /^${pluginchar}trigger\s+(\d+)/);
     $conn->privmsg($who, "Hal's trigger lines now: $trigger_lines");
   }
-  if($event->{args}[0] =~ /^\!learn/) {
+  if($event->{args}[0] =~ /^${pluginchar}learn/) {
     if($learn == 1) { 
       $learn = 0;
       $conn->privmsg($who, "learning off (responses)");
@@ -99,30 +99,30 @@ sub on_msg {
       $conn->privmsg($who, "learning on (no responses)");
     }
   }
-  if($event->{args}[0] =~ /^\!minusers/) {
-    ($min_users) = ($event->{args}[0] =~ /^\!minusers\s+(\d+)/);
+  if($event->{args}[0] =~ /^${pluginchar}minusers/) {
+    ($min_users) = ($event->{args}[0] =~ /^\${pluginchar}minusers\s+(\d+)/);
     $conn->privmsg($who, "Min Users now: " . $min_users);
   }
-  if($event->{args}[0] =~ /^\!status/) {
+  if($event->{args}[0] =~ /^${pluginchar}status/) {
     $conn->privmsg($who, "Channels in channels array: " . @channels);
     $conn->privmsg($who, "Min Users to get added to chan array: " . $min_users);
     $conn->privmsg($who, "Trigger lines: " . $trigger_lines);
     $conn->privmsg($who, "Learning: " . $learn);
   }
-  if($event->{args}[0] =~ /^\!getchanlist/) {
+  if($event->{args}[0] =~ /^${pluginchar}getchanlist/) {
     $conn->privmsg($who, "Getting channel list, this could take a while...");
     while(@channels) {
       pop @channels;
     }
     $conn->list();
   }
-  if($event->{args}[0] =~ /^!dumpchanlist/) {
+  if($event->{args}[0] =~ /^${pluginchar}dumpchanlist/) {
     $conn->privmsg($who, "Dumping channel list...");
     while(@channels) {
       pop @channels;
     }
   }
-  if($event->{args}[0] =~ /^\!orderchans/) {
+  if($event->{args}[0] =~ /^${pluginchar}orderchans/) {
     my @newchannels = sort { $b->[1] <=> $a->[1] } @channels;
     my $i = 0;
     while($newchannels[$i]) {
@@ -131,7 +131,7 @@ sub on_msg {
     }
     $conn->privmsg($who, "Channels should be in order now...");
   }
-  if($event->{args}[0] =~ /^!jointopchan/) {
+  if($event->{args}[0] =~ /^${pluginchar}jointopchan/) {
     if(@channels) {
       my $chan = @{shift @channels}->[0];
       $channels{to_channel($chan)} = new Chan(to_channel($chan));
@@ -142,7 +142,7 @@ sub on_msg {
       $conn->privmsg($who, "No channels...");
     }
   } 
-  if(!($event->{args}[0] =~ /^[\!|\#]/)) {
+  if(($event->{args}[0] !~ /^${pluginchar}/)) {
     hal($conn, $event, $who, 1);
   }
 }  
@@ -256,14 +256,9 @@ sub hal {
 
 sub close_hal {
   if($write) { print $write "#quit\n\n"; }
-  `killall -9 run-hal`;
+  `kill $proc_pid`;
+  `kill -9 $proc_pid`;
 }
 
 
 1;
-
-
-
-
-
-
