@@ -11,7 +11,7 @@ for 2.0:
 - move Note.pm into the Notes plugin
 - clean up code, make -w clean, etc.
 - flock the config file when reading/writing
-- move config stuff into a Config object
+- write create() and delete() methods for Config?
 - move all code that touches Net::IRC stuff into Perlbot.pm and write
   accessor methods (for example, ConnectionManagement currently bangs
   on $perlbot->{ircconn})
