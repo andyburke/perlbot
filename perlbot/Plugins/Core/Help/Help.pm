@@ -18,7 +18,7 @@ sub gethelp {
   my @foundhelp;
 
   if($text) {
-    foreach my $plugin (@{$self->{perlbot}{plugins}}) {
+    foreach my $plugin (@{$self->perlbot->{plugins}}) {
       push(@foundhelp, $plugin->_help($text));
     }
 

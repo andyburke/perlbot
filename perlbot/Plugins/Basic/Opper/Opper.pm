@@ -21,7 +21,7 @@ sub opper {
   my $chan = $self->perlbot->get_channel($event->{to}[0]);
 
   if($user && (grep {$_ eq $user->name } @{$chan->ops})) {
-    $self->{perlbot}->op($event->{to}[0], $event->nick());
+    $self->perlbot->op($event->{to}[0], $event->nick());
   }
 }
 

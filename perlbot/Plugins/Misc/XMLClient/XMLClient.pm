@@ -21,7 +21,7 @@ sub init {
 #  $self->perlbot->config->value('user') = XMLin($users->value->value());
   $self->perlbot->config->{_config}{$field} = ${$xml}{$field};
 
-  $self->{perlbot}->process_config();
+  $self->perlbot->process_config();
 
 }
 
