@@ -410,6 +410,130 @@ my %command_handlers =
        host_to_user($userhost)->readnote($priv_conn, @_);
      }
    },
+   auth => sub {
+     my ($priv_conn, $from, $userhost) = (shift, shift, shift);
+     my $username = shift;
+     my $password = shift;
+
+     if(!$username || !$password || $password eq "''") {
+       $priv_conn->privmsg($from, "usage: ${commandprefix}auth <username> <password>");
+       return;
+     }
+
+     if(exists($users{$username})) {
+       if($users{$username}->password() && (crypt($password, $users{$username}->password()) eq $users{$username}->password())) {
+         $users{$username}->hostmasks($userhost); # add this hostmask
+         $priv_conn->privmsg($from, "User $username authenticated");
+       } else {
+         $priv_conn->privmsg($from, "Bad password");
+       }
+     } else {
+       $priv_conn->privmsg($from, "No such user: $username");
+       return;
+     }
+   },
+   password => sub {
+     my ($conn, $from, $userhost) = (shift, shift, shift);
+     my $newpassword = shift;
+     my $user = host_to_user($userhost);
+     my $username;
+
+     if(!$newpassword) {
+       $conn->privmsg($from, "Must specify a new password!");
+       return;
+     }
+
+     if(!$user) {
+       $conn->privmsg($from, "Not a known user, try auth first!");
+       return;
+     }
+
+     foreach my $tempname (keys(%users)) {
+       if($user == $users{$tempname}) {
+         $username = $tempname;
+         last;
+       }
+     }
+
+     if(!$username) {
+       $conn->privmsg($from, "error in password: !username, tell your bot admin");
+       return;
+     }
+
+     # FIXME:  This will break if someone has #loaded and is working from
+     # a different config, basically if we #load a config, we should
+     # probably reset $CONFIG
+     my $tmpconfig = parse_config($CONFIG);
+     my $usertomodify;
+     foreach my $tempuser (@{$tmpconfig->{'user'}}) {
+       if($tempuser->{'name'}[0] eq $username) {
+         $usertomodify = $tempuser;
+         last;
+       }
+     }
+
+     if(!$usertomodify) {
+       $conn->privmsg($from, "error in password: !usertomodify, tell your bot admin");
+       return;
+     }
+
+     $newpassword =  crypt($newpassword, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
+     $usertomodify->{'password'}[0] = $newpassword;
+     write_config($CONFIG, $tmpconfig);
+     $user->password($newpassword);
+
+     $conn->privmsg($from, "Password successfully changed");
+   },
+   addhost => sub {
+     my ($conn, $from, $userhost) = (shift, shift, shift);
+     my $hostname = shift;
+     my $user = host_to_user($userhost);
+     my $username;
+
+     if(!$hostname) {
+       $conn->privmsg($from, "Must specify a hostname!");
+       return;
+     }
+
+     if(!$user) {
+       $conn->privmsg($from, "Not a known user, try auth first!");
+       return;
+     }
+
+     foreach my $tempname (keys(%users)) {
+       if($user == $users{$tempname}) {
+         $username = $tempname;
+         last;
+       }
+     }
+
+     if(!$username) {
+       $conn->privmsg($from, "error in addhost: !username, tell your bot admin");
+       return;
+     }
+
+     # FIXME:  This will break if someone has #loaded and is working from
+     # a different config, basically if we #load a config, we should
+     # probably reset $CONFIG
+     my $tmpconfig = parse_config($CONFIG);
+     my $usertomodify;
+     foreach my $tempuser (@{$tmpconfig->{'user'}}) {
+       if($tempuser->{'name'}[0] eq $username) {
+         $usertomodify = $tempuser;
+         last;
+       }
+     }
+
+     if(!$usertomodify) {
+       $conn->privmsg($from, "error in addhost: !usertomodify, tell your bot admin");
+       return;
+     }
+
+     push(@{$usertomodify->{'hostmask'}}, $hostname);
+     write_config($CONFIG, $tmpconfig);
+     
+     $conn->privmsg($from, "Added $hostname to your list of hostmasks");
+   },
    plugins => sub {
      my ($conn, $from, $userhost) = (shift, shift, shift);
      if (!@_) {

@@ -51,5 +51,17 @@ listnotes
 readnote
 #readnote [<num>]\\By itself, shows you the oldest note waiting for you (and deletes it).\\With <num>, shows the note with that number.
 
+auth
+auth <username> <password>\\Authenticates a user with the bot according to the password set in the config.\\Only authenticates the user from their host for the session of the given bot.\\See also: password, addhost
+
+addhost
+addhost <hostmask>\\Adds <hostmask> to the list of valid hostmasks for an authenticated user.\\This permanently adds the hostmask to the config file.\\See also: delhost
+
+delhost
+delhost <hostmask>\\Removes <hostmask> from the list of valid hostmasks for an authenticated user.\\This permanently removes the hostmask from the config file.\\See also: addhost
+
+password
+password <newpassword>\\Sets the user's password to <newpassword>\\Saves this value permanently to the config file.\\See also: auth
+
 plugins
 #plugins [(start|load|stop|unload|restart|reload) <plugin>]\\By itself, returns a list of currently loaded plugins.\\(the following subcommands are for owners only)\\start/load - load and enable <plugin>\\stop/unload - unload and disable <plugin>\\restart/reload - unload then load <plugin>
