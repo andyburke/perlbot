@@ -189,18 +189,31 @@ sub get {
 
   my $ret = $self->_value(@_);
   if (ref $ret) {
-    debug("get: request for non-leaf node: ". join('=>', @_));
+    # if an array itself was specified, return element 0
+    if (ref $ret eq 'ARRAY') {
+      debug("get: assuming array index 0", 9);
+      return $self->_value(@_, 0);
+    } else {
+      debug("get: request for non-leaf node: ". join('=>', @_));
+    }
   }
   return $ret;
 }
 
 sub set {
   my $self = shift;
-  my $value = shift;
+  my $value = pop;
 
   my $ret = $self->_value(@_);
   if (ref $ret) {
     debug("set: request for non-leaf node: ". join('=>', @_));
+  }
+  if (!$self->exists(@_)) {
+    my @parent_keys = @_[0..@_-2];
+    my $key = @_[@_-1];
+    if (ref $self->_value(@parent_keys) eq 'HASH') {
+      $self->_value(@parent_keys)->{$key} = undef;
+    }
   }
   $self->_value(@_) = $value;
 }
@@ -224,18 +237,18 @@ sub array_initialize {
 
 sub array_push {
   my $self = shift;
-  my $value = shift;
+  my $value = pop;
 
-  $self->exists($arrayref) or $self->array_initialize(@_);
+  $self->exists(@_) or $self->array_initialize(@_);
   my $arrayref = $self->_value(@_);
   push @$arrayref, $value;
 }
 
 sub array_delete {
   my $self = shift;
-  my $value = shift;
+  my $value = pop;
 
-  $self->exists($arrayref) or return;
+  $self->exists(@_) or return;
   @{$self->_value(@_)} = grep {$_ ne $value} $self->_value(@_);
 }
 
