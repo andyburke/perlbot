@@ -112,7 +112,7 @@ sub write {
     #    stat ">>basedir".$dirsep.from_channel($self->chan).$dirsep.$self->curyr.'.'.$self->curmon.'.'.$self->curday or
     if(!$self->{file}->opened) { $self->open(); } 
 
-    if($debug) {
+    if($debug > 1) {
       print "Logging at: real: $year.$mon.$mday / internal: " . $self->curyr . "." . $self->curmon . "." . $self->curday . "\n";
     }
 
