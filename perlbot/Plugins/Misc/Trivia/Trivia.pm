@@ -427,7 +427,7 @@ sub triviastats {
       $timerank++;
     }
 
-    $winsrank = $self->{winsranks}{$nick};
+    $timerank = $self->{timeranks}{$nick};
 
     $self->reply("$nick: %R:$percentagerank  WR:$winsrank  TR:$timerank  W:$self->{correctlyanswered}{$nick}  TA:$self->{totalanswered}{$nick}  S:" . $self->score($nick) . "%  FT: $self->{fastestoverall}{$nick}");
   }
