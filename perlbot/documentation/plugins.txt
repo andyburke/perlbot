@@ -81,3 +81,8 @@ plugins (see section 4) then it will still be prevented from loading the next
 time you start perlbot.  If you want the plugin to automatically start up,
 you'll have to remove the appropriate "noload" line from your config file.
 
+In addition, you can msg the bot "#plugins unload PluginName" (or "stop") to
+dynamically reload a plugin, and "#plugins reload Pluginname" (or "restart")
+to reload the plugin.  Reload is generally useful to plugin developers.  (See
+plugins-authoring.txt if you're interested.)
+
