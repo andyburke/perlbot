@@ -278,6 +278,13 @@ sub connect {
   #   set our ircconn object to the new one
 
   if ($self->config->exists(server => $index)) {
+
+    # if we already had a connection, get rid of it...
+    if(defined($self->ircconn)) {
+      debug('Destroying old server connection...', 2);
+      $self->ircconn = undef;
+    }
+
     $server    = $self->config->get(server => $index => 'address');
     $port      = $self->config->get(server => $index => 'port');
     $password  = $self->config->get(server => $index => 'password');
@@ -323,7 +330,7 @@ sub connect {
     debug("connected to server: $server");
 
     if(defined($self->handlers_backup)) {
-      debug("reusing old handlers for new connection", 5);
+      debug("Reusing old handlers for new connection!", 3);
       $self->ircconn->{_handler} = $self->handlers_backup;
       $self->handlers_backup = undef;
     }

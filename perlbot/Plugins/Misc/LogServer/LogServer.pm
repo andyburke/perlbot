@@ -328,7 +328,7 @@ sub logserver {
       
       $response .= "</table>";
 
-      $response .= "<input type=\"submit\" name=\"submit\" />";
+      $response .= "<input type=\"submit\" name=\"submit\" value=\"Search\" />";
       $response .= "</form>";
 
       $response .= '<span class="note">* Note that search speed is often dependent on many factors, including the amount of data logged and the log facility the bot administrator has chosen.  Please allow ample time for the search to complete!</span>';

@@ -29,13 +29,12 @@ sub join_channels {
   my $self = shift;
   my $event = shift;
 
-  debug("Joining Channels");
+  debug("Joining Channels...");
 
   foreach my $channel (values(%{$self->perlbot->channels})) {
-    debug("  Joining Channel: " . $channel->name);
-#    $self->perlbot->join($channel);
+    debug("\\-> Joining Channel: " . $channel->name);
     $channel->join();
-    debug("    Sending whois to channel: " . $channel->name, 2);
+    debug("  \\->  Sending whois to channel: " . $channel->name, 2);
     $self->perlbot->whois($channel);
     sleep(1); # so we don't flood
   }
@@ -68,6 +67,7 @@ sub reconnect {
   while (!$self->perlbot->connect($i)) {
     $i++;
     $i = $i % $self->perlbot->config->array_get('server');
+    sleep(1);
   }
 }
 

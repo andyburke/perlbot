@@ -9,7 +9,7 @@ package Perlbot::Plugin;
 use strict;
 
 use vars qw($AUTOLOAD %FIELDS);
-use fields qw(name perlbot directory config helpitems infoitems commandprefix_hooks addressed_command_hooks regular_expression_hooks addressed_hooks commandprefix_admin_hooks addressed_command_admin_hooks commandprefix_advanced_hooks addressed_command_advanced_hooks event_hooks lastcontact lastnick lasthost behaviors);
+use fields qw(name perlbot directory config helpitems infoitems commandprefix_hooks addressed_command_hooks regular_expression_hooks addressed_hooks commandprefix_admin_hooks addressed_command_admin_hooks commandprefix_user_hooks addressed_command_user_hooks commandprefix_advanced_hooks addressed_command_advanced_hooks event_hooks lastcontact lastnick lasthost behaviors);
 
 use Perlbot::Utils;
 use Perlbot::PluginConfig;
@@ -38,6 +38,8 @@ sub new {
   $self->addressed_hooks = [];
   $self->commandprefix_admin_hooks = {};
   $self->addressed_command_admin_hooks = {};
+  $self->commandprefix_user_hooks = {};
+  $self->addressed_command_user_hooks = {};
   $self->commandprefix_advanced_hooks = {};
   $self->addressed_command_advanced_hooks = {};
   $self->event_hooks = {};
@@ -278,6 +280,31 @@ sub hook_addressed_command_admin {
   $self->addressed_command_admin_hooks->{$hook} = $call;
 }
 
+sub hook_user {
+  my $self = shift;
+  my $hook = shift;
+  my $call = shift;
+
+  $self->hook_commandprefix_user($hook, $call);
+  $self->hook_addressed_command_user($hook, $call);
+}
+
+sub hook_commandprefix_user {
+  my $self = shift;
+  my $hook = shift;
+  my $call = shift;
+
+  $self->commandprefix_user_hooks->{$hook} = $call;
+}
+
+sub hook_addressed_command_user {
+  my $self = shift;
+  my $hook = shift;
+  my $call = shift;
+
+  $self->addressed_command_user_hooks->{$hook} = $call;
+}
+
 sub hook_event {
   my $self = shift;
   my $event = shift;
@@ -498,9 +525,69 @@ sub _process { # _process to stay out of people's way
 
   # set a couple of history things for our reply* methods
 
-  $self->lastnick = $event->nick;
-  $self->lasthost = $event->host;
+  $self->_set_lastcontact($event);
 
+  my $regexp = '(' . $botnick . ')?(?:\s+|,|:|\.)*(' . $self->perlbot->config->get(bot => 'commandprefix') . ')?(.*)';
+
+  my ($addressed, $prefixed, $extratext, $command, $texttocallwith);
+
+  if($text ne '') {
+    ($addressed, $prefixed, $extratext) = $text =~ /^$regexp$/i;
+    ($command, $texttocallwith) = split(/ /, $extratext, 2);
+  }
+  
+  foreach my $regular_expression_hook (keys(%{$self->regular_expression_hooks})) {
+    if($text =~ /$regular_expression_hook/) {
+      $self->_dispatch($self->regular_expression_hooks->{$regular_expression_hook}, $user, $text, $event);
+    }
+  }
+  
+  # here we just return raw events
+
+  foreach my $event_hook (@{$self->event_hooks->{$event->type()}}) {
+    $self->_dispatch($event_hook, $event);
+  }
+
+  # like above, but here we can return any event in which the bot was addressed
+
+  if($addressed) {
+    foreach my $addressed_hook (@{$self->addressed_hooks}) {
+      $self->_dispatch($addressed_hook, $user, $texttocallwith, $event);
+    }
+  }
+
+  if($addressed || $prefixed) {
+    if($addressed && !$prefixed) {
+      if(exists($self->addressed_command_hooks{$command})) {
+        $self->_dispatch($self->addressed_command_hooks->{$addressed_command_hook},
+                         $user,
+                         $texttocallwith,
+                         $event);
+      }
+      if(exists($self->addressed_command_user_hooks{$command})) {
+        if($user) {
+          $self->_dispatch($self->addressed_command_user_hooks->{$command},
+                           $user,
+                           $texttocallwith,
+                           $event);
+        } else {
+          $self->perlbot->msg($event->nick, 'You are not a bot user!');
+        }
+      }
+      if(exists($self->addressed_command_admin_hooks{$command})) {
+        if($user && $user->is_admin()) {
+          $self->_dispatch($self->addressed_command_admin_hooks->{$command},
+                           $user,
+                           $texttocallwith,
+                           $event);
+        } else {
+          $self->perlbot->msg($event->nick, 'You are not a bot admin!');
+        }
+      }
+    }
+    if($prefixed) {
+    }
+  }
   # foreach normal hook we have
   #   append the command prefix to it
   #   if the event's text matches our hook
@@ -531,25 +618,6 @@ sub _process { # _process to stay out of people's way
     }
   }
 
-  # like above, but with a raw regular expression
-
-  foreach my $regular_expression_hook (keys(%{$self->regular_expression_hooks})) {
-    if($text =~ /$regular_expression_hook/) {
-      $self->_set_lastcontact($event);
-      $self->_dispatch($self->regular_expression_hooks->{$regular_expression_hook}, $user, $text, $event);
-    }
-  }
-  
-  # like above, but here we can return any event in which the bot was addressed
-
-  if($text =~ /^$botnick(?:,|:|\.|\s)*/i) {
-    $self->_set_lastcontact($event);
-    my $texttocallwith = $text;
-    $texttocallwith =~ s/^$botnick(?:,|:|\.|\s)*//i;
-    foreach my $addressed_hook (@{$self->addressed_hooks}) {
-      $self->_dispatch($addressed_hook, $user, $texttocallwith, $event);
-    }
-  }
 
   # just like the first one, but with an added check to make sure the
   # person generating the event is an admin
@@ -563,6 +631,7 @@ sub _process { # _process to stay out of people's way
         $self->_set_lastcontact($event);
         $self->_dispatch($self->commandprefix_admin_hooks->{$commandprefix_admin_hook}, $user, $texttocallwith, $event);
       } else {
+        print "hook: $commandprefix_admin_hook\n";
         $self->perlbot->msg($event->nick(), 'You are not an admin!');
       }
     }
@@ -576,6 +645,39 @@ sub _process { # _process to stay out of people's way
         $texttocallwith =~ s/${regexp}//i;
         $self->_set_lastcontact($event);
         $self->_dispatch($self->addressed_command_admin_hooks->{$addressed_command_admin_hook}, $user, $texttocallwith, $event);
+      } else {
+        $self->perlbot->msg($event->nick(), 'You are not an admin!');
+      }
+    }
+  }
+
+  # hooks that only allow users...
+
+  foreach my $commandprefix_user_hook (keys(%{$self->commandprefix_user_hooks})) {
+    my $regexp = $self->perlbot->config->get(bot => 'commandprefix') . $commandprefix_user_hook;
+    if($text =~ /^\Q${regexp}\E(?:\s+|$)/i) {
+      if($user) {
+        my $texttocallwith = $text;
+        $texttocallwith =~ s/^\Q${regexp}\E(?:\s+|$)//i;
+        $self->_set_lastcontact($event);
+        $self->_dispatch($self->commandprefix_user_hooks->{$commandprefix_user_hook}, $user, $texttocallwith, $event);
+      } else {
+        $self->perlbot->msg($event->nick(), 'You are not a bot user!');
+      }
+    }
+  }
+
+  foreach my $addressed_command_user_hook (keys(%{$self->addressed_command_user_hooks})) {
+    my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->get(bot => 'commandprefix') . '*' . $addressed_command_user_hook . '(?:\s+|$)';
+    if($text =~ /^${regexp}/i) {
+      if($user) {
+        my $texttocallwith = $text;
+        $texttocallwith =~ s/${regexp}//i;
+        $self->_set_lastcontact($event);
+        $self->_dispatch($self->addressed_command_user_hooks->{$addressed_command_user_hook}, $user, $texttocallwith, $event);
+      } else {
+        print "addressed...\n";
+        $self->perlbot->msg($event->nick(), 'You are not a bot user!');
       }
     }
   }
@@ -602,12 +704,6 @@ sub _process { # _process to stay out of people's way
     }
   }
 
-  # here we just return raw events
-
-  foreach my $event_hook (@{$self->event_hooks->{$event->type()}}) {
-    $self->_set_lastcontact($event);
-    $self->_dispatch($event_hook, $event);
-  }
 }
 
 
@@ -670,6 +766,9 @@ sub _shutdown {
 sub _set_lastcontact {
   my $self = shift;
   my $event = shift;
+
+  $self->lastnick = $event->nick;
+  $self->lasthost = $event->host;
 
   if($event->type() eq 'msg' || $self->behaviors->{reply_via_msg}) {
     $self->lastcontact = $event->nick();
