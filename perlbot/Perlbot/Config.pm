@@ -6,7 +6,6 @@ use Carp;
 use XML::Simple;
 use Perlbot::Utils;
 
-
 sub new {
   my $class = shift;
   my ($filename, $readonly) = (@_);
@@ -15,6 +14,7 @@ sub new {
     _filename => $filename,
     _readonly => $readonly ? 1 : undef,
     _config => {},
+    _slaves => [],
   };
 
   bless $self, $class;
@@ -146,11 +146,31 @@ sub value : lvalue {
   $$ref;
 }
 
-
 sub set {
   my ($self) = @_;
 
   # TODO: implement
 }
 
+sub publish {
+  my $self = shift;
+
+  foreach my $slave (@{$self->{_slaves}}) {
+    # publish to slave
+  }
+}
+
 1;
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -107,8 +107,7 @@ sub useradmin {
       $self->reply('You must specify a new password!');
       return;
     }
-    my $newpass = crypt($password, join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
-    $other_user->password($newpass);
+    $other_user->password($password);
     $self->perlbot->config->save;
     $self->reply("Password saved for user: $username");
 
