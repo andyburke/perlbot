@@ -3,9 +3,9 @@ CHANGES:
 1.9.0 - rewrite of much of the bot
 - Made everything much more object oriented
 - Moved much of what was in PerlbotCore into appropriate plugins
-- Totally changed the plugin interface to simply plugin authoring
+- Totally changed the plugin interface to simplify plugin authoring
 - Integrated XML config file handling
-- Integrated XML help system, easing plugin author's burden
+- Integrated XML help system, easing plugin authors' burden
 - Integrated web-based log viewing/searching
 - Added plugins for Babelfish, BitchOps (ala eggdrop), FServ (basic),
   InfoBot functionality (basic, supports factpacks)
