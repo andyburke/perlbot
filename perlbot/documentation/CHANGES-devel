@@ -1,5 +1,23 @@
 CHANGES:
 
+1.9.1 - fixes and cleanups
+- DTD fixed in the sample config
+- Typo fixes in Plugin.pm
+- Can specify a config file on the command line now
+- Added a bot.localaddr option for people with either multiple network
+  interfaces
+- Finished up the conversion to debug()
+- Help now watches msg AND public, but only replies via msg
+- Seen now is case-insensitive
+- Config was having problems when you asked for undefined things because it
+  would try to dereference 'undef'... fixed.
+- Now "botname[,: ] command" is equivalent to "commandprefixcommand", ie:
+  you can just address the bot: perlbot, math 2+2
+- Added a <usage> tag to the help syntax, see the end of
+  plugins-authoring.txt
+- Added author, version, contact and url fields to Plugin, which should be
+  set in the plugin's init function.
+
 1.9.0 - rewrite of much of the bot
 - Made everything much more object oriented
 - Moved much of what was in PerlbotCore into appropriate plugins
