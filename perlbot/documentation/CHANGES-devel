@@ -1,12 +1,15 @@
 CHANGES:
 
-1.9.6 - new Config API, cleanups
+1.9.6 - new Config API, new Logging API, cleanups
 - New Config API provides more robust access to config data.  See
   plugins-authoring.txt section 4 for details.
+- New logging facilities.  Allows logging to arbitrary targets, like
+  files, databases, xml, etc.  Provides for generic searching.
 - All code uses 'strict' and compiles cleanly with -w
 - Nicer debugging output.  Prints PID and calling package/sub on each line.
   If the env. var. PERLBOT_DEBUG_LINENUMBERS is set, filename/line num. will
-  be printed as well.
+  be printed as well.  Crashlogs have timestamps now, and are also dumped
+  to stdout.
 - Feedback-agent copy edited and cleaned up
 - New PluginConfig class allows moving plugin config data into the main
   config file while keeping the syntax the same as before
@@ -16,7 +19,9 @@ CHANGES:
 - Plugins use 'base' and 'fields' instead of ISA and ad-hoc hash keys
 Plugins:
 - LogServer: 'allowsearchengines' option (yes/no) allows or prohibits search
-  engines crawling the logs produced by this plugin
+  engines crawling the logs produced by this plugin.  Made to work with the
+  new logging API, which results in finer-grained searching amongst other
+  things.
 - UserAdmin: new 'addadmin' and 'removeadmin' commands
 - Host: uses Net::DNS to do DNS lookups
 - Infobot: won't reply twice by accident now

@@ -4,55 +4,56 @@ Perlbot Internals
 
 ATTENTION
 ---------
-You should only read this if you are interested in the perlbot internals,
-either because you want to hack on the core code or because you have some
-morbid curiosity.  If you are just a casual user, turn back now.  There is
-brutality ahead.
+        You should only read this if you are interested in the perlbot
+internals, either because you want to hack on the core code or because
+you have some morbid curiosity.  If you are just a casual user, turn
+back now.  There is brutality ahead.
 
 
 Table of Contents
 =================
 
 ) Packages and Namespaces
+) Configuration System
+) Logging System
 ) Object Classes
 ) IRC Events
 ) Other Subsystems
 ) Plugins
-) Configuration System
 
 
 
 Packages and Namespaces
 =======================
 
-All of the perlbot code lives in packages under the "Perlbot" namespace.
-You will see packages like Perlbot, Perlbot::Channel, Perlbot::Plugin and
-Perlbot::Plugin::UserAdmin.
+        All of the perlbot code lives in packages under the "Perlbot"
+namespace. You will see packages like Perlbot, Perlbot::Channel,
+Perlbot::Plugin and Perlbot::Plugin::UserAdmin.
 
 
 Configuration System
 ====================
 
-A perlbot config file is an XML file with a hierarchal collection of data
-pertaining to bot settings.  Based on certain conventions, a given part of
-the XML document tree may be interpreted as a scalar value, an array, or a
-hash.  This all corresponds directly to the parsing behavior of XML::Simple
-with forcearray=>1, as this is precisely what perlbot uses.  If you are
-familiar with XML::Simple then you are in good shape, otherwise you ought to
-read up and play around with it before reading any farther!  Remember that
-forcearray=>1 will always create arrays, except in the presence of the
+        A perlbot config file is an XML file with a hierarchal collection
+of data pertaining to bot settings.  Based on certain conventions, a given
+part of the XML document tree may be interpreted as a scalar value, an array,
+or a hash.  This all corresponds directly to the parsing behavior of
+XML::Simple with forcearray=>1, as this is precisely what perlbot uses.  If
+you are familiar with XML::Simple then you are in good shape, otherwise you
+ought to read up and play around with it before reading any farther!  Remember
+that forcearray=>1 will always create arrays, except in the presence of the
 attributes name/id/key, in which case a hash is created.  So the overall
 structure is (in perl terms) HoAoHoA, but with any of the aforementioned
 attributes at a given level, an A becomes an H.
 
-In older versions of perlbot code, a "config" was just the reference
+    In older versions of perlbot code, a "config" was just the reference
 returned by XML::Simple's XMLin function.  You had to traverse the hashes
 and arrays yourself and watch out for numerous pitfalls.  When the 1.9.x
 tree was started, the class module Perlbot::Config was created to
 encapsulate some of the nastiness.  A "config" is now a full object of this
 class.
 
-The most commonly used method of Perlbot::Config is get().  get() takes a
+    The most commonly used method of Perlbot::Config is get().  get() takes a
 list of strings or integers that serve as indices into the nested hashes and
 arrays in the "raw" data structure returned by XMLin, to reference down a
 branch to a specific node.  It returns the value at that node.  You should
@@ -63,7 +64,7 @@ for quotes and also to provide a nice visual mnemonic of what's going on.
 Remember however that if your final value is a literal string, you'll still
 need to quote it.
 
-If there is only one instance of a certain value or branch, instead of a
+    If there is only one instance of a certain value or branch, instead of a
 list, you may omit the '0' array index here and it will be inferred.  For
 example, the <bot> section of the config contains the element <nick> for
 specifying the bot's IRC nick.  There is only one <bot> section and one
@@ -71,11 +72,11 @@ specifying the bot's IRC nick.  There is only one <bot> section and one
 Instead we can leave out the 0's: get(bot => 'nick') .  It is desireable to
 leave out 0's in cases like this, as it makes the code far more readable.
 
-In addition to get(), there is set() which takes the same key/index list,
+    In addition to get(), there is set() which takes the same key/index list,
 but also an extra parameter as the value to store at that location.  To set
 the bot's nick: set(bot => 'nick', 'new_nick') .
 
-To make dealing with arrays easier, there are 4 methods: array_get,
+    To make dealing with arrays easier, there are 4 methods: array_get,
 array_initialize, array_push, and array_delete.  They all take a key/index
 list as their first parameter, just like get and set.  You must only call
 them on "leaf-level" arrays, i.e. arrays whose values are leaves in the raw
@@ -92,16 +93,16 @@ value to delete is NOT an index but rather an actual value, making it work
 like a hash deletion.  There is currently no way to "splice" from an array,
 but this should be possible to implement if desired.
 
-For hashes, there are 3 methods: hash_keys, hash_initialize, and
+    For hashes, there are 3 methods: hash_keys, hash_initialize, and
 hash_delete.  The same rules and conventions from the array_ methods apply.
 hash_keys returns a hash's keys.  hash_initialize creates an empty hash.
 hash_delete deletes a value (the final parameter) from a hash.
 
-All plugins are given a Config object that is limited just to the sub-tree
-of the main config file rooted at the <plugin> element whose "name"
-attribute matches that plugin's name.  Sound complicated?  Here's an
-example.  For a plugin named "Foo", this <plugin> element would describe
-some kind of server option:
+    All plugins are given a Config object that is limited just to the sub-tree
+of the main config file rooted at the <plugin> element whose "name" attribute
+matches that plugin's name.  Sound complicated?  Here's an example.  For a
+plugin named "Foo", this <plugin> element would describe some kind of server
+option:
 
 <plugin name="Foo">
   <server>
@@ -110,17 +111,128 @@ some kind of server option:
   </server>
 </plugin>
 
-You can access elements from your config by using your Perlbot::Config
+    You can access elements from your config by using your Perlbot::Config
 object, accessible via $self->config .  This code would return
 'www.someplace.com':
 
   $self->config->get(server => 'hostname')
 
-If you really, REALLY need to look at the rest of the config, you may access
-$self->perlbot->config to get at the entire thing, but PLEASE make sure this
-is what you want/need to do.
+    If you really, REALLY need to look at the rest of the config, you may
+access $self->perlbot->config to get at the entire thing, but PLEASE make
+sure this is what you want/need to do.
 
-IRC Events
-----------
+Logging System
+--------------
 
-Talk about as_formatted_string and how it can take an array of filters here.
+        The Perlbot logging system is meant to abstract the logging medium
+away from the user/developer.  Each implementation should provide a regular
+API for performing actions on the the logs as follows:
+
+  Perlbot::Logs::Medium::log_event(Net::IRC::event);
+  Perlbot::Logs::Medium::search(hashref_of_arguments);
+  Perlbot::Logs::Medium::initial_entry_time();
+  Perlbot::Logs::Medium::final_entry_time();
+
+-- Perlbot::Logs::Medium::log_event(Net::IRC::event);
+
+    The log_event function should take a Net::IRC::event and store it in
+whatever medium your implementation supports.  We provide a class,
+Perlbot::Logs::Event to help generalize the data which is stores. A
+Perlbot::Logs::Event can take a raw Net::IRC::event as an argument.
+It will then fill in its internal fields appropriately.  The fields you
+should use consist of:
+
+  time     (a ctime at which the event occurred)
+  type     (the event type)
+  nick     (the nick associated with the event)
+  channel  (the channel, if any, associated with the event)
+  target   (the target, ie: of a kick)
+  userhost (the hostmask of the nick associated with the event)
+  text     (the text of the event)
+
+    So, were you inserting into a database, you might do something like:
+
+  my $event = new Perlbot::Logs::Event($ircevent);
+
+  my $insert_line =
+    "INSERT INTO logs WHERE"
+    . " time = " . $event->time()
+    . ", type = " . $event->type()
+    . ", nick = " . $event->nick()
+    . ", channel = " . $event->channel()
+    . ", target = " . $event->target()
+    . ", userhost = " . $event->userhost()
+    . ", text = " . $event->text();
+    
+    Perlbot::Logs::Event can also perform transforms on events, such
+as producing a standard event string (containing all the data in a
+string format, which Perlbot::Logs::Event can in turn take as an
+argument to create an object), or producing a formatted string.
+    The functionality to format an event as a string is fairly
+powerful.  One can not only specify the format of the string, but
+also a list of filters to be applied to all the fields, for example:
+
+  $event->as_string_formatted("%hour:%min:%sec <%nick> %text");
+
+    would return a string that looked like:
+
+  14:02:35 <ender> hey, how's it going?
+
+    But let's say you wanted to escape single quotes, you could do:
+
+  $event->as_string_formatted("%hour:%min:%sec <%nick> %text",
+                              [ sub { s/\'/\\\'/g; } ]);
+
+    Here, we pass an array of filters to be performed on all the
+fields.  In this case, we want to change "'" to "\'".  So our
+output would be:
+
+  14:02:35 <ender> hey, how\'s it going?
+
+    Certain standard filters are provided, such as html:
+
+  $event->as_string_formatted("%hour:%min:%sec <%nick> %text",
+                              [ html,
+                                sub { s/\'/\\\'/g; } ]);
+
+    Let's pretend our 'text' in this event is:
+      '<billy> hey, how's it going?'
+As though ender had quoted another user.  Our output would be:
+
+  14:02:35 <ender> &lt;billy&gt; hey how\'s it going?
+
+    Note that the < in the text was replaced with the html &lt;.
+For some more examples of the possibilities, see the LogServer
+plugin.
+
+-- Perlbot::Logs::Medium::search(hashref_of_arguments);
+
+    The 'hashref_of_arguments' is of the form:
+
+  {
+    terms => \@words,      # where @words is an array of words to search for
+    maxresults => $max,    # where $max is the maximum number results returned
+    nick => $nick,         # where $nick is a nickname to limit the search to
+    type => $type,         # where $type is an event type to limit the search to
+    initialdate => $ctime, # where $ctime is a standard unix ctime
+    finaldate => $ctime2,  # where $ctime2 is a second unix ctime
+    boolean => $bool       # where $bool evaluates as true/false
+  }
+
+    If boolean is set to true, the search should simply return a true/false
+value reflecting whether there were or were not (respectively) log entries
+found.
+    If search is called in an array context, it should return an array of
+Perlbot::Logs::Event objects.  If it is called in a scalar context, it should
+return the number of log entries found.
+
+-- Perlbot::Logs::Medium::initial_entry_time();
+
+        This method should return a ctime represting the time of the very
+first event ever logged.
+
+-- Perlbot::Logs::Medium::final_entry_time();
+
+        Like the above, this method should return a ctime, but of the last
+event ever logged.
+
