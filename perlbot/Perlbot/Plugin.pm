@@ -453,6 +453,7 @@ sub _process { # _process to stay out of people's way
   my $event = shift;
   my $user  = shift;
   my $text  = shift;
+  my $botnick = $self->perlbot->curnick;
 
   # if the type of event isn't a message and this channel has an ignoreplugins
   # list, and the current plugin is listed in that list, return without doing
@@ -498,8 +499,7 @@ sub _process { # _process to stay out of people's way
   }
 
   foreach my $addressed_command_hook (keys(%{$self->{addressed_command_hooks}})) {
-    my $nick = $self->perlbot->curnick;
-    my $regexp = $nick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_hook . '(?:\s+|$)';
+    my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/${regexp}//i;
@@ -529,7 +529,7 @@ sub _process { # _process to stay out of people's way
   
   # like above, but here we can return any event in which the bot was addressed
 
-  if($text =~ /^$self->perlbot->{curnick}(?:,|:|\.|\s)*/i) {
+  if($text =~ /^$botnick(?:,|:|\.|\s)*/i) {
     if($event->type() eq 'msg' || $self->{behaviors}{reply_via_msg}) {
       $self->{lastcontact} = $event->nick();
     } else {
@@ -537,7 +537,7 @@ sub _process { # _process to stay out of people's way
     }
 
     my $texttocallwith = $text;
-    $texttocallwith =~ s/^$self->perlbot->{curnick}(?:,|:|\.|\s)*//i;
+    $texttocallwith =~ s/^$botnick(?:,|:|\.|\s)*//i;
     foreach my $addressed_hook (@{$self->{addressed_hooks}}) {
       $self->_dispatch($addressed_hook, $user, $texttocallwith, $event);
     }
@@ -566,8 +566,7 @@ sub _process { # _process to stay out of people's way
   }
 
   foreach my $addressed_command_admin_hook (keys(%{$self->{addressed_command_admin_hooks}})) {
-    my $nick = $self->perlbot->curnick;
-    my $regexp = $nick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_admin_hook . '(?:\s+|$)';
+    my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_admin_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       if($user && $user->is_admin()) {
         my $texttocallwith = $text;
@@ -601,8 +600,7 @@ sub _process { # _process to stay out of people's way
   }
 
   foreach my $addressed_command_advanced_hook (keys(%{$self->{addressed_command_advanced_hooks}})) {
-    my $nick = $self->perlbot->curnick;
-    my $regexp = $nick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_advanced_hook . '(?:\s+|$)';
+    my $regexp = $botnick . '(?:,|:|\.|\s)*' . $self->perlbot->config->value(bot => 'commandprefix') . '*' . $addressed_command_advanced_hook . '(?:\s+|$)';
     if($text =~ /^${regexp}/i) {
       my $texttocallwith = $text;
       $texttocallwith =~ s/${regexp}//i;

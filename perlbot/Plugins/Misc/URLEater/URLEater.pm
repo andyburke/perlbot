@@ -33,9 +33,9 @@ sub eaturl {
     my ($url) = $text =~ /(http:\/\/.*?)(?:\s+|$)/;
     my $urltostore = $channel . '::::' . $nick . '::::' . time() . '::::' . $url;
     if(length(@{$self->{urls}}) > 100) {
-      shift @{$self->{urls}};
+      pop @{$self->{urls}};
     }
-    push(@{$self->{urls}}, $urltostore);      
+    unshift(@{$self->{urls}}, $urltostore);      
   }
 }
 
@@ -63,6 +63,3 @@ sub regurgitate {
 
   $self->reply(@reply);
 }
-
-
-
