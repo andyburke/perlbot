@@ -18,6 +18,9 @@ listchans\\Returns the bot's current channels (where it is).\\(owners only)
 logging
 logging <channel> (yes|no)\\Enables (yes) or disables (no) logging for <channel>.\\Anything other than "yes" will be treated as "no".\\(owners only)
 
+status
+status\\Shows the status of the bot
+
 say
 say <channel> <text>\\Causes the bot to say <text> to <channel>.\\(owners only)
 
