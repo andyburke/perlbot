@@ -7,11 +7,19 @@ use strict;
 sub new {
   my $class = shift;
   my ($name, $config) = @_;
+  my $rolllogfile = 1;
+
+  use Data::Dumper;
+  print Dumper($config);
+
+  if(lc($config->value(channel => $name => 'rolllogfile')) eq 'no') {
+    $rolllogfile = 0;
+  }
 
   my $self = {
     config   => $config,
     name     => $name,
-    log      => new Perlbot::Logs($config->value(bot => 'logdir'), $name),
+    log      => new Perlbot::Logs($config->value(bot => 'logdir'), $name, $rolllogfile),
     members  => {},
   };
 

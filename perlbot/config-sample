@@ -4,6 +4,7 @@
   <channel name="#perlbot"
            flags="+t-ns"
            logging="yes"
+           rolllogfile="yes"
            limit="0">
     <op>someone</op>
     <op>otherperson</op>
