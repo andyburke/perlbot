@@ -1,0 +1,6 @@
+<config>
+  <server>
+    <hostname>www.fdntech.com</hostname>
+    <port>9000</port>
+  </server>
+</config>
