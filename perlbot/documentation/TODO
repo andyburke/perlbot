@@ -26,8 +26,6 @@ for 2.2:
 
 when we can:
 
-- possibly modify Config to make it easier to create branches, modify
-  values, and deal with arrays/hashes
 - create a plugin that publishes our config via RPC::XML::Server so we can
   make a botnet
   -  This needs more thought, let's push it back to post 2.0
