@@ -4,6 +4,10 @@ CHANGES:
 - Logging actions now works correctly
 - If you don't specify hostmasks for users, it now works correctly
 - #status now msgs you back with bot status
+- made our hostmasks code better, you now can't specify really out-there
+  hostmasks that would break our user identification
+- made host_to_user() only return correctly if it finds one user, not
+  multiple ones (shouldn't happen since our hostmask fix)
 
 1.4.0/1.5.0 - crash log, configurable plugin and command trigger prefixes,
               new plugin, plugin fixes, misc core updates/fixes
