@@ -1,0 +1,18 @@
+<trivia>
+  <question>
+    <category>lala</category>
+    <text>here is a question?</text>
+    <answer>answer</answer>
+    <hint>here is hint 1</hint>
+    <hint>here is hint 2</hint>
+    <hint>here is hint 3</hint>
+  </question>
+  <question>
+    <category>lala2</category>
+    <text>here is a question2?</text>
+    <answer>answer2</answer>
+    <hint>here is hint 1 2</hint>
+    <hint>here is hint 2 2</hint>
+    <hint>here is hint 3 2</hint>
+  </question>
+</trivia>
