@@ -169,6 +169,10 @@ sub import_from_logs {
 
   my $logdir = $self->perlbot->config->value(bot => 'logdir');
 
+  foreach my $key (keys(%{$self->{channels}})) {
+    delete $self->{channels}{$key};
+  }
+
   opendir(LOGSDIR, File::Spec->catfile($logdir));
   my @dirs = grep { !/^\./ } readdir(LOGSDIR);
   close(LOGSDIR);
