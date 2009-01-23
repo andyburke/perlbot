@@ -19,12 +19,7 @@ sub init {
   $self->{expiretime} = 172800; # 48 hours of history
 
   $self->hook('seen', \&seen);
-  $self->hook( eventtypes => 'public', coderef => \&updater );
-  $self->hook( eventtypes => 'join', coderef => \&updater );
-  $self->hook( eventtypes => 'part', coderef => \&updater );
-  $self->hook( eventtypes => 'quit', coderef => \&updater );
-  $self->hook( eventtypes => 'nick', coderef => \&updater );
-  $self->hook( eventtypes => 'caction', coderef => \&updater );
+  $self->hook( eventtypes => [ 'public', 'join', 'part', 'quit', 'nick', 'caction' ], coderef => \&updater );
 }
 
 sub seen {

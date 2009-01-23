@@ -21,10 +21,7 @@ sub init {
   $self->hook('listnotes', \&listnotes);
   $self->hook('readnote', \&readnote);
 
-  $self->hook( eventtypes => 'public', coderef => \&notify );
-  $self->hook( eventtypes => 'msg', coderef => \&notify );
-  $self->hook( eventtypes => 'join', coderef => \&notify );
-  $self->hook( eventtypes => 'part', coderef => \&notify );
+  $self->hook( eventtypes => [ 'public', 'msg', 'join', 'part' ], coderef => \&notify );
 
 }
 

@@ -14,15 +14,7 @@ sub init {
 
 #  $self->want_fork(0);
 
-  $self->hook( eventtypes => 'public', coderef => \&log );
-  $self->hook( eventtypes => 'caction', coderef => \&log );
-  $self->hook( eventtypes => 'join', coderef => \&log );
-  $self->hook( eventtypes => 'part', coderef => \&log );
-  $self->hook( eventtypes => 'mode', coderef => \&log );
-  $self->hook( eventtypes => 'topic', coderef => \&log );
-  $self->hook( eventtypes => 'nick', coderef => \&log );
-  $self->hook( eventtypes => 'quit', coderef => \&log );
-  $self->hook( eventtypes => 'kick', coderef => \&log );
+  $self->hook( eventtypes => [ 'public', 'caction', 'join', 'part', 'mode', 'topic', 'nick', 'quit', 'kick' ], coderef => \&log );
 
 }
 

@@ -13,18 +13,7 @@ sub init {
 
 #  $self->want_fork(0);
 
-  $self->hook( eventtypes => 'public', coderef => \&update );
-  $self->hook( eventtypes => 'msg', coderef => \&update );
-  $self->hook( eventtypes => 'caction', coderef => \&update );
-  $self->hook( eventtypes => 'join', coderef => \&update );
-  $self->hook( eventtypes => 'part', coderef => \&update );
-  $self->hook( eventtypes => 'mode', coderef => \&update );
-  $self->hook( eventtypes => 'topic', coderef => \&update );
-  $self->hook( eventtypes => 'nick', coderef => \&update );
-  $self->hook( eventtypes => 'quit', coderef => \&update );
-  $self->hook( eventtypes => 'kick', coderef => \&update );
-  $self->hook( eventtypes => 'namreply', coderef => \&update );
-
+  $self->hook( eventtypes => [ 'public', 'msg', 'caction', 'join', 'part', 'mode', 'topic', 'nick', 'quit', 'kick', 'namreply' ], coderef => \&update );
 }
 
 # ============================================================
@@ -42,8 +31,7 @@ sub update {
   my $nick = $event->nick;
   my $channel = normalize_channel($event->{to}[0]);
   my $chan = $self->perlbot->get_channel($channel);
-  my $text = $event->{args}[0];
-  my $user = $self->perlbot->get_user($userhost);
+
 
   if ($type eq 'join' and $chan) {
     $chan->add_member($nick);
