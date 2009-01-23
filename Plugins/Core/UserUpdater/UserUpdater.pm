@@ -11,19 +11,19 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_fork(0);
+#  $self->want_fork(0);
 
-  $self->hook_event('public', \&update);
-  $self->hook_event('msg', \&update);
-  $self->hook_event('caction', \&update);
-  $self->hook_event('join', \&update);
-  $self->hook_event('part', \&update);
-  $self->hook_event('mode', \&update);
-  $self->hook_event('topic', \&update);
-  $self->hook_event('nick', \&update);
-  $self->hook_event('quit', \&update);
-  $self->hook_event('kick', \&update);
-  $self->hook_event('namreply', \&update);
+  $self->hook( eventtypes => 'public', coderef => \&update );
+  $self->hook( eventtypes => 'msg', coderef => \&update );
+  $self->hook( eventtypes => 'caction', coderef => \&update );
+  $self->hook( eventtypes => 'join', coderef => \&update );
+  $self->hook( eventtypes => 'part', coderef => \&update );
+  $self->hook( eventtypes => 'mode', coderef => \&update );
+  $self->hook( eventtypes => 'topic', coderef => \&update );
+  $self->hook( eventtypes => 'nick', coderef => \&update );
+  $self->hook( eventtypes => 'quit', coderef => \&update );
+  $self->hook( eventtypes => 'kick', coderef => \&update );
+  $self->hook( eventtypes => 'namreply', coderef => \&update );
 
 }
 
@@ -33,6 +33,8 @@ sub init {
 
 sub update {
   my $self = shift;
+  my $user = shift;
+  my $text = shift;
   my $event = shift;
 
   my $userhost = $event->from;

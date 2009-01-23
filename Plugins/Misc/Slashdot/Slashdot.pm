@@ -16,7 +16,7 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->hook_user('slashdot', \&slashdot);
+#  $self->hook_user('slashdot', \&slashdot);
 }
 
 sub slashdot {

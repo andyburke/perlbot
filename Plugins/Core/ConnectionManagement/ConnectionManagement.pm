@@ -11,14 +11,9 @@ sub init {
 
 #  $self->want_fork(0);
 
-  $self->hook_event('endofmotd', \&join_channels);
-  $self->hook_event('nomotd', \&join_channels);
-
-  $self->hook_event('disconnect', \&reconnect);
-
-  $self->hook_event('nicknameinuse', \&cycle_nick);
-  $self->hook_event('nickcollision', \&cycle_nick);
-
+  $self->hook( eventtypes => ['endofmotd', 'nomotd'], coderef => \&join_channels);
+  $self->hook( eventtypes => 'disconnect', coderef => \&reconnect);
+  $self->hook( eventtypes => ['nicknameinuse', 'nickcollision'], coderef => \&cycle_nick);
 }
 
 # ============================================================

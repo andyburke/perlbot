@@ -15,12 +15,11 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_fork(0);
-  $self->want_reply_via_msg(1);
-  $self->want_public(0);
+#  $self->want_fork(0);
+#  $self->want_reply_via_msg(1);
+#  $self->want_public(0);
 
-  $self->hook_admin('useradmin', \&useradmin);
-
+  $self->hook( trigger => 'useradmin', coderef => \&useradmin, authtype => 'admin' );
 }
 
 sub useradmin {

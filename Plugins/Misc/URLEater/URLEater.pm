@@ -12,24 +12,26 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_fork(0);
+#  $self->want_fork(0);
   
   tie @{$self->{urls}},  'DB_File', File::Spec->catfile($self->{directory}, 'urldb'), O_CREAT|O_RDWR, 0640, $DB_RECNO;
   if(length(@{$self->{urls}}) == 1) {
     push(@{$self->{urls}}, 'this is a crappy hack to make unshift work');
   }
 
-  $self->hook_event('public', \&eaturl);
+  $self->hook( eventtypes => 'public', coderef => \&eaturl );
   $self->hook('urls', \&regurgitate);
   $self->hook_web('urls', \&regurgitate_web, 'Recent URLs');
 }
 
 sub eaturl {
   my $self = shift;
+  my $user = shift;
+  my $text = shift;
   my $event = shift;
   my $nick = $event->nick();
   my $channel = $event->{to}[0];
-  my $text = $event->{args}[0];
+#  my $text = $event->{args}[0];
 
   if($text =~ /http:\/\//) {
     my ($url) = $text =~ /(http:\/\/.*?)(?:\s+|$)/;

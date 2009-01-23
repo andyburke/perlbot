@@ -21,10 +21,10 @@ sub init {
   $self->hook('listnotes', \&listnotes);
   $self->hook('readnote', \&readnote);
 
-  $self->hook_event('public', \&notify);
-  $self->hook_event('msg', \&notify);
-  $self->hook_event('join', \&notify);
-  $self->hook_event('part', \&notify);
+  $self->hook( eventtypes => 'public', coderef => \&notify );
+  $self->hook( eventtypes => 'msg', coderef => \&notify );
+  $self->hook( eventtypes => 'join', coderef => \&notify );
+  $self->hook( eventtypes => 'part', coderef => \&notify );
 
 }
 
@@ -119,8 +119,9 @@ sub readnote {
 
 sub notify {
   my $self = shift;
+  my $user = shift;
+  my $text = shift;
   my $event = shift;
-  my $user = $self->perlbot->get_user($event->from);
 
   if($user) {
     if(exists($self->{notified}{$user->name})) {

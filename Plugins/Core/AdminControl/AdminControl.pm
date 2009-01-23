@@ -14,8 +14,8 @@ sub init {
 #  $self->want_public(0);
 #  $self->want_fork(0);
 
-  $self->hook_admin('reload', \&reload);
-  $self->hook_admin('debug', \&debugchange);
+  $self->hook( trigger => 'reload', coderef => \&reload, authtype => 'admin' );
+  $self->hook( trigger => 'debug', coderef => \&debugchange, authtype => 'admin' );
 }
 
 sub reload {

@@ -107,30 +107,22 @@ sub hook {
   my $eventtypes;
   my $attributes;
 
-
-  if(@_ > 2) {
-    debug("Extraneous arguments!");
-    debug(@_);
-    die("Extraneous arguments passed to Perlbot::Plugin::hook!");
-  }
-
   if(@_ == 2) {
     $trigger = shift;
     $coderef = shift;
   } else {
-    my $args = shift;
 
-    if(ref($args) ne 'HASH') {
-      debug("Got something not a hashref!");
+    if( @_ % 2 != 0 ) {
+      debug("Got something not a hash!");
       die("Got a piece of shit you suck at coding.");
     }
 
-    $trigger = $args->{trigger};
-    $coderef = $args->{coderef};
-    $authtype = $args->{authtype};
-    $eventtypes = $args->{eventtypes};
-    $attributes = $args->{attributes};
-
+    my %args = ( @_ );
+    $trigger = $args{trigger};
+    $coderef = $args{coderef};
+    $authtype = $args{authtype};
+    $eventtypes = $args{eventtypes};
+    $attributes = $args{attributes};
   }
       
   my $hook = new Perlbot::Plugin::Hook($trigger, $coderef, $authtype, $eventtypes, $attributes);
@@ -323,7 +315,7 @@ sub _handle_event {
   $self->_set_lastcontact($event);
 
   foreach my $hook (@{$self->hooks}) {
-    $hook->process($event, $user, $text, $botnick);
+    $hook->process($self, $event, $user, $text, $botnick);
   }
 }
 
@@ -344,7 +336,7 @@ sub _set_lastcontact {
   $self->lastnick = $event->nick;
   $self->lasthost = $event->host;
 
-  if($event->type() eq 'msg' || $self->behaviors->{reply_via_msg}) {
+  if($event->type() eq 'msg') { # || $self->behaviors->{reply_via_msg}) {
     $self->lastcontact = $event->nick();
   } else {
     $self->lastcontact = $event->{to}[0];

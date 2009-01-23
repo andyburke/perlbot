@@ -12,28 +12,28 @@ our $VERSION = '2.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_fork(0);
+#  $self->want_fork(0);
 
   tie %{$self->{seen}},  'DB_File', File::Spec->catfile($self->{directory}, 'seendb'), O_CREAT|O_RDWR, 0640, $DB_HASH;
 
   $self->{expiretime} = 172800; # 48 hours of history
 
   $self->hook('seen', \&seen);
-  $self->hook_event('public', \&updater);
-  $self->hook_event('join', \&updater);
-  $self->hook_event('part', \&updater);
-  $self->hook_event('quit', \&updater);
-  $self->hook_event('nick', \&updater);
-  $self->hook_event('caction', \&updater);
+  $self->hook( eventtypes => 'public', coderef => \&updater );
+  $self->hook( eventtypes => 'join', coderef => \&updater );
+  $self->hook( eventtypes => 'part', coderef => \&updater );
+  $self->hook( eventtypes => 'quit', coderef => \&updater );
+  $self->hook( eventtypes => 'nick', coderef => \&updater );
+  $self->hook( eventtypes => 'caction', coderef => \&updater );
 }
 
 sub seen {
   my $self = shift;
   my $user = shift;
-  my $name = shift;
+  my $text = shift;
+  my $event = shift;
 
-  ($name) = split(' ', lc($name));
-
+  my ($name) = split(' ', lc($text));
   if(defined($self->{seen}{$name})) {
     my ($lastseentime, $type, $lasttext) = split(':', $self->{seen}{$name}, 3);
     my $curtime = time();
@@ -109,10 +109,11 @@ sub seen {
 
 sub updater {
   my $self = shift;
+  my $user = shift;
+  my $text = shift;
   my $event = shift;
   my $nick = lc($event->nick);
-
-  my $user = $self->perlbot->get_user($event->from());
+  #my $user = $self->perlbot->get_user($event->from());
 
   if($event->type eq 'public') {
     if($user) {

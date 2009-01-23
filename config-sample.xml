@@ -24,7 +24,9 @@
       <dbtype>Pg</dbtype>
       <dbpassword>kasyd987</dbpassword>
       <type>DBI</type>
-      <dbname>perlbotlogs@some.other.host:port</dbname>
+      <dbname>perlbotlogs</dbname>
+      <dbhost>some.other.host</dbhost>
+      <dbport>12345</dbport>
     </log>
   </channel>
   <channel name="#singlefileloggedchannel"

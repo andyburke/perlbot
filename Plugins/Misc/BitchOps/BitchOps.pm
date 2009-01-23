@@ -11,11 +11,11 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_public(0);
-  $self->want_msg(0);
-  $self->want_fork(0);
+#  $self->want_public(0);
+#  $self->want_msg(0);
+#  $self->want_fork(0);
 
-  $self->hook_event('mode', \&modechange);
+  $self->hook( eventtypes => 'mode', coderef => \&modechange );
 }
 
 sub modechange {

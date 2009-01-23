@@ -9,13 +9,13 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_public(0);
-  $self->want_fork(0);
+#  $self->want_public(0);
+#  $self->want_fork(0);
 
-  $self->hook_admin('loadplugin', \&load_plugin);
-  $self->hook_admin('unloadplugin', \&unload_plugin);
-  $self->hook_admin('reloadplugin', \&reload_plugin);
-  $self->hook_admin('reloadallplugins', \&reload_all_plugins);
+  $self->hook( trigger => 'loadplugin', coderef => \&load_plugin, authtype => 'admin' );
+  $self->hook( trigger => 'unloadplugin', coderef => \&unload_plugin, authtype => 'admin' );
+  $self->hook( trigger => 'reloadplugin', coderef => \&reload_plugin, authtype => 'admin' );
+  $self->hook( trigger => 'reloadallplugins', coderef => \&reload_all_plugins, authtype => 'admin' );
 }
 
 

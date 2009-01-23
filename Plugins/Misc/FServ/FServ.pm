@@ -29,8 +29,8 @@ sub init {
     push(@{$self->{filesizes}}, sprintf("%.2f", $stat->size / (1024*1024)));
   }
 
-  $self->want_chat(1); # we want dcc chat
-  $self->want_reply_via_msg(1);
+#  $self->want_chat(1); # we want dcc chat
+#  $self->want_reply_via_msg(1);
 
   $self->hook('fserv', \&fserv);
 }

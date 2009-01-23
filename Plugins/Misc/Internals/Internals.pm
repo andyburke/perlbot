@@ -21,10 +21,10 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_reply_via_msg(1);
-  $self->want_fork(0);
+#  $self->want_reply_via_msg(1);
+#  $self->want_fork(0);
 
-  $self->hook_admin('internal', \&internal);
+  $self->hook( trigger => 'internal', coderef => \&internal, authtype => 'admin' );
 }
 
 sub internal {

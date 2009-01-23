@@ -16,8 +16,8 @@ our $VERSION = '0.2.0';
 sub init {
   my $self = shift;
 
-  $self->want_msg(0);
-  $self->want_fork(0);
+#  $self->want_msg(0);
+#  $self->want_fork(0);
 
   $self->{chain} = new Algorithm::MarkovChain;
   $self->{symbols} = ();

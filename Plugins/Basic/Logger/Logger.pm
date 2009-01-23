@@ -14,15 +14,15 @@ sub init {
 
 #  $self->want_fork(0);
 
-  $self->hook_event('public', \&log);
-  $self->hook_event('caction', \&log);
-  $self->hook_event('join', \&log);
-  $self->hook_event('part', \&log);
-  $self->hook_event('mode', \&log);
-  $self->hook_event('topic', \&log);
-  $self->hook_event('nick', \&log);
-  $self->hook_event('quit', \&log);
-  $self->hook_event('kick', \&log);
+  $self->hook( eventtypes => 'public', coderef => \&log );
+  $self->hook( eventtypes => 'caction', coderef => \&log );
+  $self->hook( eventtypes => 'join', coderef => \&log );
+  $self->hook( eventtypes => 'part', coderef => \&log );
+  $self->hook( eventtypes => 'mode', coderef => \&log );
+  $self->hook( eventtypes => 'topic', coderef => \&log );
+  $self->hook( eventtypes => 'nick', coderef => \&log );
+  $self->hook( eventtypes => 'quit', coderef => \&log );
+  $self->hook( eventtypes => 'kick', coderef => \&log );
 
 }
 
@@ -32,6 +32,8 @@ sub init {
 
 sub log {
   my $self = shift;
+  my $user = shift;
+  my $text = shift;
   my $event = shift; 
   my $channel;
   # stupid, stupid irc

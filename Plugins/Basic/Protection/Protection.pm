@@ -14,7 +14,7 @@ sub init {
 
   $self->{deoppers} = {};
 
-  $self->hook_event('mode', \&modechange);
+  $self->hook( eventtypes => 'mode', coderef => \&modechange );
 }
 
 sub modechange {

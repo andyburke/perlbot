@@ -23,15 +23,15 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_fork(0);
-  $self->want_msg(0);
+#  $self->want_fork(0);
+#  $self->want_msg(0);
 
   $self->{_topics} = {};
 
   # remember we get a 'topic' even on channel joins, so nothing extra is
   # needed to capture the initial topic. (note it's a 'server' type event)
-  $self->hook_event('topic', \&set_topic);
-  $self->hook_event('topicinfo', \&set_topic_info);
+  $self->hook( eventtypes => 'topic', coderef => \&set_topic );
+  $self->hook( eventtypes => 'topicinfo', coderef => \&set_topic_info );
   # ('topicinfo' tells us *who* set the topic, should anyone want to grab that too)
 
   $self->hook_web('stats', \&stats, 'Bot Stats');

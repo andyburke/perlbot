@@ -13,7 +13,7 @@ sub init {
 #  $self->want_public(0);
 #  $self->want_msg(0);
 
-  $self->hook_event('join', \&opper);
+  $self->hook( eventtypes => 'join', coderef => \&opper );
 }
 
 sub opper {

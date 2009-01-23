@@ -25,8 +25,8 @@ our $VERSION = '0.3.1';
 sub init {
   my $self = shift;
 
-  $self->want_msg(0);
-  $self->want_public(0);
+#  $self->want_msg(0);
+#  $self->want_public(0);
   
   $self->hook_web('logserver', \&logserver, 'Channel Logs');
 }

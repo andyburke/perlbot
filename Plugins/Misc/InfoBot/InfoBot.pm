@@ -26,8 +26,8 @@ sub init {
 
   $self->load_dbs();
 
-  $self->hook_addressed(\&addressed);
-  $self->hook(\&normal);
+#  $self->hook_addressed(\&addressed);
+  $self->hook( undef, \&normal );
 
 }
 

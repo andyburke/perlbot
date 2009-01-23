@@ -17,8 +17,8 @@ sub init {
 
 #  $self->want_fork(0);
 
-  $self->hook_admin('redir', \&adminredirs);
-  $self->hook_event('public', \&redir);
+  $self->hook( trigger => 'redir', coderef => \&adminredirs, authtype => 'admin' );
+  $self->hook( eventtypes => 'public', coderef => \&redir );
 }
 
 sub adminredirs {

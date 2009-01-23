@@ -12,7 +12,7 @@ sub init {
 #  $self->want_public(0);
 #  $self->want_fork(0);
 
-  $self->hook_admin('config', \&configaccessor);
+  $self->hook( trigger => 'config', coderef => \&configaccessor, authtype => 'admin' );
 }
 
 sub configaccessor {

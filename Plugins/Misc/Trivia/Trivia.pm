@@ -19,8 +19,8 @@ our $VERSION = '0.2.0';
 sub init {
   my $self = shift;
 
-  $self->want_fork(0);
-  $self->want_msg(0);
+#  $self->want_fork(0);
+#  $self->want_msg(0);
 
   $self->{state} = 'idle';
 
@@ -78,7 +78,7 @@ sub init {
   $self->hook('stopplaying', \&stopplaying);
   $self->hook('notplaying', \&stopplaying);
   $self->hook('hint', \&requestedhint);
-  $self->hook(\&answer);
+  $self->hook(undef, \&answer);
 
   $self->hook_web('triviastats', \&webtriviastats, 'Trivia Statistics');
 

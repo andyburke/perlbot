@@ -11,16 +11,16 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_public(0);
-  $self->want_fork(0);
+#  $self->want_public(0);
+#  $self->want_fork(0);
 
-  $self->hook_admin('nick', \&nick);
-  $self->hook_admin('quit', \&quit);
-  $self->hook_admin('join', \&join);
-  $self->hook_admin('part', \&part);
-  $self->hook_admin('cycle', \&cycle);
-  $self->hook_admin('say', \&say);
-  $self->hook_admin('msg', \&msg);
+  $self->hook( trigger => 'nick', coderef => \&nick, authtype => 'admin' );
+  $self->hook( trigger => 'quit', coderef => \&quit, authtype => 'admin' );
+  $self->hook( trigger => 'join', coderef => \&join, authtype => 'admin' );
+  $self->hook( trigger => 'part', coderef => \&part, authtype => 'admin' );
+  $self->hook( trigger => 'cycle', coderef => \&cycle, authtype => 'admin' );
+  $self->hook( trigger => 'say', coderef => \&say, authtype => 'admin' );
+  $self->hook( trigger => 'msg', coderef => \&msg, authtype => 'admin' );
   $self->hook('op', \&op);
 }
 

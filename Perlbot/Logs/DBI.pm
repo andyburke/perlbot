@@ -38,10 +38,9 @@ sub new {
                               PrintError => 1,
                               InactiveDestroy => 1})
       or die("Could not connect to database for logging!");
-  
 
-  my $tabletest = $self->dbh->prepare("SELECT * FROM logs;");
-  if(!$tabletest->execute()) {  # table not yet created
+  my $table_info = $self->dbh->table_info( '', '', 'logs', 'TABLE' )->fetchall_arrayref;
+  if( @$table_info == 0) {  # table not yet created
 
     debug("Creating database table 'logs'");
 

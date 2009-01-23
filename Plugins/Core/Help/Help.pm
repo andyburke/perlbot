@@ -8,7 +8,7 @@ our $VERSION = '1.0.0';
 sub init {
   my $self = shift;
 
-  $self->want_reply_via_msg(1);
+#  $self->want_reply_via_msg(1);
 
   $self->hook('help', \&gethelp);
 }

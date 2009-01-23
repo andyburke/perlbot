@@ -324,7 +324,10 @@ sub connect {
       }
     }
 
-    $self->ircconn->add_default_handler(sub { $self->event_multiplexer(@_) });
+    my $code = sub { $self->event_multiplexer(@_) };
+    $self->ircconn->add_default_handler( $code );
+    $self->ircconn->add_handler( 'msg', $code );
+    $self->ircconn->add_handler( 'public', $code );
 
     return $self->ircconn;
   } else {
