@@ -49,7 +49,7 @@ sub unload_plugin {
 # reload.  If you just unload me first, you get caught with your pants
 # down, since there's no way to load me back up.  :)
 sub reload_plugin {
-  my ($self, $user, $text) = @_;
+  my ($self, $user, $text, $event) = @_;
 
   my $plugin_name = $self->validate_input($text) or return;
 

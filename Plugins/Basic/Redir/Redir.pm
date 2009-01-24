@@ -25,6 +25,7 @@ sub adminredirs {
   my $self = shift;
   my $user = shift;
   my $text = shift;
+  my $event = shift;
 
   my ($command, $source, $dest) = split(' ', $text, 3);
 
@@ -64,6 +65,8 @@ sub adminredirs {
 
 sub redir {
   my $self = shift;
+  my $user = shift;
+  my $text = shift;
   my $event = shift;
 
   my $chan = $event->{to}[0];

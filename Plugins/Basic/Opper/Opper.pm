@@ -18,11 +18,11 @@ sub init {
 
 sub opper {
   my $self = shift;
+  my $user = shift;
+  my $text = shift;
   my $event = shift;
 
-  my $user = $self->perlbot->get_user($event->from);
   my $chan = $self->perlbot->get_channel($event->{to}[0]);
-
   if ($chan->is_op($user)) {
     $self->perlbot->op($event->{to}[0], $event->nick);
   }

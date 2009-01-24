@@ -50,9 +50,9 @@ sub process {
   my $text = shift;
   my $botnick = shift;
 
-  if ( $user && $self->authtype && !$user->is_admin() )
+  if ( $user && $self->authtype && !$plugin->perlbot->is_admin($user) )
   {
-    $self->perlbot->msg($event->nick(), 'You are not an admin!');
+    $plugin->perlbot->msg($event->nick(), 'You are not an admin!');
     return;
   }
 
