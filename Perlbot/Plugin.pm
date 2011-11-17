@@ -1,4 +1,4 @@
-# Andrew Burke   <burke@bitflood.org>
+# Andrew Burke   <aburke@bitflood.org>
 # Jeremy Muhlich <jmuhlich@bitflood.org>
 #
 # Plugin base class

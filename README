@@ -1,1 +1,572 @@
-Please read documentation/manual.txt before running perlbot.
+Please note that this code is largely abandoned.
+----
+
+Perlbot  /  http://www.perlbot.org
+An IRC bot written in perl.
+Authors: Andrew Burke and Jeremy Muhlich
+         aburke@bitflood.org / jmuhlich@bitflood.org
+======================================================
+
+WARNING!: DO NOT RUN AS ROOT.  We have seen people around the net run
+perlbot as root.  This is ill advised.  Although the perlbot core
+*should* be fairly secure, we make no claims as to its actual level
+of security.  In addition, every plugin you run is a potential security
+risk.  Please do NOT run this as root.
+
+NOTE: When we use an expression like <version> or <botnick>, that
+means you should substitute your perlbot version or your bot's nick or
+whatever is inside the angle brackets, WITHOUT the actual angle
+brackets.  So perlbot-<version> would mean perlbot-1.2.0 if you're
+running version 1.2.0 .
+
+Table of Contents
+-----------------
+
+1)  Requirements
+2)  Installation
+2a)   Upgrading from 1.x to 2.x
+3)  Settings
+4)  Using It
+5)  Debugging
+6)  Mailing List
+7)  Miscellaneous Stuff
+    (including how to make perlbot work on non-unix systems)
+
+=======================================================================
+
+
+1.0 Requirements
+================
+
+  - Net::IRC (http://www.perl.com/CPAN/modules/by-module/Net/)
+    -> Make sure you check back there periodically for new versions.  This
+       package is still sort of in development, and we're not afraid to
+       make use of features in the newest version.  Bugfixes here are
+       important too.
+  - XML::Simple (http://www.cpan.org/modules/by-module/XML/)
+  - Plugins may have their own requirements, and we trust plugin authors
+    to put that in their documentation.
+  - Optional, but recommended:
+      Algorithm::MarkovChain (For the Outlander plugin)
+      Calendar::Simple (For the Cal plugin)
+      Date::Manip (Misc modules use this)
+      HTML::CalendarMonth (Used by the LogServer plugin)
+      HTML::TableExtract (Used by some web plugins)
+      HTTP::Daemon (Used by the integrated webserver)
+      LWP::Simple (Many web plugins use this module)
+      Net::DNS (For the Host plugin)
+      Net::Google (For the Google and SpelCheck plugins)
+      String::Approx (Used by the Trivia plugin)
+      Weather::Underground (For the Weather plugin)
+      WWW::Babelfish (For the Babelfish plugin)
+
+2.0 Installation
+================
+
+  For personal use, you should simply be able to expand the archive in
+  your home directory:
+
+    tar zxvf perlbot-<version>.tar.gz
+
+  System-wide use isn't possible just yet, but we're working towards
+  that in future versions.
+
+  However, some work has been done to allow you to run multiple perlbots
+  from a machine if you have root access.  If you create a 'perlbot' user
+  whose home directory is '/home/perlbot', you can add new bots under that
+  directory, for instance: '/home/perlbot/logbot' would contain a perlbot
+  tree.  You can then copy the file 'perlbot.initscript' to
+  /etc/rc.d/init.d/logbot and run 'chkconfig --add logbot' (for RedHat-based
+  Linux distros only; make the symlinks by hand otherwise) to have the logbot
+  start at boot.  You can also use this script to stop/start the bot
+  manually by passing it the parameter 'start' or 'stop'.  This is currently
+  experimental, and you probably shouldn't play with it unless you know what
+  you're doing.  (it's also a pretty poor hack :)
+
+2.0a Upgrading from 1.x to 2.x
+==============================
+
+  Perlbot 2.0 is a significant revision of almost every aspect of the bot.
+  As such, upgrading isn't trivial.  Perlbot 2.0 uses XML as the format for
+  storing its config file.  This allows us much greater flexibility as
+  developers and opens the door to all kinds of inter-bot communication.
+
+  Under the miscscripts directory, you will find a script called: convertconfig
+  It takes a perlbot 1.x config file as its argument and prints out an XML
+  version of it. (With some caveats)
+
+  Example:
+
+    convertconfig config > config.xml
+
+  Would convert the perlbot 1.x config in 'config' to XML and write it to
+  'config.xml'.  This will bring over a great deal of the configuration
+  you've done for your 1.x bot, hopefully saving you some time.
+
+  **You still need to look over the generated XML and make some minor
+  changes.**
+
+  - Any channel flags you specified in your 1.x configuration will be gone.
+    They should be respecified ala the instructions below.
+
+  - Your plugindir specifications will almost certainly need to be corrected.
+
+  - Pluginprefix will be gone, it has been unified with commandprefix.
+
+3.0 Settings
+============
+
+  You should create and edit perlbot-<version>/config.xml to suit your
+  needs. This file is XML and uses XML syntax.  The provided
+  config-sample.xml should be a good place to start.
+
+  3.1  bot
+  --------
+
+    This class holds settings that pertain to the bot itself, such as its
+    IRC nick and directories for logfiles and plugins.  There must be only
+    ONE bot object in your config file!
+
+    nick
+      - Specify a nick that the bot will try to use.
+
+        Example:
+
+          <bot nick="perlbot" />
+
+    logdir
+      - This sets the directory that the bot will use for logs,
+        which defaults to "./logs" if it is not set.  A good
+        way to set this up to keep logs independent of perlbot
+        version is to set it to "../logs" or some other directory
+        external to the perlbot tree.
+
+        Example:
+
+          <bot nick="perlbot"
+               logdir="../logs" />
+
+    defaultlogtype
+      - This sets the default type of logging for a channel to
+        use.  It normally defaults to 'Files', which are separate
+        log files per day.  Another example would be 'SingleFile'
+        which stores all your logs for a given channel in a file
+        named channelname.log.
+
+        Example:
+
+          <bot nick="perlbot"
+               defaultlogtype="SingleFile" />
+
+    plugindir
+      - This sets the directories in which the bot will look
+	for plugins. (You should almost definitely specify
+        Plugins/Core and Plugins/Basic to get any useful
+        action out of your perlbot)
+
+        Example:
+
+          <bot nick="perlbot"
+               logdir="../logs>
+            ...
+            <plugindir>Plugins/Core</plugindir>
+            <plugindir>Plugins/Basic</plugindir>
+            <plugindir>Plugins/Misc</plugindir>
+            ...
+          </bot>
+
+    noload
+      - This tells the bot not to load certain plugins.
+
+        Example:
+
+          <bot nick="perlbot"
+               logdir="../logs">
+            ...
+            <noload>Weather</noload>
+            <noload>Seen</noload>
+            ...
+          </bot>
+
+    admin
+      - This specifies which users (See section 3.3) are to be
+        considered bot administrators.  This gives them the power
+        to control the bot.  You will most likely want to make
+        at least yourself an admin.  Be careful who you make an
+        admin.
+
+        Example:
+
+          <bot nick="perlbot"
+               logdir="../logs">
+            ...
+            <admin>billy</admin>
+            <admin>tommy</admin>
+            ...
+          </bot>
+
+    nickappend
+      - This specifies the character to append to the end of
+	the bot's nick when it cannot obtain its specified
+        nick. Defaults to '_'.
+
+        Example:
+
+          <bot nick="perlbot"
+               logdir="../logs"
+               nickappend="_">
+            ...
+            ...
+          </bot>
+
+    ircname
+      - This sets the bot's ircname.  Some IRC networks require
+        that all bots are identified as such in either their
+        nick or ircname.  So putting "bot" somewhere in the
+        ircname would be a good idea on these nets.  The default
+        is "imabot".
+
+        Example:
+
+          <bot nick="perlbot"
+               logdir="../logs"
+               nickappend="_"
+               ircname="imabot">
+            ...
+            ...
+          </bot>
+
+    commandprefix
+      - This is a character that will preface all the bot's
+        commands.  This has no default and must be set or the
+        bot will respond without any kind of prefix.
+
+        Example:
+
+          <bot nick="perlbot"
+               logdir="../logs"
+               nickappend="_"
+               ircname="imabot"
+               commandprefix="!">
+            ...
+            ...
+          </bot>
+
+
+    crashlogdir
+      - This is the directory to which crash logs will be written.
+        When something goes wrong and the bot crashes unexpectedly,
+	    a perl stack trace will be dumped to "crashlog.txt" in this
+        directory, along with the error message from the crash.
+        The default is "." (the current directory, i.e. your perlbot
+        directory).
+
+        Example:
+
+          <bot nick="perlbot"
+               logdir="../logs"
+               nickappend="_"
+               ircname="imabot"
+               commandprefix="!"
+               crashlogdir=".">
+            ...
+            ...
+          </bot>
+
+    localaddr
+      - This will set the hostname to which Net::IRC will attempt
+        to bind.  If you have multiple network interfaces in your
+        computer, you should set this to the ip or hostname of the
+        one you wish your bot to connect from.  It is safe in most
+        cases to leave this option out.
+
+        Example:
+
+          <bot nick="perlbot"
+               localaddr="somehost.example.com">
+            ...
+            ...
+          </bot>
+
+    username
+      - This allows you to set the username that will be displayed
+        on irc on machines not running ident.  Ie, if normally the
+        bot appears as ~you@someplace.com, but setting the username
+        to blahblah, it would appear as ~blahblah@someplace.com
+
+        Example:
+
+          <bot nick="perlbot"
+               username="blahblah">
+            ...
+            ...
+          </bot>
+
+    ignore
+      - Causes the bot to ignore someone.
+
+        Example:
+
+          <bot nick="perlbot">
+            <ignore>*!*someone@*.someplace.com</ignore>
+            ...
+          </bot>
+
+  3.2  server
+  -----------
+
+    Each server object represents an IRC server that you want your perlbot
+    to use.  You should specify several servers, so that if your bot loses
+    its connection to one, it can roll over to another and stay on IRC.  You
+    must have at least one server object or perlbot will print an error and
+    refuse to start.
+
+    address
+      - This sets the address of the server, it can be an IP
+        address or a domain name. (1.2.3.4 or irc.example.com)
+
+        Example:
+
+          <server address="irc.example.com" />
+
+    port
+      - This sets the port that the bot will try to connect to
+        the server on.  The default is 6667.
+
+        Example:
+
+          <server address="irc.example.com" port="6667" />
+
+    password
+      - This sets the server password if your server requires authentication.
+
+        Example:
+
+          <server address="irc.example.com" port="6667" password="secret" />
+
+    ssl
+      - This toggles the use of Net::IRC's SSL support for connecting to
+        secure servers.  (Note: Net::IRC 0.74+ required)
+
+        Example:
+
+          <server address="irc.example.com" port="36901" ssl="1" />
+
+  3.3  user
+  ---------
+
+    Each user object represents one person that you want your perlbot to
+    recognize on IRC.
+
+    name
+      - This sets the unique name that the bot and other users
+        will use to refer to that user.  It would ideally be
+        the same as the user's usual IRC nick, perhaps without
+        extra punctuation like trailing _ or ` characters.
+
+        Example:
+
+          <user name="billy" />
+
+    hostmask
+      - This sets a hostmask for the user, which is how they
+	are recognized.  Be mindful of your users' hostmasks,
+	they can easily allow the wrong person to access the
+	bot as that user if not configured correctly.  There
+	can be any number of these specified.  The bot may
+        refuse to add certain hostmasks if they are deemed
+        insecure.
+
+        Example:
+
+          <user name="billy">
+            ...
+            <hostmask>*!*billy@*.billy.com</hostmask>
+            <hostmask>*!*billy@*.funtimes.com</hostmask>
+            ...
+          </user>
+
+    password
+      - Allows users to authenticate themselves when not
+        connected via a hostmask specified in the config file.
+        Look in miscscripts/ for the perlbotpasswd script to
+        help you generate user passwords.
+
+        Example:
+
+          <user name="billy"
+                password="lakLKJAS./ASD">
+            <hostmask>*!*billy@*.billy.com</hostmask>
+          </user>
+
+  3.4  channel
+  ------------
+
+    name
+      - The name of the channel.  If the leading # or & character
+        is omitted, perlbot will assume # .
+
+        Example:
+
+          <channel name="#perlbot" />
+
+    key
+      - The channel key (only needed if the channel has a key).
+
+        Example:
+
+          <channel name="#perlbot"
+                   key="secret" />
+
+    flags
+      - This sets the channel flags, such as +snt etc.
+
+        Example:
+
+          <channel name="#perlbot"
+                   flags="-s+tn" />
+
+    logging
+      - Turns logging on or off for the channel.  Takes "yes" or
+        "no" (which mean "logging on" and "logging off", respectively).
+        The default is "no"!  If perlbot is not logging your channel,
+        make sure logging is set to "yes".
+
+        Example:
+
+          <channel name="#perlbot"
+                   flags="-s+tn"
+                   logging="yes" />
+
+    logtype
+      - Tells the bot how to store logs.  Will use one of the modules
+        under Perlbot/Logs.  It defaults to the bot.defaultlogtype, or
+        if that it not set, 'Files'.  The 'Files' type of logging
+        will split your logs into a single file for each day.  Another
+        example would be 'SingleFile' which would store all your logs
+        in a single file named channelname.log.
+
+        Example:
+
+          <channel name="#perlbot"
+                   logging="yes"
+                   logtype="SingleFile" />
+
+    op
+      - This sets a user to be an op for the channel.  It expects
+        the name field from their user object.
+
+        Example:
+
+          <channel name="#perlbot">
+            <op>billy</op>
+            <op>timmy</op>
+          </channel>
+
+    limit
+      - This sets the maximum number of users in the channel.
+        The default is 0 which means there is no limit.
+        (this setting is not currently implemented/enforced)
+
+        Example:
+
+          <channel name="#perlbot"
+                   limit="100" />
+
+  3.5 webserver
+  -------------
+
+    host
+      - This sets the hostname to bind the integrated webserver to. It
+        defaults to binding to all interfaces.
+
+        Example:
+
+          <webserver host="www.example.com" />
+
+    port
+      - This is the port the integrated webserver will bind to. It
+        defaults to 9090.
+
+        Example:
+
+          <webserver host="www.example.com" port="9000" />
+
+    enabled
+      - This option allows you to disable the webserver.  A value
+        other than 'no' or '0' will enable the webserver.  If this
+        key is absent, the webserver is ENABLED by default.
+
+        Example:
+
+          <webserver host="www.example.com" port="9000" enabled="no" />
+
+
+4.0 Using It
+============
+
+  4.1  What now?
+  --------------
+
+    So you have this shiny new perlbot, all configured, and you want to know
+    what you can do with it.  The basic bot functionality already has online
+    documentation.  Simply msg the bot "<commandprefix>help" and you'll get
+    information on how to use the online help facility.
+
+  4.2  How do I freakin' run this thing?
+  --------------------------------------
+
+    4.2.1  I'm the bot admin
+    ------------------------
+
+      The commands you'll most often use are probably join, and quit.
+      They join channels and quit the bot, respectively.  Message the
+      bot:
+
+        <commandprefix>help
+
+      for more information.
+
+    4.2.2  I'm a user
+    -----------------
+
+      The commands you'll most often use are auth, password, addhost,
+      and the note-related commands.  Message the bot:
+
+        <commandprefix>help Authentication
+  
+      for more information.
+
+    4.2.3  I need more help!
+    ------------------------
+
+      Check the FAQ included with perlbot.  If you still need more help, try
+      contacting the authors.
+
+
+5.0 Debugging
+=============
+
+  If you have major problems, please set the environment variable
+  PERLBOT_DEBUG to 1.  Then, run:
+
+    ./perlbot.pl > pblog.txt
+
+  Now make the problem occur again, and then attach pblog.txt and
+  crashlog.txt (see "crashlogdir" under section 3.1 above) to
+  a github issue.
+
+
+
+7.0 Miscellaneous Stuff
+=======================
+
+  7.1  How to make perlbot work under win32 (Windows 9x / NT / 2000):
+  -------------------------------------------------------------------
+
+    Let us know if you have experience with getting 2.x to work.
+
+  7.2  How to make perlbot work under MacOS:
+  ------------------------------------------
+
+    Let us know if you have experience with getting 2.x to work.

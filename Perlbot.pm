@@ -14,7 +14,7 @@ use Perlbot::Channel;
 use Perlbot::Logs;
 
 our $VERSION = '1.9.7';
-our $AUTHORS = 'burke@bitflood.org / jmuhlich@bitflood.org';
+our $AUTHORS = 'aburke@bitflood.org / jmuhlich@bitflood.org';
 
 use fields qw(starttime configfile config ircobject ircconn webserver plugins users channels logs curnick masterpid);
 
